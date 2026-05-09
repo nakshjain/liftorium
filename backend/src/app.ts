@@ -5,6 +5,7 @@ import { env } from "./config/env.js";
 import { errorMiddleware } from "./middleware/error.middleware.js";
 import { authRoutes } from "./modules/auth/auth.routes.js";
 import { exerciseRoutes } from "./modules/exercises/exercise.routes.js";
+import { workoutRoutes } from "./modules/workouts/workout.routes.js";
 import { notFoundHandler } from "./shared/http/not-found.handler.js";
 
 export const createApp = () => {
@@ -30,6 +31,7 @@ export const createApp = () => {
 
   app.use("/api/v1/auth", authRoutes);
   app.use("/api/v1/exercises", exerciseRoutes);
+  app.use("/api/v1/workouts", workoutRoutes);
   app.use(notFoundHandler);
   app.use(errorMiddleware);
 

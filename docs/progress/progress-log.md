@@ -91,3 +91,23 @@ Use this file for short, dated progress entries.
 
 - Exercise reads are public; mutations require authentication.
 - Seed data and frontend exercise UI remain pending.
+
+## 2026-05-10 - Workout Session Backend Module
+
+### Completed
+
+- Implemented modular Workout Session backend module.
+- Added start workout, get active workout, get workout by ID, workout history, add exercise, add set, remove set, and finish workout endpoints.
+- Added tracking for reps, weight, rest time, duration, RPE, warmup sets, dropset-ready set types, tempo, and notes.
+- Added user-owned workout schema with embedded exercises and sets referencing catalog exercises.
+- Added validation, error handling, DTO mapping, and history pagination.
+
+### Verification
+
+- Ran `npm run typecheck` in `backend`.
+- Ran `npm run build` in `backend`.
+
+### Notes
+
+- Frontend workout logging UI remains pending.
+- Integration tests should cover active workout rules, ownership, and set mutations.

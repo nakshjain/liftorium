@@ -71,9 +71,10 @@ type Workout = {
   name: string;
   status: "active" | "completed" | "discarded";
   startedAt: string;
-  completedAt?: string;
-  exercises: WorkoutExercise[];
+  finishedAt?: string;
+  durationSeconds?: number;
   notes?: string;
+  exercises: WorkoutExercise[];
   createdAt: string;
   updatedAt: string;
 };
@@ -83,8 +84,10 @@ type Workout = {
 
 ```ts
 type WorkoutExercise = {
+  id: string;
   exerciseId: string;
   order: number;
+  supersetGroupId?: string;
   notes?: string;
   sets: WorkoutSet[];
 };
@@ -94,13 +97,27 @@ type WorkoutExercise = {
 
 ```ts
 type WorkoutSet = {
+  id: string;
   order: number;
-  weight: number;
   reps: number;
+  weight: number;
+  restTimeSeconds?: number;
+  durationSeconds?: number;
+  rpe?: number;
   isWarmup: boolean;
+  setType: "standard" | "warmup" | "dropset";
+  tempo?: {
+    eccentric?: number;
+    pauseBottom?: number;
+    concentric?: number;
+    pauseTop?: number;
+  };
+  notes?: string;
   completedAt?: string;
 };
 ```
+
+Workout exercises and sets are embedded inside the workout document for fast active-session updates and history reads. Each workout exercise references the catalog `exercises` collection by `exerciseId`.
 
 ## Indexing Notes
 
@@ -108,6 +125,9 @@ type WorkoutSet = {
 - `refresh_tokens.userId` should be indexed.
 - `refresh_tokens.expiresAt` should support cleanup.
 - `workouts.userId` and `workouts.startedAt` should be indexed for history views.
+- `workouts.userId + status + startedAt` supports active-session lookup and session lists.
+- `workouts.userId + finishedAt` supports completed history pagination.
+- `workouts.userId + exercises.exerciseId + startedAt` supports future exercise history and PR analytics.
 - `exercises.name` has a text index for name search.
 - `exercises.category` and `exercises.equipment` are indexed for filters.
 - `exercises.targetMuscles` and `exercises.secondaryMuscles` are indexed for muscle group filters.

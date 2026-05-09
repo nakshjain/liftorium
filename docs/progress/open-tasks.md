@@ -12,7 +12,8 @@
 
 ## Upcoming
 
-- [ ] Implement workout tracking module.
+- [x] Implement workout tracking backend module.
+- [ ] Implement workout tracking frontend UI.
 - [x] Implement exercise database backend module.
 - [ ] Seed exercise database.
 - [ ] Implement exercise database frontend UI.
@@ -22,7 +23,7 @@
 
 ## Documentation Follow-Up
 
-- [ ] Update API docs after authentication implementation.
-- [ ] Add architecture decision records for auth token storage.
+- [x] Update API docs after authentication implementation.
 - [x] Add architecture decision records for auth token storage.
+- [x] Add architecture decision records for workout session schema.
 - [ ] Document local development setup once scripts are finalized.

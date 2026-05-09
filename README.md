@@ -27,6 +27,8 @@ Implemented:
 - Express and TypeScript backend foundation.
 - JWT authentication backend module.
 - MongoDB user and refresh token persistence.
+- Exercise database backend module.
+- Workout session backend module.
 - Project documentation structure.
 - Architecture decision records and implementation summaries.
 
@@ -35,7 +37,7 @@ Next focus:
 - Frontend authentication pages.
 - Frontend route guards.
 - Backend auth integration tests.
-- Workout tracking module.
+- Frontend workout logging UI.
 
 ## Tech Stack
 
@@ -271,8 +273,8 @@ Start here: [Project Documentation](./docs/README.md)
 | Priority | Feature | Status |
 | --- | --- | --- |
 | 1 | Authentication | In progress |
-| 2 | Workout tracking | Not started |
-| 3 | Exercise database | Not started |
+| 2 | Workout tracking | In progress |
+| 3 | Exercise database | In progress |
 | 4 | Workout history | Not started |
 | 5 | Progress analytics | Not started |
 | 6 | PR tracking | Not started |

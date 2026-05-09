@@ -56,6 +56,7 @@ The backend currently includes:
 - Zod request body validation middleware.
 - JWT auth module under `src/modules/auth`.
 - Exercise database module under `src/modules/exercises`.
+- Workout session module under `src/modules/workouts`.
 - User persistence under `src/modules/users`.
 - HTTP-only refresh token cookie support.
 
@@ -118,3 +119,14 @@ The exercise module follows the same controller/service/repository structure:
 - `exercise.repository.ts` owns Mongoose queries and pagination.
 - `exercise.validation.ts` owns Zod body, query, and param schemas.
 - `exercise.types.ts` defines DTOs and paginated response types.
+
+## Workout Module
+
+The workout module manages active sessions and completed workout history:
+
+- `workout.routes.ts` defines authenticated REST endpoints.
+- `workout.controller.ts` returns consistent API response shapes.
+- `workout.service.ts` enforces ownership, active-session rules, and DTO mapping.
+- `workout.repository.ts` owns Mongoose queries and embedded workout mutations.
+- `workout.validation.ts` validates bodies, params, and history pagination.
+- `workout.types.ts` defines session, exercise, set, tempo, and history DTOs.
