@@ -55,3 +55,18 @@ Use this file for short, dated progress entries.
 
 - Frontend auth pages and route guards remain pending.
 - Auth endpoint rate limiting and integration tests should be added before production launch.
+
+## 2026-05-10 - GitHub README
+
+### Completed
+
+- Replaced the root README placeholder with a professional GitHub project README.
+- Added overview, architecture, AI workflow, tech stack, setup instructions, screenshot placeholders, roadmap, documentation structure, and scalability notes.
+
+### Verification
+
+- Reviewed repository scripts and documentation paths before writing setup instructions.
+
+### Notes
+
+- Screenshot placeholders should be replaced after frontend UI screens are implemented.
