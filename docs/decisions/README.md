@@ -1,0 +1,29 @@
+# Architecture Decision Records
+
+This section stores architecture decision records.
+
+## Documents
+
+| Document | Purpose |
+| --- | --- |
+| [ADR Template](./adr-template.md) | Template for new decision records |
+| [0001 Documentation Structure](./0001-documentation-structure.md) | Decision to maintain structured project documentation |
+
+## ADR Naming
+
+Use this format:
+
+```text
+0001-short-decision-title.md
+0002-another-decision.md
+```
+
+## When To Create An ADR
+
+Create an ADR when a decision:
+
+- Affects project architecture.
+- Changes data modeling.
+- Changes authentication or security behavior.
+- Introduces a major dependency.
+- Establishes a long-lived convention.
