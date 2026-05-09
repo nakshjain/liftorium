@@ -4,7 +4,7 @@
 
 | Priority | Feature | Status | Notes |
 | --- | --- | --- | --- |
-| 1 | Authentication | Not Started | Register, login, refresh tokens, logout, protected routes |
+| 1 | Authentication | In Progress | Backend JWT auth module implemented; frontend auth pages and guards still pending |
 | 2 | Workout tracking | Not Started | Active workout, add exercises, log sets, complete workout |
 | 3 | Exercise database | Not Started | Seed catalog, search, filters, custom exercises |
 | 4 | Workout history | Not Started | Completed workout list and detail pages |

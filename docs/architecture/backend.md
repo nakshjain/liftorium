@@ -45,6 +45,19 @@ backend/src
   server.ts
 ```
 
+## Implemented Auth Foundation
+
+The backend currently includes:
+
+- Express app bootstrap in `src/app.ts`.
+- MongoDB connection setup in `src/config/mongodb.ts`.
+- Environment validation in `src/config/env.ts`.
+- Centralized error middleware.
+- Zod request body validation middleware.
+- JWT auth module under `src/modules/auth`.
+- User persistence under `src/modules/users`.
+- HTTP-only refresh token cookie support.
+
 ## Request Flow
 
 ```text

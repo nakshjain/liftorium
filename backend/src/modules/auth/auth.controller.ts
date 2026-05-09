@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import { env, isProduction } from "../../config/env.js";
+import { AppError } from "../../shared/errors/app-error.js";
 import { authService } from "./auth.service.js";
+import type { AuthSession } from "./auth.types.js";
 import type { LoginRequestBody, RegisterRequestBody } from "./auth.validation.js";
 
 const refreshTokenCookieOptions = {
@@ -57,7 +59,7 @@ export class AuthController {
 
   private sendSession(
     response: Response,
-    session: Awaited<ReturnType<typeof authService.register>>,
+    session: AuthSession,
     statusCode: number
   ) {
     response.cookie(env.REFRESH_TOKEN_COOKIE_NAME, session.refreshToken, refreshTokenCookieOptions);
@@ -74,7 +76,7 @@ export class AuthController {
     const refreshToken = request.cookies[env.REFRESH_TOKEN_COOKIE_NAME];
 
     if (typeof refreshToken !== "string" || refreshToken.length === 0) {
-      throw new Error("Refresh token cookie is missing");
+      throw new AppError("REFRESH_TOKEN_REQUIRED", "Refresh token cookie is missing", 401);
     }
 
     return refreshToken;

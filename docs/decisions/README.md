@@ -8,6 +8,7 @@ This section stores architecture decision records.
 | --- | --- |
 | [ADR Template](./adr-template.md) | Template for new decision records |
 | [0001 Documentation Structure](./0001-documentation-structure.md) | Decision to maintain structured project documentation |
+| [0002 JWT Refresh Token Strategy](./0002-jwt-refresh-token-strategy.md) | Decision for access tokens, refresh cookies, hashing, and rotation |
 
 ## ADR Naming
 

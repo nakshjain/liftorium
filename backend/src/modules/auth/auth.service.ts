@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
+import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
+import type { SignOptions } from "jsonwebtoken";
 import { env } from "../../config/env.js";
 import { AppError } from "../../shared/errors/app-error.js";
 import { durationToMilliseconds } from "../../shared/utils/duration.js";
@@ -117,7 +119,7 @@ export class AuthService {
     };
 
     return jwt.sign(payload, env.JWT_ACCESS_SECRET, {
-      expiresIn: env.ACCESS_TOKEN_TTL
+      expiresIn: env.ACCESS_TOKEN_TTL as SignOptions["expiresIn"]
     });
   }
 
@@ -128,7 +130,7 @@ export class AuthService {
     };
 
     return jwt.sign(payload, env.JWT_REFRESH_SECRET, {
-      expiresIn: env.REFRESH_TOKEN_TTL
+      expiresIn: env.REFRESH_TOKEN_TTL as SignOptions["expiresIn"]
     });
   }
 
@@ -192,8 +194,8 @@ export class AuthService {
     );
   }
 
-  private async hashRefreshToken(refreshToken: string) {
-    return bcrypt.hash(refreshToken, passwordSaltRounds);
+  private hashRefreshToken(refreshToken: string) {
+    return crypto.createHmac("sha256", env.JWT_REFRESH_SECRET).update(refreshToken).digest("hex");
   }
 }
 

@@ -41,3 +41,21 @@ Created `/docs` documentation scaffold with architecture, API, workflow, prompt,
 ### Follow-Up
 
 Keep documentation updated as implementation begins.
+
+## 2026-05-10 - Implement JWT Auth Module
+
+### Prompt
+
+Implement JWT auth module.
+
+### Context
+
+First MVP priority for Gym Helper. Backend directory required a production-ready Express/TypeScript foundation plus modular auth implementation.
+
+### Outcome
+
+Implemented backend JWT authentication with registration, login, refresh token rotation, current user lookup, logout, validation, centralized errors, MongoDB models, and environment configuration.
+
+### Follow-Up
+
+Add frontend authentication pages, route guards, backend auth tests, and rate limiting for auth endpoints.

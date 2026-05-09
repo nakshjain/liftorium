@@ -35,8 +35,11 @@ type RefreshToken = {
   expiresAt: string;
   revokedAt?: string;
   createdAt: string;
+  updatedAt: string;
 };
 ```
+
+Refresh token hashes are deterministic HMAC-SHA256 values derived from the raw token and refresh token secret. Raw refresh tokens must never be stored.
 
 ## Exercise
 

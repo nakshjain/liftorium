@@ -6,6 +6,14 @@ Gym Helper uses JWT access tokens and refresh tokens.
 
 Access tokens should be short-lived. Refresh tokens should be persisted in hashed form and revocable.
 
+Current implementation:
+
+- Access tokens are returned in JSON responses.
+- Refresh tokens are stored in HTTP-only cookies.
+- Refresh tokens are persisted only as deterministic HMAC-SHA256 hashes.
+- Refresh tokens are rotated on refresh.
+- Logout revokes the active refresh token.
+
 ## Token Strategy
 
 | Token | Purpose | Storage | Lifetime |
@@ -13,7 +21,7 @@ Access tokens should be short-lived. Refresh tokens should be persisted in hashe
 | Access token | Authorize API requests | Frontend memory or secure client strategy | Short |
 | Refresh token | Renew access tokens | Secure cookie preferred | Longer |
 
-Final storage details should be confirmed during implementation based on frontend/backend deployment topology.
+The backend uses an HTTP-only refresh token cookie scoped to `/api/v1/auth`.
 
 ## Password Handling
 
