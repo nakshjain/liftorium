@@ -29,14 +29,14 @@ Implemented:
 - MongoDB user and refresh token persistence.
 - Exercise database backend module.
 - Workout session backend module.
+- Angular authentication flow.
 - Project documentation structure.
 - Architecture decision records and implementation summaries.
 
 Next focus:
 
-- Frontend authentication pages.
-- Frontend route guards.
 - Backend auth integration tests.
+- Frontend auth flow tests.
 - Frontend workout logging UI.
 
 ## Tech Stack

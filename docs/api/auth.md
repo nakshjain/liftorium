@@ -101,6 +101,11 @@ Uses the refresh token cookie to rotate the refresh token and issue a new access
 {
   "success": true,
   "data": {
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com",
+      "displayName": "Alex"
+    },
     "accessToken": "new_jwt_access_token"
   }
 }

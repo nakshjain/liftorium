@@ -4,7 +4,7 @@
 
 | Priority | Feature | Status | Notes |
 | --- | --- | --- | --- |
-| 1 | Authentication | In Progress | Backend JWT auth module implemented; frontend auth pages and guards still pending |
+| 1 | Authentication | In Progress | Backend JWT auth and Angular auth flow implemented; integration tests and hardening pending |
 | 2 | Workout tracking | In Progress | Backend session module implemented; frontend workout logging UI pending |
 | 3 | Exercise database | In Progress | Backend CRUD, pagination, search, filters, validation, and indexes implemented; seed catalog and frontend UI pending |
 | 4 | Workout history | Not Started | Completed workout list and detail pages |

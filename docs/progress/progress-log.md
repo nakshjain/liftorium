@@ -111,3 +111,24 @@ Use this file for short, dated progress entries.
 
 - Frontend workout logging UI remains pending.
 - Integration tests should cover active workout rules, ownership, and set mutations.
+
+## 2026-05-10 - Angular Authentication Flow
+
+### Completed
+
+- Implemented Angular login and signup pages.
+- Added Signals-based auth state service.
+- Added access token persistence, refresh token handling, route guards, and HTTP interceptor.
+- Added reusable auth form field component with validation messages.
+- Added TailwindCSS configuration and mobile-first dark auth UI.
+- Added protected app placeholder screen and logout flow.
+
+### Verification
+
+- Ran `npm run build` in `frontend`.
+- Ran `npm test -- --watch=false` in `frontend`.
+
+### Notes
+
+- Build and tests required elevated filesystem permissions because sandboxed Angular resolution could not read the real project path.
+- Tailwind is configured through a plain CSS global stylesheet.

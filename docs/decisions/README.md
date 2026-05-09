@@ -11,6 +11,7 @@ This section stores architecture decision records.
 | [0002 JWT Refresh Token Strategy](./0002-jwt-refresh-token-strategy.md) | Decision for access tokens, refresh cookies, hashing, and rotation |
 | [0003 Exercise Catalog API Design](./0003-exercise-catalog-api-design.md) | Decision for exercise schema, public reads, authenticated mutations, and indexed search |
 | [0004 Workout Session Schema Design](./0004-workout-session-schema-design.md) | Decision for embedded workout sessions, catalog exercise references, and future set metadata |
+| [0005 Angular Auth Flow Design](./0005-angular-auth-flow-design.md) | Decision for frontend Signals auth state, interceptors, guards, and token storage |
 
 ## ADR Naming
 

@@ -3,12 +3,13 @@
 ## Immediate
 
 - [x] Implement authentication backend module.
-- [ ] Implement authentication frontend pages and route guards.
+- [x] Implement authentication frontend pages and route guards.
 - [x] Define environment variable examples.
 - [ ] Add initial backend test setup.
 - [ ] Add initial frontend test setup.
 - [ ] Add backend auth integration tests.
 - [ ] Add auth endpoint rate limiting before production.
+- [ ] Add frontend auth flow tests.
 
 ## Upcoming
 
@@ -26,4 +27,5 @@
 - [x] Update API docs after authentication implementation.
 - [x] Add architecture decision records for auth token storage.
 - [x] Add architecture decision records for workout session schema.
+- [x] Add architecture decision record for Angular auth flow.
 - [ ] Document local development setup once scripts are finalized.

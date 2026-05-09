@@ -64,6 +64,19 @@ Use Angular Signals for:
 
 Avoid global state libraries until app complexity justifies them.
 
+## Implemented Auth Foundation
+
+The frontend currently includes:
+
+- Lazy-loaded `/auth/login` and `/auth/signup` routes.
+- Protected `/app` route guarded by auth state.
+- `AuthService` with Signals for user, access token, auth status, and authenticated state.
+- Access token persistence through a focused token storage service.
+- HTTP interceptor that attaches bearer tokens and attempts refresh on `401`.
+- Refresh token handling through backend HTTP-only cookies with `withCredentials`.
+- Reusable auth form field component with validation messages.
+- Tailwind dark mobile-first auth screens.
+
 ## Component Guidelines
 
 - Use standalone components only.

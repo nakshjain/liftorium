@@ -13,6 +13,8 @@ Current implementation:
 - Refresh tokens are persisted only as deterministic HMAC-SHA256 hashes.
 - Refresh tokens are rotated on refresh.
 - Logout revokes the active refresh token.
+- Frontend stores the access token in local storage and keeps auth state in Angular Signals.
+- Frontend sends refresh requests with credentials so the HTTP-only refresh cookie is included.
 
 ## Token Strategy
 
@@ -22,6 +24,8 @@ Current implementation:
 | Refresh token | Renew access tokens | Secure cookie preferred | Longer |
 
 The backend uses an HTTP-only refresh token cookie scoped to `/api/v1/auth`.
+
+The frontend access token storage strategy is an MVP tradeoff. Future hardening should evaluate in-memory access tokens, stricter CSP, and broader XSS protections before production launch.
 
 ## Password Handling
 
