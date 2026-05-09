@@ -6,7 +6,7 @@
 | --- | --- | --- | --- |
 | 1 | Authentication | In Progress | Backend JWT auth module implemented; frontend auth pages and guards still pending |
 | 2 | Workout tracking | Not Started | Active workout, add exercises, log sets, complete workout |
-| 3 | Exercise database | Not Started | Seed catalog, search, filters, custom exercises |
+| 3 | Exercise database | In Progress | Backend CRUD, pagination, search, filters, validation, and indexes implemented; seed catalog and frontend UI pending |
 | 4 | Workout history | Not Started | Completed workout list and detail pages |
 | 5 | Progress analytics | Not Started | Volume and trend summaries |
 | 6 | PR tracking | Not Started | Personal records by exercise |

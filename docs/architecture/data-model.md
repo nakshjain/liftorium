@@ -47,16 +47,20 @@ Refresh token hashes are deterministic HMAC-SHA256 values derived from the raw t
 type Exercise = {
   id: string;
   name: string;
-  primaryMuscleGroup: string;
-  secondaryMuscleGroups: string[];
+  description: string;
+  category: string;
   equipment: string;
-  movementPattern: string;
-  isCustom: boolean;
-  ownerUserId?: string;
+  targetMuscles: string[];
+  secondaryMuscles: string[];
+  instructions: string[];
+  tips: string[];
+  mediaUrl?: string;
   createdAt: string;
   updatedAt: string;
 };
 ```
+
+Exercise muscle fields support multi-muscle movements and catalog filtering.
 
 ## Workout
 
@@ -104,4 +108,7 @@ type WorkoutSet = {
 - `refresh_tokens.userId` should be indexed.
 - `refresh_tokens.expiresAt` should support cleanup.
 - `workouts.userId` and `workouts.startedAt` should be indexed for history views.
-- `exercises.name` should be indexed for search.
+- `exercises.name` has a text index for name search.
+- `exercises.category` and `exercises.equipment` are indexed for filters.
+- `exercises.targetMuscles` and `exercises.secondaryMuscles` are indexed for muscle group filters.
+- `exercises.category + equipment` and `exercises.targetMuscles + equipment` compound indexes support common catalog browsing queries.

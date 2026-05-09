@@ -70,3 +70,24 @@ Use this file for short, dated progress entries.
 ### Notes
 
 - Screenshot placeholders should be replaced after frontend UI screens are implemented.
+
+## 2026-05-10 - Exercise Database Backend Module
+
+### Completed
+
+- Implemented modular Exercise Database backend module.
+- Added create, get by ID, list, update, and delete endpoints.
+- Added pagination, name search, and filters for muscle group, equipment, and category.
+- Added Zod validation for request bodies, query parameters, and route parameters.
+- Added Mongoose schema with text, field, and compound indexes for catalog browsing.
+- Added DTO mapping and typed paginated responses.
+
+### Verification
+
+- Ran `npm run typecheck` in `backend`.
+- Ran `npm run build` in `backend`.
+
+### Notes
+
+- Exercise reads are public; mutations require authentication.
+- Seed data and frontend exercise UI remain pending.

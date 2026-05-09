@@ -13,7 +13,9 @@
 ## Upcoming
 
 - [ ] Implement workout tracking module.
+- [x] Implement exercise database backend module.
 - [ ] Seed exercise database.
+- [ ] Implement exercise database frontend UI.
 - [ ] Implement workout history views.
 - [ ] Add progress analytics.
 - [ ] Add personal record tracking.

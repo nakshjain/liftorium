@@ -55,6 +55,7 @@ The backend currently includes:
 - Centralized error middleware.
 - Zod request body validation middleware.
 - JWT auth module under `src/modules/auth`.
+- Exercise database module under `src/modules/exercises`.
 - User persistence under `src/modules/users`.
 - HTTP-only refresh token cookie support.
 
@@ -106,3 +107,14 @@ Recommended success shape:
 - Repositories own database access.
 - Validation files define request schemas.
 - Types are explicit and exported from feature modules when shared.
+
+## Exercise Module
+
+The exercise module follows the same controller/service/repository structure:
+
+- `exercise.routes.ts` defines REST endpoints and middleware.
+- `exercise.controller.ts` handles HTTP response shapes.
+- `exercise.service.ts` handles not-found behavior and DTO mapping.
+- `exercise.repository.ts` owns Mongoose queries and pagination.
+- `exercise.validation.ts` owns Zod body, query, and param schemas.
+- `exercise.types.ts` defines DTOs and paginated response types.

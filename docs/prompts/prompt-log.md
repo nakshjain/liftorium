@@ -77,3 +77,21 @@ Created a complete GitHub README with current project status, setup commands, ar
 ### Follow-Up
 
 Replace screenshot placeholders after frontend UI screens are implemented.
+
+## 2026-05-10 - Implement Exercise Database Module
+
+### Prompt
+
+Implement the Exercise Database module with modular architecture, strict TypeScript, MongoDB/Mongoose, controller/service/repository structure, validation, CRUD, pagination, search, filters, Mongo indexes, DTO typing, API docs, progress logs, and architecture decision documentation.
+
+### Context
+
+Exercise database is the third MVP priority and provides the catalog needed for workout tracking.
+
+### Outcome
+
+Implemented the backend exercise module with schema, repository, service, controller, routes, validation, DTOs, pagination, search, filters, and documentation updates.
+
+### Follow-Up
+
+Add exercise seed data, frontend exercise browsing/search UI, and integration tests.
