@@ -4,22 +4,8 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 @Component({
   selector: 'app-auth-form-field',
   imports: [ReactiveFormsModule],
-  template: `
-    <label class="block">
-      <span class="mb-2 block text-sm font-medium text-zinc-200">{{ label }}</span>
-      <input
-        class="h-12 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 text-base text-zinc-50 outline-none transition placeholder:text-zinc-600 focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20"
-        [autocomplete]="autocomplete"
-        [formControl]="control"
-        [placeholder]="placeholder"
-        [type]="type"
-      />
-    </label>
-
-    @if (control.invalid && (control.dirty || control.touched)) {
-      <p class="mt-2 text-sm text-rose-300">{{ errorMessage }}</p>
-    }
-  `
+  templateUrl: './auth-form-field.html',
+  styleUrl: './auth-form-field.scss'
 })
 export class AuthFormFieldComponent {
   @Input({ required: true }) public label = '';

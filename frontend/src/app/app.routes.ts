@@ -16,13 +16,13 @@ export const routes: Routes = [
     path: 'app/workout',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/workouts/live-workout-page.component').then((module) => module.LiveWorkoutPageComponent)
+      import('./features/workouts/live-workout-page/live-workout-page').then((module) => module.LiveWorkoutPageComponent)
   },
   {
     path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/dashboard/dashboard-page.component').then((module) => module.DashboardPageComponent)
+      import('./features/dashboard/dashboard-page/dashboard-page').then((module) => module.DashboardPageComponent)
   },
   {
     path: '**',

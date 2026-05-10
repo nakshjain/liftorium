@@ -1,0 +1,49 @@
+<app-auth-shell
+  eyebrow="Start strong"
+  title="Create your training account."
+  description="Set up a secure profile for workouts, history, and progress tracking."
+>
+  <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
+    <app-auth-form-field
+      autocomplete="name"
+      label="Display name"
+      placeholder="Alex"
+      [control]="form.controls.displayName"
+    />
+
+    <app-auth-form-field
+      autocomplete="email"
+      label="Email"
+      placeholder="you@example.com"
+      type="email"
+      [control]="form.controls.email"
+    />
+
+    <app-auth-form-field
+      autocomplete="new-password"
+      label="Password"
+      placeholder="At least 8 characters"
+      type="password"
+      [control]="form.controls.password"
+    />
+
+    @if (errorMessage()) {
+      <p class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+        {{ errorMessage() }}
+      </p>
+    }
+
+    <button
+      class="h-12 w-full rounded-lg bg-teal-400 px-4 text-base font-semibold text-zinc-950 transition hover:bg-teal-300 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+      type="submit"
+      [disabled]="submitDisabled()"
+    >
+      {{ submitButtonLabel() }}
+    </button>
+  </form>
+
+  <p class="mt-6 text-center text-sm text-zinc-400">
+    Already have an account?
+    <a class="font-medium text-teal-300 hover:text-teal-200" routerLink="/auth/login">Sign in</a>
+  </p>
+</app-auth-shell>

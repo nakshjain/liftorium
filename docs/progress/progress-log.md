@@ -152,3 +152,22 @@ Use this file for short, dated progress entries.
 
 - Build and tests required elevated filesystem permissions because sandboxed Angular resolution could not read the real project path.
 - The UI currently uses local seeded exercise/history data and is ready to be connected to the existing workout and exercise APIs.
+
+## 2026-05-10 - Angular Component File Structure Refactor
+
+### Completed
+
+- Refactored every Angular component into a dedicated folder containing `.ts`, `.html`, and `.scss` files.
+- Removed all inline templates and inline component styles.
+- Preserved standalone components, lazy route loading, Signals-based state, and Tailwind utility styling.
+- Moved small presentation labels and workout summary formatting out of templates into component computed state/helpers.
+- Updated frontend architecture and reusable prompt documentation with the component structure standard and maintainability rationale.
+
+### Verification
+
+- Ran `npm run build` in `frontend`.
+- Ran `npm test -- --watch=false` in `frontend`.
+
+### Notes
+
+- Build and tests required elevated filesystem permissions because sandboxed Angular resolution could not read the real project path.

@@ -149,3 +149,21 @@ Added a lazy-loaded live workout feature with a Signals store, seeded exercise/h
 ### Follow-Up
 
 Connect the store to workout/exercise APIs, add persistence for active sessions, and add focused component/store tests.
+
+## 2026-05-10 - Angular Component File Structure Refactor
+
+### Prompt
+
+Refactor the Angular frontend so every component uses a dedicated folder with separate `.ts`, `.html`, and `.scss` files. Remove inline templates/styles, preserve standalone components, Signals state, Tailwind styling, lazy loading, and strict TypeScript compliance. Update frontend architecture and prompt library documentation.
+
+### Context
+
+The frontend had several standalone components with inline templates. The project needed a consistent production-oriented component file standard across auth, dashboard, workout logging, shared form fields, and the root app component.
+
+### Outcome
+
+Moved all Angular components into dedicated folders, extracted templates/styles, updated route/import paths, kept SCSS files for every component, and documented the standard.
+
+### Follow-Up
+
+Apply the same structure to all future frontend components as features expand.

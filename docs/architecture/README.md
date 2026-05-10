@@ -18,6 +18,7 @@ This section describes the technical architecture for Gym Helper.
 - Production-ready modular structure.
 - Strict TypeScript usage across frontend and backend.
 - Small reusable components and services.
+- Separate Angular component folders with `.ts`, `.html`, and `.scss` files.
 - Mobile-first workout logging experience.
 - Clear separation between controllers, services, repositories, and schemas.
 - Centralized validation and error handling.
