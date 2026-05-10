@@ -131,3 +131,21 @@ Implemented Angular auth state, API integration, guards, interceptor, login/sign
 ### Follow-Up
 
 Add focused frontend auth tests and revisit access token storage hardening before production.
+
+## 2026-05-10 - Implement Live Workout Logging UI
+
+### Prompt
+
+Implement live workout logging UI with mobile-first UX, minimal taps, dark gym aesthetic, instant add/remove sets, previous workout comparison, rest timer, sticky bottom controls, fast weight/reps editing, Signals-based state management, Tailwind styling, start workout, select exercises, log sets, mark completed sets, and finish workout.
+
+### Context
+
+Workout session backend and Angular auth flow already existed. The frontend needed the core MVP workout logging surface behind the authenticated app route.
+
+### Outcome
+
+Added a lazy-loaded live workout feature with a Signals store, seeded exercise/history data, thumb-friendly set controls, rest timer behavior, dashboard entry point, and documentation updates.
+
+### Follow-Up
+
+Connect the store to workout/exercise APIs, add persistence for active sessions, and add focused component/store tests.

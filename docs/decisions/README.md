@@ -12,6 +12,7 @@ This section stores architecture decision records.
 | [0003 Exercise Catalog API Design](./0003-exercise-catalog-api-design.md) | Decision for exercise schema, public reads, authenticated mutations, and indexed search |
 | [0004 Workout Session Schema Design](./0004-workout-session-schema-design.md) | Decision for embedded workout sessions, catalog exercise references, and future set metadata |
 | [0005 Angular Auth Flow Design](./0005-angular-auth-flow-design.md) | Decision for frontend Signals auth state, interceptors, guards, and token storage |
+| [0006 Live Workout UI State](./0006-live-workout-ui-state.md) | Decision for local Signals state, mobile logging UX, and API-ready session shape |
 
 ## ADR Naming
 

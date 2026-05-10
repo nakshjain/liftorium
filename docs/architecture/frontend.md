@@ -46,7 +46,7 @@ Routes should be lazy loaded by feature:
 
 - `/auth/login`
 - `/auth/register`
-- `/workouts/active`
+- `/app/workout`
 - `/workouts/new`
 - `/history`
 - `/exercises`
@@ -92,3 +92,13 @@ The frontend currently includes:
 - Minimal navigation while a workout is active.
 - Clear active workout status.
 - Preserve in-progress workout state.
+
+## Implemented Live Workout UI
+
+The frontend now includes a protected lazy-loaded `/app/workout` route for live workout logging.
+
+- `LiveWorkoutStore` owns active workout state with Angular Signals.
+- The UI starts a workout, adds catalog exercises, adds/removes sets, edits reps and weight with thumb-friendly controls, marks sets complete, runs a rest timer, and finishes the session.
+- Previous workout set targets are shown inline per set to reduce context switching during training.
+- Sticky bottom controls keep rest and finish actions available while scrolling through exercises.
+- Seeded local exercise/history data mirrors backend workout and exercise DTO concepts so API integration can replace the local source without reshaping the UI.

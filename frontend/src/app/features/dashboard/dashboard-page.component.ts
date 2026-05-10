@@ -1,10 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/auth/auth.service';
 
 @Component({
   selector: 'app-dashboard-page',
+  imports: [RouterLink],
   template: `
     <main class="min-h-dvh px-4 py-6 text-zinc-50 sm:px-6">
       <div class="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-3xl flex-col">
@@ -30,10 +31,10 @@ import { AuthService } from '../../core/auth/auth.service';
         </section>
 
         <section class="mt-5 grid gap-3 sm:grid-cols-3">
-          <div class="rounded-lg border border-zinc-800 bg-zinc-950/70 p-4">
+          <a class="rounded-lg border border-teal-400/30 bg-teal-400/10 p-4 transition hover:border-teal-300" routerLink="/app/workout">
             <p class="text-sm text-zinc-400">Active workout</p>
-            <p class="mt-2 text-xl font-semibold text-zinc-50">Ready</p>
-          </div>
+            <p class="mt-2 text-xl font-semibold text-zinc-50">Start logging</p>
+          </a>
           <div class="rounded-lg border border-zinc-800 bg-zinc-950/70 p-4">
             <p class="text-sm text-zinc-400">Exercise catalog</p>
             <p class="mt-2 text-xl font-semibold text-zinc-50">Available</p>

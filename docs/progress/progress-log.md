@@ -132,3 +132,23 @@ Use this file for short, dated progress entries.
 
 - Build and tests required elevated filesystem permissions because sandboxed Angular resolution could not read the real project path.
 - Tailwind is configured through a plain CSS global stylesheet.
+
+## 2026-05-10 - Live Workout Logging UI
+
+### Completed
+
+- Added protected lazy-loaded `/app/workout` route.
+- Implemented Signals-based live workout state for starting, adding exercises, adding/removing sets, editing weight/reps, completing sets, rest timing, and finishing workouts.
+- Added mobile-first Tailwind UI with previous-set comparison, large tap targets, and sticky bottom controls.
+- Added a dashboard entry point for starting workout logging.
+- Updated frontend architecture, workout API mapping, prompt log, progress, and ADR documentation.
+
+### Verification
+
+- Ran `npm run build` in `frontend`.
+- Ran `npm test -- --watch=false` in `frontend`.
+
+### Notes
+
+- Build and tests required elevated filesystem permissions because sandboxed Angular resolution could not read the real project path.
+- The UI currently uses local seeded exercise/history data and is ready to be connected to the existing workout and exercise APIs.

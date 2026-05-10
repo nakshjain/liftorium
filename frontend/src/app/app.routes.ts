@@ -13,6 +13,12 @@ export const routes: Routes = [
     loadChildren: () => import('./features/auth/auth.routes').then((module) => module.authRoutes)
   },
   {
+    path: 'app/workout',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/workouts/live-workout-page.component').then((module) => module.LiveWorkoutPageComponent)
+  },
+  {
     path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>

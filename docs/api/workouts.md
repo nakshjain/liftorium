@@ -158,6 +158,18 @@ Supported set types:
 - `warmup`
 - `dropset`
 
+## Live Logger UI Mapping
+
+The Angular live workout logger currently keeps active-session state locally while presenting the same workflow as the workout API:
+
+- Start workout maps to `POST /api/v1/workouts`.
+- Select exercise maps to `POST /api/v1/workouts/:workoutId/exercises`.
+- Add set maps to `POST /api/v1/workouts/:workoutId/exercises/:workoutExerciseId/sets`.
+- Remove set maps to `DELETE /api/v1/workouts/:workoutId/exercises/:workoutExerciseId/sets/:setId`.
+- Finish workout maps to `POST /api/v1/workouts/:workoutId/finish`.
+
+Fast in-place set editing will require an update-set endpoint or autosave strategy before the UI is connected to the backend.
+
 ## Remove Set
 
 ```http
