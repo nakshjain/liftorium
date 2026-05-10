@@ -17,7 +17,7 @@ The AI agent should:
 
 - Follow existing project patterns.
 - Keep files small and modular.
-- Use strict TypeScript.
+- Use strict TypeScript on the frontend and Java 21 backend conventions.
 - Avoid `any`.
 - Prefer production-ready code over placeholders.
 - Keep changes scoped to the requested feature.

@@ -10,7 +10,7 @@ Follow the project architecture rules:
 - Angular components must use `component-name/component-name.ts`, `component-name/component-name.html`, and `component-name/component-name.scss`.
 - No inline Angular templates or inline component styles.
 - Keep templates presentation-focused; move computed labels, formatting, and state transformations into TypeScript, services, or stores.
-- Node.js, Express, MongoDB, JWT auth, and TypeScript on the backend.
+- Java 21, Spring Boot, Maven, MongoDB, Spring Security, JWT auth, Lombok, and Jakarta Validation on the backend.
 - Controller/service/repository structure.
 - Strict typing with no any.
 - Update documentation in /docs.

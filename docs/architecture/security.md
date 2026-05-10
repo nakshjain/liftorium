@@ -1,49 +1,39 @@
 # Security Architecture
 
+Gym Helper uses Spring Security with JWT access tokens and refresh-token cookies.
+
 ## Authentication
 
-Gym Helper uses JWT access tokens and refresh tokens.
+- Users register and log in through `/api/v1/auth`.
+- Passwords are hashed with BCrypt.
+- Successful login/register returns a JWT access token in the response body.
+- A JWT refresh token is stored in an HTTP-only cookie scoped to `/api/v1/auth`.
 
-Access tokens should be short-lived. Refresh tokens should be persisted in hashed form and revocable.
+## Refresh Tokens
 
-Current implementation:
+- Refresh tokens are stored in MongoDB as HMAC-SHA256 hashes.
+- Raw refresh tokens are never persisted.
+- Refresh rotates the current token by revoking the old record and issuing a new one.
+- Logout revokes the active refresh token and clears the cookie.
 
-- Access tokens are returned in JSON responses.
-- Refresh tokens are stored in HTTP-only cookies.
-- Refresh tokens are persisted only as deterministic HMAC-SHA256 hashes.
-- Refresh tokens are rotated on refresh.
-- Logout revokes the active refresh token.
-- Frontend stores the access token in local storage and keeps auth state in Angular Signals.
-- Frontend sends refresh requests with credentials so the HTTP-only refresh cookie is included.
+## Route Protection
 
-## Token Strategy
+- `JwtAuthenticationFilter` validates bearer access tokens.
+- Spring Security sets the authenticated `UserPrincipal`.
+- Workout routes and mutating exercise routes require authentication.
+- User roles are stored as authorities, starting with `ROLE_USER`, so role-based authorization can be added without changing the user model.
 
-| Token | Purpose | Storage | Lifetime |
-| --- | --- | --- | --- |
-| Access token | Authorize API requests | Frontend memory or secure client strategy | Short |
-| Refresh token | Renew access tokens | Secure cookie preferred | Longer |
+## API Errors
 
-The backend uses an HTTP-only refresh token cookie scoped to `/api/v1/auth`.
+Authentication and authorization failures use the same response envelope as the rest of the API:
 
-The frontend access token storage strategy is an MVP tradeoff. Future hardening should evaluate in-memory access tokens, stricter CSP, and broader XSS protections before production launch.
-
-## Password Handling
-
-- Store password hashes only.
-- Use a strong password hashing algorithm.
-- Never log passwords or tokens.
-- Validate password strength on registration.
-
-## Authorization
-
-- Users may access only their own workouts, custom exercises, history, and progress data.
-- Shared exercise catalog entries may be visible to all authenticated users.
-- Repository queries must include `userId` constraints for user-owned data.
-
-## API Security Controls
-
-- Validate every request body, query, and route parameter.
-- Use centralized error responses without leaking internals.
-- Configure CORS explicitly.
-- Use environment variables for secrets.
-- Add rate limiting for auth endpoints before production launch.
+```json
+{
+  "success": false,
+  "error": {
+    "code": "AUTHENTICATION_REQUIRED",
+    "message": "Authentication required",
+    "details": []
+  }
+}
+```

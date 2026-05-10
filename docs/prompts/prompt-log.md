@@ -167,3 +167,17 @@ Moved all Angular components into dedicated folders, extracted templates/styles,
 ### Follow-Up
 
 Apply the same structure to all future frontend components as features expand.
+
+## 2026-05-10 - Migrate Backend To Spring Boot
+
+### Prompt
+
+Migrate the entire backend from Node.js and Express to Spring Boot latest using Java 21 and Maven. Preserve auth, exercise, and workout functionality, keep API compatibility where possible, use MongoDB, Spring Security, JWT authentication, Lombok, Spring Validation, layered architecture, environment-placeholder configuration, documentation updates, cleanup, and a final migration commit.
+
+### Context
+
+The existing backend used Express, TypeScript, Mongoose, JWT access tokens, refresh-token cookies, and controller/service/repository modules.
+
+### Result
+
+Rebuilt the backend as a Spring Boot 4.0.6 Maven project with Java 21, Spring Security JWT filtering, MongoDB entities/repositories, DTO validation, centralized exceptions, and equivalent auth, exercise, and workout API modules.

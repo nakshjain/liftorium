@@ -1,6 +1,6 @@
 # Gym Helper Documentation
 
-This directory contains the working documentation for Gym Helper, a mobile-first workout tracking application built with Angular, Node.js, Express, MongoDB, and JWT authentication.
+This directory contains the working documentation for Gym Helper, a mobile-first workout tracking application built with Angular, Spring Boot, MongoDB, and JWT authentication.
 
 ## Documentation Map
 

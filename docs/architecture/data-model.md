@@ -7,15 +7,15 @@ This document tracks the planned MongoDB collections and relationships.
 | Collection | Purpose | MVP |
 | --- | --- | --- |
 | `users` | Account identity and profile data | Yes |
-| `refresh_tokens` | Refresh token persistence and revocation | Yes |
+| `refreshtokens` | Refresh token persistence and revocation | Yes |
 | `exercises` | Exercise catalog | Yes |
 | `workouts` | Active and completed workout sessions | Yes |
 | `personal_records` | PR tracking | Later |
 
 ## User
 
-```ts
-type User = {
+```java
+class User {
   id: string;
   email: string;
   passwordHash: string;
@@ -27,8 +27,8 @@ type User = {
 
 ## Refresh Token
 
-```ts
-type RefreshToken = {
+```java
+class RefreshToken {
   id: string;
   userId: string;
   tokenHash: string;
@@ -43,8 +43,8 @@ Refresh token hashes are deterministic HMAC-SHA256 values derived from the raw t
 
 ## Exercise
 
-```ts
-type Exercise = {
+```java
+class Exercise {
   id: string;
   name: string;
   description: string;
@@ -64,8 +64,8 @@ Exercise muscle fields support multi-muscle movements and catalog filtering.
 
 ## Workout
 
-```ts
-type Workout = {
+```java
+class Workout {
   id: string;
   userId: string;
   name: string;
@@ -82,8 +82,8 @@ type Workout = {
 
 ## Workout Exercise
 
-```ts
-type WorkoutExercise = {
+```java
+class WorkoutExercise {
   id: string;
   exerciseId: string;
   order: number;
@@ -95,8 +95,8 @@ type WorkoutExercise = {
 
 ## Workout Set
 
-```ts
-type WorkoutSet = {
+```java
+class WorkoutSet {
   id: string;
   order: number;
   reps: number;
@@ -122,8 +122,8 @@ Workout exercises and sets are embedded inside the workout document for fast act
 ## Indexing Notes
 
 - `users.email` should be unique.
-- `refresh_tokens.userId` should be indexed.
-- `refresh_tokens.expiresAt` should support cleanup.
+- `refreshtokens.userId` should be indexed.
+- `refreshtokens.expiresAt` should support cleanup.
 - `workouts.userId` and `workouts.startedAt` should be indexed for history views.
 - `workouts.userId + status + startedAt` supports active-session lookup and session lists.
 - `workouts.userId + finishedAt` supports completed history pagination.

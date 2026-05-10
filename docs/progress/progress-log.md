@@ -171,3 +171,38 @@ Use this file for short, dated progress entries.
 ### Notes
 
 - Build and tests required elevated filesystem permissions because sandboxed Angular resolution could not read the real project path.
+
+## 2026-05-10 - Auth Form Submit State Fix
+
+### Completed
+
+- Fixed login and signup submit button disabled state by deriving it from a signal-backed form status.
+- Replaced direct `form.invalid` reads inside `computed` with `toSignal(form.statusChanges)`, ensuring Angular form validity changes trigger recomputation.
+
+### Verification
+
+- Ran `npm run build` in `frontend`.
+
+### Notes
+
+- Initial sandboxed build failed due Windows path-read restrictions; reran with approved filesystem access and the build completed successfully.
+
+## 2026-05-10 - Spring Boot Backend Migration
+
+### Completed
+
+- Migrated the backend from Express/TypeScript to Spring Boot 4.0.6 with Java 21 and Maven.
+- Recreated auth, exercise, and workout modules with controller/service/repository layering.
+- Added Spring Security JWT authentication, refresh-token cookie support, BCrypt password hashing, and role-ready user principals.
+- Added MongoDB entities, repositories, DTO validation, centralized exception handling, and environment-placeholder configuration.
+- Removed obsolete Node backend files, dependencies, compiled output, and TypeScript config.
+- Updated architecture, security, deployment, workflow, prompt, progress, and decision documentation.
+
+### Verification
+
+- Could not run `mvn clean package` because Maven is not installed on the local machine.
+
+### Notes
+
+- API paths and response envelopes were preserved wherever possible.
+- Frontend API compatibility is expected for existing auth, exercise, and workout contracts.

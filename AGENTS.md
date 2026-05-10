@@ -29,11 +29,14 @@ The goal is:
 
 ## Backend
 
-* Node.js
-* Express
+* Java 21
+* Spring Boot latest stable
+* Maven
 * MongoDB
+* Spring Security
 * JWT Authentication
-* TypeScript
+* Lombok
+* Spring Validation
 
 ---
 
@@ -66,12 +69,12 @@ The goal is:
 # Backend Rules
 
 * Use controller/service/repository structure
-* Use centralized error handling
-* Validate all requests
-* Use modular routing
-* Use environment variables
+* Use centralized exception handling
+* Validate all requests with Jakarta Validation
+* Use Spring Security for protected routes
+* Use environment variable placeholders in `application.properties`
 * Use JWT auth with refresh tokens
-* Use scalable folder structure
+* Use scalable package structure under `com.gymhelper`
 
 ---
 

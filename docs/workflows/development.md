@@ -31,6 +31,7 @@ feat: implement JWT authentication
 feat: add workout tracking module
 refactor: optimize exercise service
 docs: add API documentation scaffold
+feat: migrated backend from express to spring boot
 ```
 
 ## Definition Of Done
@@ -41,3 +42,11 @@ docs: add API documentation scaffold
 - [ ] Architecture notes are updated when needed.
 - [ ] Progress tracker has a dated entry.
 - [ ] No unrelated files were changed.
+
+## Backend Commands
+
+```bash
+cd backend
+mvn spring-boot:run
+mvn clean package
+```

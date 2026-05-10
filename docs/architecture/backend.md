@@ -2,81 +2,83 @@
 
 ## Stack
 
-- Node.js
-- Express
-- TypeScript
-- MongoDB
-- JWT authentication with refresh tokens
+- Java 21
+- Spring Boot 4.0.6
+- Maven
+- MongoDB with Spring Data MongoDB
+- Spring Security
+- JWT access tokens and refresh tokens
+- Lombok
+- Jakarta Validation
 
 ## Design Goals
 
-- Modular domain-based structure.
-- Controller/service/repository separation.
-- Centralized request validation.
-- Centralized error handling.
-- Strict TypeScript without `any`.
-- Environment-driven configuration.
+- Preserve the existing `/api/v1` API behavior wherever possible.
+- Keep controller, service, and repository concerns separate.
+- Use constructor injection only.
+- Centralize validation, authentication, authorization, and error handling.
+- Keep MongoDB documents compatible with the existing MVP data model.
+- Remain role-ready through Spring Security authorities.
 
-## Proposed Folder Structure
+## Folder Structure
 
 ```text
-backend/src
+backend/src/main/java/com/gymhelper
   config/
-  modules/
-    auth/
-      auth.controller.ts
-      auth.routes.ts
-      auth.service.ts
-      auth.repository.ts
-      auth.validation.ts
-      auth.types.ts
-    users/
-    exercises/
-    workouts/
-  middleware/
-    auth.middleware.ts
-    error.middleware.ts
-    validate.middleware.ts
-  shared/
-    errors/
-    types/
-    utils/
-  app.ts
-  server.ts
+    cors/
+    jwt/
+    security/
+  controller/
+  dto/
+  entity/
+  exception/
+  repository/
+  security/
+  service/
+  util/
+  GymHelperApplication.java
+backend/src/main/resources/application.properties
 ```
-
-## Implemented Auth Foundation
-
-The backend currently includes:
-
-- Express app bootstrap in `src/app.ts`.
-- MongoDB connection setup in `src/config/mongodb.ts`.
-- Environment validation in `src/config/env.ts`.
-- Centralized error middleware.
-- Zod request body validation middleware.
-- JWT auth module under `src/modules/auth`.
-- Exercise database module under `src/modules/exercises`.
-- Workout session module under `src/modules/workouts`.
-- User persistence under `src/modules/users`.
-- HTTP-only refresh token cookie support.
 
 ## Request Flow
 
 ```text
-Route
-  -> Validation Middleware
-  -> Auth Middleware when required
-  -> Controller
-  -> Service
-  -> Repository
+HTTP request
+  -> Spring Security filter chain
+  -> JWT authentication filter when a bearer token is present
+  -> Controller with Jakarta Validation
+  -> Service business rules
+  -> Spring Data Mongo repository
   -> MongoDB
 ```
 
-## Error Handling
+## Modules
 
-All errors should pass through centralized error middleware.
+- Auth: registration, login, current user, refresh rotation, logout, BCrypt password hashing, and refresh-token persistence.
+- Exercises: catalog CRUD, pagination, filtering, search, and Mongo indexes.
+- Workouts: authenticated user-owned sessions, active workout rules, exercise additions, set add/remove, completion, and history pagination.
 
-Recommended error shape:
+## Security Architecture
+
+- Access tokens are short-lived JWTs returned in API responses.
+- Refresh tokens are JWTs stored in an HTTP-only `SameSite=Strict` cookie scoped to `/api/v1/auth`.
+- Refresh token records are persisted as deterministic HMAC-SHA256 hashes in MongoDB.
+- Refresh rotates the token by revoking the current record and issuing a new token.
+- Protected routes are enforced by Spring Security and `JwtAuthenticationFilter`.
+- Roles are stored on the user document as Spring Security authorities, starting with `ROLE_USER`.
+
+## API Response Shape
+
+Success responses keep the existing envelope:
+
+```json
+{
+  "success": true,
+  "data": {}
+}
+```
+
+Error responses keep the existing envelope:
 
 ```json
 {
@@ -89,44 +91,18 @@ Recommended error shape:
 }
 ```
 
-## API Response Shape
+## Configuration
 
-Recommended success shape:
+Spring Boot reads configuration from `application.properties` and environment variable placeholders.
 
-```json
-{
-  "success": true,
-  "data": {}
-}
-```
+Key environment variables:
 
-## Module Rules
-
-- Routes define URL bindings only.
-- Controllers translate HTTP input/output.
-- Services own business logic.
-- Repositories own database access.
-- Validation files define request schemas.
-- Types are explicit and exported from feature modules when shared.
-
-## Exercise Module
-
-The exercise module follows the same controller/service/repository structure:
-
-- `exercise.routes.ts` defines REST endpoints and middleware.
-- `exercise.controller.ts` handles HTTP response shapes.
-- `exercise.service.ts` handles not-found behavior and DTO mapping.
-- `exercise.repository.ts` owns Mongoose queries and pagination.
-- `exercise.validation.ts` owns Zod body, query, and param schemas.
-- `exercise.types.ts` defines DTOs and paginated response types.
-
-## Workout Module
-
-The workout module manages active sessions and completed workout history:
-
-- `workout.routes.ts` defines authenticated REST endpoints.
-- `workout.controller.ts` returns consistent API response shapes.
-- `workout.service.ts` enforces ownership, active-session rules, and DTO mapping.
-- `workout.repository.ts` owns Mongoose queries and embedded workout mutations.
-- `workout.validation.ts` validates bodies, params, and history pagination.
-- `workout.types.ts` defines session, exercise, set, tempo, and history DTOs.
+- `PORT`
+- `SPRING_PROFILES_ACTIVE`
+- `MONGODB_URI`
+- `CORS_ORIGIN`
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+- `ACCESS_TOKEN_TTL`
+- `REFRESH_TOKEN_TTL`
+- `REFRESH_TOKEN_COOKIE_NAME`

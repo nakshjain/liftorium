@@ -33,7 +33,8 @@ Recommended coverage:
 
 ## Verification Checklist
 
-- [ ] Type checking passes.
+- [ ] Backend Maven package/build passes.
+- [ ] Frontend type checking/build passes.
 - [ ] Unit tests pass.
 - [ ] Integration tests pass when relevant.
 - [ ] Linting passes.

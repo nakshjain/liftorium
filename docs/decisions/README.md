@@ -13,6 +13,7 @@ This section stores architecture decision records.
 | [0004 Workout Session Schema Design](./0004-workout-session-schema-design.md) | Decision for embedded workout sessions, catalog exercise references, and future set metadata |
 | [0005 Angular Auth Flow Design](./0005-angular-auth-flow-design.md) | Decision for frontend Signals auth state, interceptors, guards, and token storage |
 | [0006 Live Workout UI State](./0006-live-workout-ui-state.md) | Decision for local Signals state, mobile logging UX, and API-ready session shape |
+| [0007 Spring Boot Backend Migration](./0007-spring-boot-backend-migration.md) | Decision to migrate backend from Express/TypeScript to Spring Boot, Java 21, and Maven |
 
 ## ADR Naming
 

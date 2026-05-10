@@ -1,47 +1,50 @@
 # Deployment Notes
 
-## Environments
+## Backend
 
-| Environment | Purpose |
-| --- | --- |
-| Local | Developer workstation |
-| Preview | Feature validation before release |
-| Production | Live user-facing app |
+The backend deploys as a Spring Boot Java 21 application packaged by Maven.
 
-## Configuration
+Build command:
 
-Configuration must come from environment variables.
+```bash
+cd backend
+mvn clean package
+```
 
-Backend examples:
+Run command:
+
+```bash
+java -jar target/gym-helper-backend-0.1.0.jar
+```
+
+Required environment variables:
 
 ```text
-NODE_ENV=
-PORT=
-MONGODB_URI=
+PORT=4000
+SPRING_PROFILES_ACTIVE=production
+MONGODB_URI=mongodb://127.0.0.1:27017/gym-helper
+CORS_ORIGIN=http://localhost:4200
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
-ACCESS_TOKEN_TTL=
-REFRESH_TOKEN_TTL=
-CORS_ORIGIN=
+ACCESS_TOKEN_TTL=15m
+REFRESH_TOKEN_TTL=30d
+REFRESH_TOKEN_COOKIE_NAME=gym_refresh_token
 ```
 
-Frontend examples:
+## Frontend
 
-```text
-API_BASE_URL=
+The frontend deploys as a static Angular build.
+
+```bash
+cd frontend
+npm run build
 ```
 
-## Build Artifacts
+## Checklist
 
-- Frontend: Angular production build.
-- Backend: Compiled TypeScript output.
-
-## Operational Checklist
-
-- [ ] Environment variables configured.
+- [ ] Java 21 runtime available.
 - [ ] MongoDB connection tested.
-- [ ] CORS restricted to allowed origins.
-- [ ] JWT secrets generated securely.
-- [ ] Error logging configured.
-- [ ] Health endpoint available.
-- [ ] Database indexes applied.
+- [ ] JWT secrets generated securely and at least 32 characters.
+- [ ] CORS origin set to the deployed frontend URL.
+- [ ] HTTPS enabled before production cookie `Secure` rollout.
+- [ ] Backend and frontend health checks configured.
