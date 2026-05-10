@@ -172,6 +172,24 @@ Use this file for short, dated progress entries.
 
 - Build and tests required elevated filesystem permissions because sandboxed Angular resolution could not read the real project path.
 
+## 2026-05-10 - MongoDB Configuration Clarification
+
+### Completed
+
+- Restored `spring.data.mongodb.uri` to the `MONGODB_URI` environment placeholder with a local development fallback.
+- Added local secret import paths for backend runtime configuration.
+- Documented local and production MongoDB configuration expectations.
+
+### Verification
+
+- Inspected Spring Boot resource configuration, packaged `target/classes/application.properties`, and IDE run configuration for MongoDB overrides.
+- Could not run Maven verification because `mvn` is not installed or not available on PATH.
+
+### Notes
+
+- A runtime connection to `localhost:27017` means the app did not receive `MONGODB_URI` and fell back to the local MongoDB default/fallback.
+- Keep real Atlas credentials in local-only secret files or the runtime environment, not in committed config files.
+
 ## 2026-05-10 - Auth Form Submit State Fix
 
 ### Completed
@@ -206,3 +224,73 @@ Use this file for short, dated progress entries.
 
 - API paths and response envelopes were preserved wherever possible.
 - Frontend API compatibility is expected for existing auth, exercise, and workout contracts.
+
+## 2026-05-10 - Local MongoDB Runtime Fix
+
+### Completed
+
+- Restored the backend MongoDB configuration to use the `MONGODB_URI` environment variable with a local fallback.
+- Added an initial local environment template, later replaced by `backend/application-secrets.properties.example`.
+- Added repository ignore rules for local environment files and generated output.
+- Documented the meaning of `localhost:27017` connection failures.
+
+### Verification
+
+- Inspected backend configuration and documentation paths.
+- Did not run Maven because Maven is not available on PATH in this environment.
+
+### Notes
+
+- Start an installed local MongoDB service before starting the backend when using the default local MongoDB URI.
+- Use `MONGODB_URI` in a local secret file or process environment to point the backend at Atlas instead.
+
+## 2026-05-10 - Remove Docker From Local Startup
+
+### Completed
+
+- Removed the root Docker Compose file from the local development setup.
+- Updated local run documentation to prefer IntelliJ's play button on `GymHelperApplication`.
+- Kept `application-secrets.properties` as the local-only configuration file.
+
+### Verification
+
+- Searched documentation for Docker startup references and replaced them with IntelliJ/local MongoDB guidance.
+
+### Notes
+
+- Docker can be reintroduced later when the project needs a repeatable containerized local stack.
+
+## 2026-05-10 - Local Secrets Properties Setup
+
+### Completed
+
+- Replaced local `.env` imports with `application-secrets.properties` imports.
+- Added `backend/application-secrets.properties.example` as the local template.
+- Ignored real `application-secrets.properties` files in Git.
+- Updated local development and deployment documentation.
+
+### Verification
+
+- Inspected Spring Boot config import paths and documentation references.
+
+### Notes
+
+- Keep `backend/application-secrets.properties` local-only.
+- Do not use `pass.env`; Spring imports `application-secrets.properties` now.
+
+## 2026-05-10 - IntelliJ MongoDB Secrets Fix
+
+### Completed
+
+- Switched the secrets template to direct Spring property names for clearer IntelliJ local runs.
+- Migrated the local MongoDB URI into `backend/application-secrets.properties`.
+- Verified the local secrets file contains `spring.data.mongodb.uri` and points to an Atlas-style URI.
+
+### Verification
+
+- Checked local secrets property keys without printing secret values.
+- Confirmed no active Docker startup instructions remain in README or workflow docs.
+
+### Notes
+
+- Restart the IntelliJ run configuration after changing `application-secrets.properties`.

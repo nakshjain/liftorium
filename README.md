@@ -92,7 +92,7 @@ Prerequisites:
 
 - Java 21 or newer runtime capable of building Java 21 bytecode
 - Maven
-- MongoDB running locally or a MongoDB connection string
+- MongoDB running locally or a MongoDB Atlas connection string
 
 Run locally:
 

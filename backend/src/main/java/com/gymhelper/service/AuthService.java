@@ -1,5 +1,6 @@
 package com.gymhelper.service;
 
+import com.gymhelper.config.AppProperties;
 import com.gymhelper.dto.AuthDtos.AuthSession;
 import com.gymhelper.dto.AuthDtos.AuthUserDto;
 import com.gymhelper.dto.AuthDtos.LoginRequest;
@@ -27,7 +28,7 @@ public class AuthService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
-  private final com.gymhelper.config.AppProperties appProperties;
+  private final AppProperties appProperties;
 
   public AuthSession register(RegisterRequest input) {
     String email = normalizeEmail(input.email());

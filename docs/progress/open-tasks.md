@@ -28,4 +28,4 @@
 - [x] Add architecture decision records for auth token storage.
 - [x] Add architecture decision records for workout session schema.
 - [x] Add architecture decision record for Angular auth flow.
-- [ ] Document local development setup once scripts are finalized.
+- [x] Document local development setup once scripts are finalized.

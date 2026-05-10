@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -27,7 +28,9 @@ export class SignupPageComponent {
     password: ['', [Validators.required, Validators.minLength(8)]]
   });
 
-  protected readonly submitDisabled = computed(() => this.loading() || this.form.invalid);
+  private readonly formStatus = toSignal(this.form.statusChanges, { initialValue: this.form.status });
+
+  protected readonly submitDisabled = computed(() => this.loading() || this.formStatus() !== 'VALID');
   protected readonly submitButtonLabel = computed(() => (this.loading() ? 'Creating account...' : 'Create account'));
 
   protected submit(): void {
