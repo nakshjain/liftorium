@@ -50,3 +50,13 @@ cd backend
 mvn spring-boot:run
 mvn clean package
 ```
+
+## Backend Configuration
+
+The backend uses Spring Boot profile-specific properties:
+
+- `application.properties` sets the app name and default development profile.
+- `application-development.properties` contains development runtime values.
+- `application-production.properties` contains environment placeholders for deployed runtimes.
+
+For IntelliJ local runs, open `GymHelperApplication` and click the play button. The default development profile loads automatically.

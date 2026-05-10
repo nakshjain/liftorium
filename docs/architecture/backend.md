@@ -93,7 +93,11 @@ Error responses keep the existing envelope:
 
 ## Configuration
 
-Spring Boot reads configuration from `application.properties` and environment variable placeholders.
+Spring Boot reads configuration from profile-specific `.properties` files:
+
+- `application.properties`: application name and default active profile only.
+- `application-development.properties`: development server port, Atlas MongoDB URI, development logging, auto-index creation, and development JWT values.
+- `application-production.properties`: environment placeholders, reduced logging, and disabled MongoDB auto-index creation.
 
 Key environment variables:
 

@@ -109,19 +109,15 @@ mvn clean package
 java -jar target/gym-helper-backend-0.1.0.jar
 ```
 
-Configuration is defined in `backend/src/main/resources/application.properties` with environment variable placeholders:
+Configuration is defined with Spring Boot profile-specific `.properties` files:
 
 ```text
-PORT=4000
-SPRING_PROFILES_ACTIVE=development
-MONGODB_URI=mongodb://127.0.0.1:27017/gym-helper
-CORS_ORIGIN=http://localhost:4200
-JWT_ACCESS_SECRET=replace-with-a-long-random-access-secret
-JWT_REFRESH_SECRET=replace-with-a-long-random-refresh-secret
-ACCESS_TOKEN_TTL=15m
-REFRESH_TOKEN_TTL=30d
-REFRESH_TOKEN_COOKIE_NAME=gym_refresh_token
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-development.properties
+backend/src/main/resources/application-production.properties
 ```
+
+The root file contains the application name and default development profile. Development values live in the development profile file. Production values live in the production profile file and resolve secrets from environment variables.
 
 ## Frontend Setup
 

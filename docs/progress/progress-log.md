@@ -176,7 +176,7 @@ Use this file for short, dated progress entries.
 
 ### Completed
 
-- Restored `spring.data.mongodb.uri` to the `MONGODB_URI` environment placeholder with a local development fallback.
+- Restored `spring.data.mongodb.uri` to a profile-managed configuration path.
 - Added local secret import paths for backend runtime configuration.
 - Documented local and production MongoDB configuration expectations.
 
@@ -187,8 +187,8 @@ Use this file for short, dated progress entries.
 
 ### Notes
 
-- A runtime connection to `localhost:27017` means the app did not receive `MONGODB_URI` and fell back to the local MongoDB default/fallback.
-- Keep real Atlas credentials in local-only secret files or the runtime environment, not in committed config files.
+- Runtime MongoDB connection details are managed by active Spring profiles.
+- Keep real production Atlas credentials in the runtime environment, not in committed config files.
 
 ## 2026-05-10 - Auth Form Submit State Fix
 
@@ -229,10 +229,10 @@ Use this file for short, dated progress entries.
 
 ### Completed
 
-- Restored the backend MongoDB configuration to use the `MONGODB_URI` environment variable with a local fallback.
-- Added an initial local environment template, later replaced by `backend/application-secrets.properties.example`.
+- Restored the backend MongoDB configuration to use a dedicated profile-specific property.
+- Added an initial local environment template, later removed in favor of Spring profile files.
 - Added repository ignore rules for local environment files and generated output.
-- Documented the meaning of `localhost:27017` connection failures.
+- Documented the meaning of MongoDB connection failures.
 
 ### Verification
 
@@ -241,8 +241,8 @@ Use this file for short, dated progress entries.
 
 ### Notes
 
-- Start an installed local MongoDB service before starting the backend when using the default local MongoDB URI.
-- Use `MONGODB_URI` in a local secret file or process environment to point the backend at Atlas instead.
+- Use the active Spring profile to select the MongoDB connection.
+- Use `MONGODB_URI` in production environments to point the backend at Atlas.
 
 ## 2026-05-10 - Remove Docker From Local Startup
 
@@ -250,7 +250,7 @@ Use this file for short, dated progress entries.
 
 - Removed the root Docker Compose file from the local development setup.
 - Updated local run documentation to prefer IntelliJ's play button on `GymHelperApplication`.
-- Kept `application-secrets.properties` as the local-only configuration file.
+- Kept a simple IntelliJ startup flow before the later profile-based refactor.
 
 ### Verification
 
@@ -258,15 +258,15 @@ Use this file for short, dated progress entries.
 
 ### Notes
 
-- Docker can be reintroduced later when the project needs a repeatable containerized local stack.
+- Container orchestration can be reintroduced later when the project needs a repeatable local stack.
 
 ## 2026-05-10 - Local Secrets Properties Setup
 
 ### Completed
 
-- Replaced local `.env` imports with `application-secrets.properties` imports.
-- Added `backend/application-secrets.properties.example` as the local template.
-- Ignored real `application-secrets.properties` files in Git.
+- Replaced local `.env` imports with an intermediate local properties file before the profile refactor.
+- Added an intermediate local properties template before the profile refactor.
+- Ignored real local secret files in Git.
 - Updated local development and deployment documentation.
 
 ### Verification
@@ -275,16 +275,16 @@ Use this file for short, dated progress entries.
 
 ### Notes
 
-- Keep `backend/application-secrets.properties` local-only.
-- Do not use `pass.env`; Spring imports `application-secrets.properties` now.
+- The later profile refactor removed local secret files from backend startup.
+- Do not use ad hoc env files for Spring Boot profile configuration.
 
 ## 2026-05-10 - IntelliJ MongoDB Secrets Fix
 
 ### Completed
 
 - Switched the secrets template to direct Spring property names for clearer IntelliJ local runs.
-- Migrated the local MongoDB URI into `backend/application-secrets.properties`.
-- Verified the local secrets file contains `spring.data.mongodb.uri` and points to an Atlas-style URI.
+- Migrated the local MongoDB URI toward Spring's `spring.data.mongodb.uri` key.
+- Verified the local MongoDB configuration points to an Atlas-style URI.
 
 ### Verification
 
@@ -293,4 +293,23 @@ Use this file for short, dated progress entries.
 
 ### Notes
 
-- Restart the IntelliJ run configuration after changing `application-secrets.properties`.
+- Restart the IntelliJ run configuration after changing profile properties.
+
+## 2026-05-10 - Spring Boot Profile Configuration Refactor
+
+### Completed
+
+- Refactored backend configuration into `application.properties`, `application-development.properties`, and `application-production.properties`.
+- Moved development runtime values into the development profile.
+- Added production environment placeholders and disabled production MongoDB auto-index creation.
+- Removed ad hoc local secret files from backend startup.
+- Added startup diagnostics for active profile, resolved MongoDB host, and resolved database name.
+
+### Verification
+
+- Searched for deprecated MongoDB keys and stale local MongoDB fallback references.
+- Confirmed the active profile property is only configured in the root application properties file.
+
+### Notes
+
+- Production environments should override the active profile and provide secrets through the platform environment or secret manager.

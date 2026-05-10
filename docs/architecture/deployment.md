@@ -22,14 +22,16 @@ Required environment variables:
 ```text
 PORT=4000
 SPRING_PROFILES_ACTIVE=production
-MONGODB_URI=mongodb://127.0.0.1:27017/gym-helper
-CORS_ORIGIN=http://localhost:4200
+MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority
+CORS_ORIGIN=https://<frontend-host>
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
 ACCESS_TOKEN_TTL=15m
 REFRESH_TOKEN_TTL=30d
 REFRESH_TOKEN_COOKIE_NAME=gym_refresh_token
 ```
+
+`MONGODB_URI` must include the database name in the URI path, for example `mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority`. Keep real MongoDB credentials out of committed files and provide production values through the runtime environment, CI/CD secret store, Kubernetes Secret, or platform secret manager.
 
 ## Frontend
 
