@@ -176,7 +176,7 @@ Use this file for short, dated progress entries.
 
 ### Completed
 
-- Restored `spring.data.mongodb.uri` to a profile-managed configuration path.
+- Restored `spring.mongodb.uri` to a profile-managed configuration path.
 - Added local secret import paths for backend runtime configuration.
 - Documented local and production MongoDB configuration expectations.
 
@@ -283,7 +283,7 @@ Use this file for short, dated progress entries.
 ### Completed
 
 - Switched the secrets template to direct Spring property names for clearer IntelliJ local runs.
-- Migrated the local MongoDB URI toward Spring's `spring.data.mongodb.uri` key.
+- Migrated the local MongoDB URI toward Spring's `spring.mongodb.uri` key.
 - Verified the local MongoDB configuration points to an Atlas-style URI.
 
 ### Verification
