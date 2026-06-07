@@ -181,3 +181,21 @@ The existing backend used Express, TypeScript, Mongoose, JWT access tokens, refr
 ### Result
 
 Rebuilt the backend as a Spring Boot 4.0.6 Maven project with Java 21, Spring Security JWT filtering, MongoDB entities/repositories, DTO validation, centralized exceptions, and equivalent auth, exercise, and workout API modules.
+
+## 2026-06-05 - AscendAPI Exercise Module
+
+### Prompt
+
+Design and implement only the Exercise domain using AscendAPI initially, while keeping Gym Helper provider-independent. Define the optimal schema, provider mappings, search, API contracts, provider strategy, workout references, sync, migration, and scalability behavior. Do not persist provider media or instructional content unnecessarily.
+
+### Context
+
+The first Exercise implementation directly stored provider-style content and did not preserve an independent internal identity across provider changes.
+
+### Outcome
+
+Added canonical Exercise metadata, a separate provider mapping collection, indexed cursor search, an `ExerciseProvider` strategy, AscendAPI V2 client/service/mapper classes, idempotent fingerprint sync, soft deletion, on-demand content retrieval, workout snapshots, and complete architecture/API/workflow documentation.
+
+### Follow-Up
+
+Add scheduled sync orchestration with a distributed lock, provider contract tests, Mongo repository integration tests, and a reviewed canonical taxonomy map for AscendAPI muscle and equipment values.

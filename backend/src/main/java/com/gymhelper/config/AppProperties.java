@@ -8,7 +8,8 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "app")
 public record AppProperties(
     Cors cors,
-    Jwt jwt
+    Jwt jwt,
+    AscendApi ascendApi
 ) {
 
   public record Cors(
@@ -23,6 +24,13 @@ public record AppProperties(
       @NotBlank String refreshTokenTtl,
       @NotBlank String refreshTokenCookieName,
       @NotBlank String refreshTokenCookiePath
+  ) {
+  }
+
+  public record AscendApi(
+      @NotBlank String baseUrl,
+      @NotBlank String host,
+      @NotBlank String apiKey
   ) {
   }
 }

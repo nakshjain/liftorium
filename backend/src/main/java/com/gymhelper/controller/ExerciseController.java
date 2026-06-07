@@ -1,27 +1,24 @@
 package com.gymhelper.controller;
 
 import com.gymhelper.dto.ApiResponse;
-import com.gymhelper.dto.ExerciseDtos.CreateExerciseRequest;
+import com.gymhelper.dto.ExerciseDtos.CursorPageDto;
 import com.gymhelper.dto.ExerciseDtos.ExerciseDto;
 import com.gymhelper.dto.ExerciseDtos.ListExercisesQuery;
-import com.gymhelper.dto.ExerciseDtos.PaginatedExercisesDto;
-import com.gymhelper.dto.ExerciseDtos.UpdateExerciseRequest;
+import com.gymhelper.dto.ExerciseDtos.SearchExercisesQuery;
+import com.gymhelper.entity.ExerciseType;
+import com.gymhelper.entity.MovementPattern;
 import com.gymhelper.service.ExerciseService;
 import com.gymhelper.util.ObjectIdValidator;
-import jakarta.validation.Valid;
-import java.util.Map;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @Validated
@@ -33,59 +30,49 @@ public class ExerciseController {
   private final ExerciseService exerciseService;
 
   @GetMapping
-  public ApiResponse<PaginatedExercisesDto> list(@ModelAttribute ListExercisesQuery query) {
-    ListExercisesQuery normalizedQuery = new ListExercisesQuery(
-        query.page() == 0 ? 1 : query.page(),
-        query.limit() == 0 ? 20 : query.limit(),
-        blankToNull(query.search()),
-        blankToNull(query.muscleGroup()),
-        blankToNull(query.equipment()),
-        blankToNull(query.category())
-    );
-    validatePagination(normalizedQuery.page(), normalizedQuery.limit());
-
-    return ApiResponse.success(exerciseService.list(normalizedQuery));
+  public ApiResponse<CursorPageDto> list(
+      @RequestParam(defaultValue = "25") @Min(1) @Max(100) int limit,
+      @RequestParam(required = false) @Size(max = 500) String cursor,
+      @RequestParam(required = false) @Size(max = 80) String muscle,
+      @RequestParam(required = false) @Size(max = 80) String equipment,
+      @RequestParam(required = false) ExerciseType exerciseType,
+      @RequestParam(required = false) MovementPattern movementPattern
+  ) {
+    return ApiResponse.success(exerciseService.list(new ListExercisesQuery(
+        limit,
+        blankToNull(cursor),
+        blankToNull(muscle),
+        blankToNull(equipment),
+        exerciseType,
+        movementPattern
+    )));
   }
 
-  @PostMapping
-  @ResponseStatus(HttpStatus.CREATED)
-  public ApiResponse<Map<String, ExerciseDto>> create(@Valid @RequestBody CreateExerciseRequest request) {
-    return ApiResponse.success(Map.of("exercise", exerciseService.create(request)));
+  @GetMapping("/search")
+  public ApiResponse<CursorPageDto> search(
+      @RequestParam("q") @NotBlank @Size(min = 2, max = 120) String query,
+      @RequestParam(defaultValue = "10") @Min(1) @Max(25) int limit,
+      @RequestParam(required = false) @Size(max = 80) String muscle,
+      @RequestParam(required = false) @Size(max = 80) String equipment
+  ) {
+    return ApiResponse.success(exerciseService.search(new SearchExercisesQuery(
+        query.trim(),
+        limit,
+        blankToNull(muscle),
+        blankToNull(equipment)
+    )));
   }
 
   @GetMapping("/{exerciseId}")
-  public ApiResponse<Map<String, ExerciseDto>> getById(@PathVariable String exerciseId) {
-    ObjectIdValidator.requireValid(exerciseId, "exerciseId");
-    return ApiResponse.success(Map.of("exercise", exerciseService.getById(exerciseId)));
-  }
-
-  @PatchMapping("/{exerciseId}")
-  public ApiResponse<Map<String, ExerciseDto>> update(
+  public ApiResponse<ExerciseDto> getById(
       @PathVariable String exerciseId,
-      @Valid @RequestBody UpdateExerciseRequest request
+      @RequestParam(defaultValue = "false") boolean includeContent
   ) {
     ObjectIdValidator.requireValid(exerciseId, "exerciseId");
-    return ApiResponse.success(Map.of("exercise", exerciseService.update(exerciseId, request)));
-  }
-
-  @DeleteMapping("/{exerciseId}")
-  public ApiResponse<Map<String, Boolean>> delete(@PathVariable String exerciseId) {
-    ObjectIdValidator.requireValid(exerciseId, "exerciseId");
-    exerciseService.delete(exerciseId);
-    return ApiResponse.success(Map.of("deleted", true));
+    return ApiResponse.success(exerciseService.getById(exerciseId, includeContent));
   }
 
   private String blankToNull(String value) {
     return value == null || value.isBlank() ? null : value.trim();
-  }
-
-  private void validatePagination(int page, int limit) {
-    if (page < 1 || limit < 1 || limit > 100) {
-      throw new com.gymhelper.exception.AppException(
-          "VALIDATION_ERROR",
-          "Request validation failed",
-          org.springframework.http.HttpStatus.UNPROCESSABLE_ENTITY
-      );
-    }
   }
 }

@@ -13,7 +13,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
@@ -22,40 +21,51 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @AllArgsConstructor
 @Document(collection = "exercises")
 @CompoundIndexes({
-    @CompoundIndex(name = "category_equipment_idx", def = "{'category': 1, 'equipment': 1}"),
-    @CompoundIndex(name = "target_muscles_equipment_idx", def = "{'targetMuscles': 1, 'equipment': 1}")
+    @CompoundIndex(name = "active_name_cursor_idx", def = "{'active': 1, 'normalizedName': 1, '_id': 1}"),
+    @CompoundIndex(name = "active_search_prefix_name_idx", def = "{'active': 1, 'searchPrefixes': 1, 'normalizedName': 1}"),
+    @CompoundIndex(name = "active_primary_muscle_name_idx", def = "{'active': 1, 'primaryMuscles': 1, 'normalizedName': 1}"),
+    @CompoundIndex(name = "active_secondary_muscle_name_idx", def = "{'active': 1, 'secondaryMuscles': 1, 'normalizedName': 1}"),
+    @CompoundIndex(name = "active_equipment_name_idx", def = "{'active': 1, 'equipment': 1, 'normalizedName': 1}"),
+    @CompoundIndex(name = "active_type_name_idx", def = "{'active': 1, 'exerciseType': 1, 'normalizedName': 1}")
 })
 public class Exercise {
 
   @Id
   private String id;
 
-  @TextIndexed
   private String name;
 
-  private String description;
+  private String normalizedName;
 
-  @Indexed
-  private String category;
+  @Indexed(unique = true, sparse = true)
+  private String slug;
 
-  @Indexed
-  private String equipment;
-
-  @Indexed
   @Builder.Default
-  private List<String> targetMuscles = new ArrayList<>();
+  private List<String> aliases = new ArrayList<>();
 
-  @Indexed
+  @Builder.Default
+  private List<String> searchPrefixes = new ArrayList<>();
+
+  @Builder.Default
+  private List<String> primaryMuscles = new ArrayList<>();
+
   @Builder.Default
   private List<String> secondaryMuscles = new ArrayList<>();
 
   @Builder.Default
-  private List<String> instructions = new ArrayList<>();
+  private List<String> bodyParts = new ArrayList<>();
 
   @Builder.Default
-  private List<String> tips = new ArrayList<>();
+  private List<String> equipment = new ArrayList<>();
 
-  private String mediaUrl;
+  @Builder.Default
+  private MovementPattern movementPattern = MovementPattern.UNKNOWN;
+
+  @Builder.Default
+  private ExerciseType exerciseType = ExerciseType.OTHER;
+
+  @Builder.Default
+  private boolean active = true;
 
   @CreatedDate
   private Instant createdAt;

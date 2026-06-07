@@ -11,6 +11,7 @@ import com.gymhelper.dto.WorkoutDtos.WorkoutDto;
 import com.gymhelper.dto.WorkoutDtos.WorkoutExerciseDto;
 import com.gymhelper.dto.WorkoutDtos.WorkoutSetDto;
 import com.gymhelper.entity.Tempo;
+import com.gymhelper.entity.Exercise;
 import com.gymhelper.entity.Workout;
 import com.gymhelper.entity.WorkoutExercise;
 import com.gymhelper.entity.WorkoutSet;
@@ -82,15 +83,18 @@ public class WorkoutService {
   }
 
   public WorkoutDto addExercise(String userId, String workoutId, AddWorkoutExerciseRequest input) {
-    if (!exerciseRepository.existsById(input.exerciseId())) {
-      throw new AppException("EXERCISE_NOT_FOUND", "Exercise was not found", HttpStatus.NOT_FOUND);
-    }
+    Exercise exercise = exerciseRepository.findByIdAndActiveTrue(input.exerciseId())
+        .orElseThrow(() -> new AppException("EXERCISE_NOT_FOUND", "Exercise was not found", HttpStatus.NOT_FOUND));
 
     Workout workout = findWorkoutForUser(userId, workoutId);
     ensureActive(workout);
 
     workout.getExercises().add(WorkoutExercise.builder()
         .exerciseId(input.exerciseId())
+        .exerciseName(exercise.getName())
+        .primaryMuscles(exercise.getPrimaryMuscles())
+        .equipment(exercise.getEquipment())
+        .exerciseType(exercise.getExerciseType())
         .order(workout.getExercises().size() + 1)
         .supersetGroupId(trim(input.supersetGroupId()))
         .notes(trim(input.notes()))
@@ -199,6 +203,10 @@ public class WorkoutService {
     return new WorkoutExerciseDto(
         exercise.getId(),
         exercise.getExerciseId(),
+        exercise.getExerciseName(),
+        exercise.getPrimaryMuscles(),
+        exercise.getEquipment(),
+        exercise.getExerciseType(),
         exercise.getOrder(),
         exercise.getSupersetGroupId(),
         exercise.getNotes(),

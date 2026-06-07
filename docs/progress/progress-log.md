@@ -313,3 +313,26 @@ Use this file for short, dated progress entries.
 ### Notes
 
 - Production environments should override the active profile and provide secrets through the platform environment or secret manager.
+
+## 2026-06-05 - Provider-Independent Exercise Module
+
+### Completed
+
+- Replaced provider-content persistence with a canonical Exercise metadata schema.
+- Added separate provider mappings with provider-ID uniqueness and sync lifecycle fields.
+- Added cursor pagination, indexed prefix autocomplete, muscle/equipment/type filters, and soft deletion.
+- Added the provider strategy and AscendAPI V2 client, service, mapper, and fingerprint sync workflow.
+- Added optional on-demand content retrieval for images, video, overview, instructions, and tips.
+- Added stable workout snapshots while retaining internal exercise IDs.
+- Added Exercise architecture, API, sync workflow, ADR, prompt, and data-model documentation.
+
+### Verification
+
+- Reviewed all Exercise and workout references for removed DTO and entity fields.
+- Ran the backend Maven test suite with IntelliJ's bundled Maven and Java runtime.
+- Tests run: 4; failures: 0; errors: 0.
+
+### Notes
+
+- The provider documents cursor pagination but no `updatedSince` feed, so sync scans provider IDs and avoids unchanged writes using fingerprints.
+- Atlas Search is recommended when fuzzy matching and typo tolerance become product requirements.

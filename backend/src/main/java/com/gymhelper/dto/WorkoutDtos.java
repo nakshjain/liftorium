@@ -2,6 +2,7 @@ package com.gymhelper.dto;
 
 import com.gymhelper.entity.WorkoutSetType;
 import com.gymhelper.entity.WorkoutStatus;
+import com.gymhelper.entity.ExerciseType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -42,6 +43,10 @@ public final class WorkoutDtos {
   public record WorkoutExerciseDto(
       String id,
       String exerciseId,
+      String exerciseName,
+      List<String> primaryMuscles,
+      List<String> equipment,
+      ExerciseType exerciseType,
       int order,
       String supersetGroupId,
       String notes,

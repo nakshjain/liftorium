@@ -10,6 +10,7 @@ This section describes the technical architecture for Gym Helper.
 | [Frontend Architecture](./frontend.md) | Angular application structure, routing, state, and UI rules |
 | [Backend Architecture](./backend.md) | Spring Boot structure, modules, services, repositories, security, and error handling |
 | [Data Model](./data-model.md) | MongoDB collections, entity relationships, and schema notes |
+| [Exercise Module](./exercise-module.md) | Provider-independent Exercise schema, mappings, indexes, search, and scalability |
 | [Security](./security.md) | Authentication, authorization, token handling, and security controls |
 | [Deployment](./deployment.md) | Environment strategy, build artifacts, hosting notes, and operational concerns |
 

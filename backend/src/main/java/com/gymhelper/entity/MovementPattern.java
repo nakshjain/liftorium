@@ -1,0 +1,20 @@
+package com.gymhelper.entity;
+
+public enum MovementPattern {
+  HORIZONTAL_PUSH,
+  HORIZONTAL_PULL,
+  VERTICAL_PUSH,
+  VERTICAL_PULL,
+  SQUAT,
+  HINGE,
+  LUNGE,
+  CARRY,
+  ROTATION,
+  ANTI_ROTATION,
+  FLEXION,
+  EXTENSION,
+  LOCOMOTION,
+  ISOMETRIC,
+  OTHER,
+  UNKNOWN
+}

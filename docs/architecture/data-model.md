@@ -9,6 +9,7 @@ This document tracks the planned MongoDB collections and relationships.
 | `users` | Account identity and profile data | Yes |
 | `refreshtokens` | Refresh token persistence and revocation | Yes |
 | `exercises` | Exercise catalog | Yes |
+| `exercise_provider_mappings` | Provider identity and sync state for exercises | Yes |
 | `workouts` | Active and completed workout sessions | Yes |
 | `personal_records` | PR tracking | Later |
 
@@ -47,20 +48,44 @@ Refresh token hashes are deterministic HMAC-SHA256 values derived from the raw t
 class Exercise {
   id: string;
   name: string;
-  description: string;
-  category: string;
-  equipment: string;
-  targetMuscles: string[];
+  normalizedName: string;
+  slug: string;
+  aliases: string[];
+  searchPrefixes: string[];
+  primaryMuscles: string[];
   secondaryMuscles: string[];
-  instructions: string[];
-  tips: string[];
-  mediaUrl?: string;
+  bodyParts: string[];
+  equipment: string[];
+  movementPattern: MovementPattern;
+  exerciseType: ExerciseType;
+  active: boolean;
   createdAt: string;
   updatedAt: string;
 };
 ```
 
-Exercise muscle fields support multi-muscle movements and catalog filtering.
+Provider-owned instructions, descriptions, images, and video are fetched on demand and are not stored in this collection.
+
+## Exercise Provider Mapping
+
+```java
+class ExerciseProviderMapping {
+  id: string;
+  provider: "ASCEND_API";
+  providerExerciseId: string;
+  exerciseId: string;
+  providerDatasetVersion: string;
+  providerName: string;
+  contentFingerprint: string;
+  active: boolean;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  lastSyncedAt: string;
+  missingSince?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+```
 
 ## Workout
 
@@ -86,6 +111,10 @@ class Workout {
 class WorkoutExercise {
   id: string;
   exerciseId: string;
+  exerciseName: string;
+  primaryMuscles: string[];
+  equipment: string[];
+  exerciseType: ExerciseType;
   order: number;
   supersetGroupId?: string;
   notes?: string;
@@ -128,7 +157,10 @@ Workout exercises and sets are embedded inside the workout document for fast act
 - `workouts.userId + status + startedAt` supports active-session lookup and session lists.
 - `workouts.userId + finishedAt` supports completed history pagination.
 - `workouts.userId + exercises.exerciseId + startedAt` supports future exercise history and PR analytics.
-- `exercises.name` has a text index for name search.
-- `exercises.category` and `exercises.equipment` are indexed for filters.
-- `exercises.targetMuscles` and `exercises.secondaryMuscles` are indexed for muscle group filters.
-- `exercises.category + equipment` and `exercises.targetMuscles + equipment` compound indexes support common catalog browsing queries.
+- `exercises.slug` is unique.
+- `exercises.active + normalizedName + _id` supports cursor pagination.
+- `exercises.active + searchPrefixes + normalizedName` supports indexed autocomplete.
+- Separate compound indexes cover primary muscles, secondary muscles, equipment, and exercise type.
+- `exercise_provider_mappings.provider + providerExerciseId` is unique.
+- `exercise_provider_mappings.exerciseId + provider` is unique.
+- No compound index combines muscles and equipment because both are arrays.

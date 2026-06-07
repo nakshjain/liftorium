@@ -6,139 +6,107 @@ Base path:
 /api/v1/exercises
 ```
 
-Exercise reads are public for catalog browsing. Exercise mutations currently require authentication.
+Exercise reads return Gym Helper exercise IDs and canonical metadata. Provider IDs are never exposed as domain identifiers.
 
-## Exercise Object
+## Exercise Response
 
 ```json
 {
-  "id": "exercise_id",
+  "id": "665f...",
   "name": "Incline Dumbbell Press",
-  "description": "A chest-focused pressing movement performed on an incline bench.",
-  "category": "strength",
-  "equipment": "dumbbell",
-  "targetMuscles": ["chest"],
-  "secondaryMuscles": ["triceps", "shoulders"],
-  "instructions": [
-    "Set an incline bench to a moderate angle.",
-    "Press the dumbbells upward until arms are extended.",
-    "Lower under control."
-  ],
-  "tips": ["Keep shoulder blades set.", "Control the eccentric."],
-  "mediaUrl": "https://example.com/incline-dumbbell-press.mp4",
-  "createdAt": "2026-05-10T00:00:00.000Z",
-  "updatedAt": "2026-05-10T00:00:00.000Z"
+  "slug": "incline-dumbbell-press-tsxtj3",
+  "aliases": [],
+  "primaryMuscles": ["pectoralis major clavicular head"],
+  "secondaryMuscles": ["anterior deltoid", "triceps brachii"],
+  "bodyParts": ["chest"],
+  "equipment": ["dumbbell", "bench"],
+  "movementPattern": "HORIZONTAL_PUSH",
+  "exerciseType": "STRENGTH",
+  "active": true,
+  "content": null,
+  "createdAt": "2026-06-05T12:00:00Z",
+  "updatedAt": "2026-06-05T12:00:00Z"
 }
 ```
+
+`content` is transient. It is fetched from the active provider only when explicitly requested and is not persisted in `exercises`.
 
 ## List Exercises
 
 ```http
-GET /api/v1/exercises
+GET /api/v1/exercises?limit=25&cursor=...&muscle=chest&equipment=dumbbell&exerciseType=STRENGTH
 ```
 
-### Query Parameters
-
-| Name | Type | Required | Description |
-| --- | --- | --- | --- |
-| `page` | number | No | Page number. Defaults to `1` |
-| `limit` | number | No | Page size. Defaults to `20`, max `100` |
-| `search` | string | No | Text search by exercise name |
-| `muscleGroup` | string | No | Filters exercises where target or secondary muscles include the value |
-| `equipment` | string | No | Filters by equipment |
-| `category` | string | No | Filters by category |
-
-### Success Response
+| Parameter | Type | Rules |
+| --- | --- | --- |
+| `limit` | integer | Default `25`, range `1..100` |
+| `cursor` | string | Opaque cursor from the previous response |
+| `muscle` | string | Canonical primary or secondary muscle code |
+| `equipment` | string | Canonical equipment code |
+| `exerciseType` | enum | `STRENGTH`, `CARDIO`, `STRETCHING`, `MOBILITY`, `BALANCE`, `PLYOMETRICS`, `REHABILITATION`, `OTHER` |
+| `movementPattern` | enum | See Exercise Module architecture document |
 
 ```json
 {
   "success": true,
   "data": {
     "items": [],
-    "page": 1,
-    "limit": 20,
-    "total": 0,
-    "totalPages": 0
+    "nextCursor": "opaque-value",
+    "hasNext": true
   }
 }
 ```
+
+Catalog pagination is cursor-based and sorted by `normalizedName`, then `_id`. Numbered page navigation is intentionally unsupported.
+
+## Search And Autocomplete
+
+```http
+GET /api/v1/exercises/search?q=incline+d&limit=10&muscle=chest&equipment=dumbbell
+```
+
+| Parameter | Type | Rules |
+| --- | --- | --- |
+| `q` | string | Required, trimmed, `2..120` characters |
+| `limit` | integer | Default `10`, range `1..25` |
+| `muscle` | string | Optional canonical muscle code |
+| `equipment` | string | Optional canonical equipment code |
+
+The MVP implementation uses precomputed lowercase prefixes from names and aliases. This supports indexed autocomplete without an unbounded case-insensitive regex.
+
+For fuzzy matching, typo tolerance, ranking, or multilingual search, replace the repository implementation with MongoDB Atlas Search while preserving this API contract.
 
 ## Get Exercise
 
 ```http
-GET /api/v1/exercises/:exerciseId
+GET /api/v1/exercises/{exerciseId}
 ```
 
-### Success Response
+Returns stored metadata only.
+
+```http
+GET /api/v1/exercises/{exerciseId}?includeContent=true
+```
+
+Also fetches provider content on demand:
 
 ```json
 {
-  "success": true,
-  "data": {
-    "exercise": {}
+  "content": {
+    "provider": "ASCEND_API",
+    "overview": "Provider-owned overview.",
+    "instructions": ["Step one."],
+    "tips": ["Form cue."],
+    "imageUrls": {
+      "360p": "https://provider-cdn.example/image.webp"
+    },
+    "videoUrl": "https://provider-cdn.example/video.mp4"
   }
 }
 ```
 
-## Create Exercise
+Provider failures return `502 EXERCISE_PROVIDER_ERROR`. Missing active mappings return `503 EXERCISE_CONTENT_UNAVAILABLE`.
 
-```http
-POST /api/v1/exercises
-```
+## Removed Catalog Mutations
 
-Requires authentication.
-
-### Request Body
-
-```json
-{
-  "name": "Incline Dumbbell Press",
-  "description": "A chest-focused pressing movement performed on an incline bench.",
-  "category": "strength",
-  "equipment": "dumbbell",
-  "targetMuscles": ["chest"],
-  "secondaryMuscles": ["triceps", "shoulders"],
-  "instructions": [
-    "Set an incline bench to a moderate angle.",
-    "Press the dumbbells upward until arms are extended.",
-    "Lower under control."
-  ],
-  "tips": ["Keep shoulder blades set.", "Control the eccentric."],
-  "mediaUrl": "https://example.com/incline-dumbbell-press.mp4"
-}
-```
-
-## Update Exercise
-
-```http
-PATCH /api/v1/exercises/:exerciseId
-```
-
-Requires authentication. Send any subset of create fields. At least one field is required.
-
-## Delete Exercise
-
-```http
-DELETE /api/v1/exercises/:exerciseId
-```
-
-Requires authentication.
-
-### Success Response
-
-```json
-{
-  "success": true,
-  "data": {
-    "deleted": true
-  }
-}
-```
-
-## Error Cases
-
-| Status | Code | Meaning |
-| --- | --- | --- |
-| `401` | `AUTHENTICATION_REQUIRED` | Mutation request is missing a valid access token |
-| `404` | `EXERCISE_NOT_FOUND` | Exercise does not exist |
-| `422` | `VALIDATION_ERROR` | Body, query, or route parameter validation failed |
+Public `POST`, `PATCH`, and `DELETE` exercise endpoints are not part of the provider-managed catalog. Imports and updates occur through the sync service. Provider removals use soft deactivation.

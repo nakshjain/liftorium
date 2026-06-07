@@ -8,7 +8,7 @@ This section documents Gym Helper REST API contracts.
 | --- | --- |
 | [Conventions](./conventions.md) | Shared response shapes, errors, pagination, and versioning |
 | [Authentication API](./auth.md) | Register, login, refresh, logout, and current user endpoints |
-| [Exercises API](./exercises.md) | Exercise catalog and custom exercise endpoints |
+| [Exercises API](./exercises.md) | Provider-independent exercise catalog, search, autocomplete, and on-demand content |
 | [Workouts API](./workouts.md) | Active workout and completed workout endpoints |
 
 ## Base URL
