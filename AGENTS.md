@@ -1,7 +1,5 @@
 # Gym Helper - AI Agent Instructions
 
-> Use this file before doing anything.
-
 ## Project Overview
 
 Build a production-ready gym workout tracking application.
