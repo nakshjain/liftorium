@@ -1,0 +1,862 @@
+{
+  "C:\\Projects\\gym\\.claude\\settings.json": {
+    "mtime": 1780950985.774469,
+    "ast_hash": "af5683cedca023035194f9ad92eb0eef",
+    "semantic_hash": "af5683cedca023035194f9ad92eb0eef"
+  },
+  "C:\\Projects\\gym\\.claude\\settings.local.json": {
+    "mtime": 1780951447.9549062,
+    "ast_hash": "685e5f5808a4c96e90e7e0e5179d99af",
+    "semantic_hash": "685e5f5808a4c96e90e7e0e5179d99af"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\GymHelperApplication.java": {
+    "mtime": 1780254943.6954317,
+    "ast_hash": "d183b2883cba81fa1aa26cc625fa3234",
+    "semantic_hash": "d183b2883cba81fa1aa26cc625fa3234"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\config\\AppProperties.java": {
+    "mtime": 1780667389.1355512,
+    "ast_hash": "fe1254423d35edaf06c321309b96b4c5",
+    "semantic_hash": "fe1254423d35edaf06c321309b96b4c5"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\config\\cors\\CorsConfig.java": {
+    "mtime": 1780254943.6971745,
+    "ast_hash": "65923fe8a06b59232259d6a64e1ecb1c",
+    "semantic_hash": "65923fe8a06b59232259d6a64e1ecb1c"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\config\\jwt\\JwtConfig.java": {
+    "mtime": 1780254943.6971745,
+    "ast_hash": "c1617fec66bfd4c13e589c0c58b4c9a4",
+    "semantic_hash": "c1617fec66bfd4c13e589c0c58b4c9a4"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\config\\security\\SecurityConfig.java": {
+    "mtime": 1780254943.6971745,
+    "ast_hash": "7b0bf43656eaef200bdd6442f91bab96",
+    "semantic_hash": "7b0bf43656eaef200bdd6442f91bab96"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\controller\\AuthController.java": {
+    "mtime": 1780254943.6971745,
+    "ast_hash": "6cbdb5dcdd950ba3b31c6821e8f596de",
+    "semantic_hash": "6cbdb5dcdd950ba3b31c6821e8f596de"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\controller\\ExerciseController.java": {
+    "mtime": 1780667445.5277796,
+    "ast_hash": "288976472ce05ca19f42608bb5506036",
+    "semantic_hash": "288976472ce05ca19f42608bb5506036"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\controller\\HealthController.java": {
+    "mtime": 1780254943.7027383,
+    "ast_hash": "ec24de0bb4874c28e40b2cc65e123bed",
+    "semantic_hash": "ec24de0bb4874c28e40b2cc65e123bed"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\controller\\WorkoutController.java": {
+    "mtime": 1780254943.7037802,
+    "ast_hash": "07d1665c01bcf26b54ef8610cc498462",
+    "semantic_hash": "07d1665c01bcf26b54ef8610cc498462"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\dto\\ApiResponse.java": {
+    "mtime": 1780254943.7044213,
+    "ast_hash": "adf7219e97a1fa0e9778c2013f924044",
+    "semantic_hash": "adf7219e97a1fa0e9778c2013f924044"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\dto\\AuthDtos.java": {
+    "mtime": 1780254943.7044213,
+    "ast_hash": "9f6d3c852a0f1a343a7219d69a8e8b9a",
+    "semantic_hash": "9f6d3c852a0f1a343a7219d69a8e8b9a"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\dto\\ErrorResponse.java": {
+    "mtime": 1780254943.7044213,
+    "ast_hash": "df05b297292692b85444c121fc433588",
+    "semantic_hash": "df05b297292692b85444c121fc433588"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\dto\\ExerciseDtos.java": {
+    "mtime": 1780667152.928492,
+    "ast_hash": "71a7dcbc8d2d998625be0c7df3f77588",
+    "semantic_hash": "71a7dcbc8d2d998625be0c7df3f77588"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\dto\\WorkoutDtos.java": {
+    "mtime": 1780667578.259408,
+    "ast_hash": "d59d6bb2110637ec53323c3e12bcde70",
+    "semantic_hash": "d59d6bb2110637ec53323c3e12bcde70"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\Exercise.java": {
+    "mtime": 1780668027.1463103,
+    "ast_hash": "b9036665b65d7a5806211c05a1b410e6",
+    "semantic_hash": "b9036665b65d7a5806211c05a1b410e6"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\ExerciseProviderMapping.java": {
+    "mtime": 1780668027.1543941,
+    "ast_hash": "1a4e21aeda612e2536f1f027d7dbd838",
+    "semantic_hash": "1a4e21aeda612e2536f1f027d7dbd838"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\ExerciseProviderType.java": {
+    "mtime": 1780667091.8790348,
+    "ast_hash": "4d1f90c54cf00b0695d1bd98a807ca70",
+    "semantic_hash": "4d1f90c54cf00b0695d1bd98a807ca70"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\ExerciseType.java": {
+    "mtime": 1780667091.8731215,
+    "ast_hash": "5cafefd7846cc6e610c67151cc03be3c",
+    "semantic_hash": "5cafefd7846cc6e610c67151cc03be3c"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\MovementPattern.java": {
+    "mtime": 1780667091.8751338,
+    "ast_hash": "072ebf3ad7a583243edfd3fbfbb6968d",
+    "semantic_hash": "072ebf3ad7a583243edfd3fbfbb6968d"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\RefreshToken.java": {
+    "mtime": 1780254943.711713,
+    "ast_hash": "f3676aa0effe3fd493c862973ce8964a",
+    "semantic_hash": "f3676aa0effe3fd493c862973ce8964a"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\Tempo.java": {
+    "mtime": 1780254943.711713,
+    "ast_hash": "4b19fa13d713f83086b897e6b44b102d",
+    "semantic_hash": "4b19fa13d713f83086b897e6b44b102d"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\User.java": {
+    "mtime": 1780254943.711713,
+    "ast_hash": "55390c4320c9465126d64dac93a818d9",
+    "semantic_hash": "55390c4320c9465126d64dac93a818d9"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\Workout.java": {
+    "mtime": 1780254943.7144504,
+    "ast_hash": "35b05fff249a33c98833443a456b30ff",
+    "semantic_hash": "35b05fff249a33c98833443a456b30ff"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\WorkoutExercise.java": {
+    "mtime": 1780667578.257207,
+    "ast_hash": "9e24ea2d8de7727193c249252874ebd0",
+    "semantic_hash": "9e24ea2d8de7727193c249252874ebd0"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\WorkoutSet.java": {
+    "mtime": 1780254943.7166152,
+    "ast_hash": "cf5f5a4a1607e314c97e0e836d71b7ef",
+    "semantic_hash": "cf5f5a4a1607e314c97e0e836d71b7ef"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\WorkoutSetType.java": {
+    "mtime": 1780254943.7176523,
+    "ast_hash": "2bbecd0e2b0faffd538a5b37cbc18a16",
+    "semantic_hash": "2bbecd0e2b0faffd538a5b37cbc18a16"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\entity\\WorkoutStatus.java": {
+    "mtime": 1780254943.7187574,
+    "ast_hash": "ab7cf4dee8a8b82e008d16deb00dc1c0",
+    "semantic_hash": "ab7cf4dee8a8b82e008d16deb00dc1c0"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\exception\\AppException.java": {
+    "mtime": 1780254943.7187574,
+    "ast_hash": "5f05acd30d3528e70201788e1becaa2c",
+    "semantic_hash": "5f05acd30d3528e70201788e1becaa2c"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\exception\\GlobalExceptionHandler.java": {
+    "mtime": 1780254943.7187574,
+    "ast_hash": "028950d2a33e56b1acde07a8d573a1e1",
+    "semantic_hash": "028950d2a33e56b1acde07a8d573a1e1"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ExerciseProvider.java": {
+    "mtime": 1780667228.855355,
+    "ast_hash": "5c9a559746d290b0183a660eeabeafb2",
+    "semantic_hash": "5c9a559746d290b0183a660eeabeafb2"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ExerciseProviderRegistry.java": {
+    "mtime": 1780667228.8646243,
+    "ast_hash": "d593aaf510026b7143522db36176f124",
+    "semantic_hash": "d593aaf510026b7143522db36176f124"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ProviderExerciseContent.java": {
+    "mtime": 1780667228.8612955,
+    "ast_hash": "9d93c015cf402106cf94078e7752d20c",
+    "semantic_hash": "9d93c015cf402106cf94078e7752d20c"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ProviderExerciseMetadata.java": {
+    "mtime": 1780667228.8580625,
+    "ast_hash": "0e5061df78bfa204231b218c6ce6054b",
+    "semantic_hash": "0e5061df78bfa204231b218c6ce6054b"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ProviderExercisePage.java": {
+    "mtime": 1780667228.8635857,
+    "ast_hash": "c7b0b6764a289c8e39bebd2ae0361aec",
+    "semantic_hash": "c7b0b6764a289c8e39bebd2ae0361aec"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ascend\\AscendApiClient.java": {
+    "mtime": 1780681163.758094,
+    "ast_hash": "bdc52d8da77dfad1b70d2c6574201909",
+    "semantic_hash": "bdc52d8da77dfad1b70d2c6574201909"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ascend\\AscendApiMapper.java": {
+    "mtime": 1780667228.875368,
+    "ast_hash": "b528398ad2da9d41071389fc1678e775",
+    "semantic_hash": "b528398ad2da9d41071389fc1678e775"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ascend\\AscendApiModels.java": {
+    "mtime": 1780667228.8687634,
+    "ast_hash": "f9bfca21f12f69a0fce60d75404cc0a8",
+    "semantic_hash": "f9bfca21f12f69a0fce60d75404cc0a8"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\provider\\ascend\\AscendApiService.java": {
+    "mtime": 1780668172.906405,
+    "ast_hash": "15a01db3cd76c50f7abc170ad03d391c",
+    "semantic_hash": "15a01db3cd76c50f7abc170ad03d391c"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\repository\\ExerciseProviderMappingRepository.java": {
+    "mtime": 1780668027.1581516,
+    "ast_hash": "50272d1386b54a3eb40b04928192cb05",
+    "semantic_hash": "50272d1386b54a3eb40b04928192cb05"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\repository\\ExerciseQueryRepository.java": {
+    "mtime": 1780667152.9369478,
+    "ast_hash": "d4caa1c2625a6ebb2b6ec336f43783be",
+    "semantic_hash": "d4caa1c2625a6ebb2b6ec336f43783be"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\repository\\ExerciseRepository.java": {
+    "mtime": 1780667152.9325697,
+    "ast_hash": "c5172d555c76399f3a5deec8142ccc35",
+    "semantic_hash": "c5172d555c76399f3a5deec8142ccc35"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\repository\\RefreshTokenRepository.java": {
+    "mtime": 1780254943.7253144,
+    "ast_hash": "07429429a90a296e54b2fde9de2439e8",
+    "semantic_hash": "07429429a90a296e54b2fde9de2439e8"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\repository\\UserRepository.java": {
+    "mtime": 1780254943.7253144,
+    "ast_hash": "2a929f2df33ca1bf55d86c9b0e63f802",
+    "semantic_hash": "2a929f2df33ca1bf55d86c9b0e63f802"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\repository\\WorkoutRepository.java": {
+    "mtime": 1780254943.7253144,
+    "ast_hash": "2b6d7227fb8fca16171b4a2181a728d8",
+    "semantic_hash": "2b6d7227fb8fca16171b4a2181a728d8"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\security\\CustomUserDetailsService.java": {
+    "mtime": 1780254943.7278597,
+    "ast_hash": "0522f5a008661400c3ae5f5da50a278b",
+    "semantic_hash": "0522f5a008661400c3ae5f5da50a278b"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\security\\JwtAuthenticationFilter.java": {
+    "mtime": 1780254943.7294786,
+    "ast_hash": "8edd003b6f889c783966d033c46b7bfb",
+    "semantic_hash": "8edd003b6f889c783966d033c46b7bfb"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\security\\RestAuthenticationEntryPoint.java": {
+    "mtime": 1780254943.7300239,
+    "ast_hash": "e36234977269a2f8d12cce4400a7f66e",
+    "semantic_hash": "e36234977269a2f8d12cce4400a7f66e"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\security\\UserPrincipal.java": {
+    "mtime": 1780254943.7310803,
+    "ast_hash": "1db1b55b5b5d809ca9adc6d994ae1de4",
+    "semantic_hash": "1db1b55b5b5d809ca9adc6d994ae1de4"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\service\\AuthService.java": {
+    "mtime": 1780254943.7320862,
+    "ast_hash": "a84e88f081207a04cdfb3d05b7101103",
+    "semantic_hash": "a84e88f081207a04cdfb3d05b7101103"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\service\\ExerciseCatalogNormalizer.java": {
+    "mtime": 1780667503.704112,
+    "ast_hash": "db880dbe641d8c9271f492dbfb7701c5",
+    "semantic_hash": "db880dbe641d8c9271f492dbfb7701c5"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\service\\ExerciseService.java": {
+    "mtime": 1780668027.163169,
+    "ast_hash": "e2c9a88477b20beaaf26ac8a4fb2c2c4",
+    "semantic_hash": "e2c9a88477b20beaaf26ac8a4fb2c2c4"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\service\\ExerciseSyncService.java": {
+    "mtime": 1780668172.9085305,
+    "ast_hash": "ffaec9c1d3c84fa36331ee2e9c86ca37",
+    "semantic_hash": "ffaec9c1d3c84fa36331ee2e9c86ca37"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\service\\JwtService.java": {
+    "mtime": 1780254943.7320862,
+    "ast_hash": "e96e68d4e9bd93fcdf05c99cdd48f0a2",
+    "semantic_hash": "e96e68d4e9bd93fcdf05c99cdd48f0a2"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\service\\WorkoutService.java": {
+    "mtime": 1780667578.2626994,
+    "ast_hash": "12b7ec3cbdee81b857725a72c75da35d",
+    "semantic_hash": "12b7ec3cbdee81b857725a72c75da35d"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\util\\DurationParser.java": {
+    "mtime": 1780254943.7379844,
+    "ast_hash": "c25bfda768158b0203c14d8ee7ec68ef",
+    "semantic_hash": "c25bfda768158b0203c14d8ee7ec68ef"
+  },
+  "C:\\Projects\\gym\\backend\\src\\main\\java\\com\\gymhelper\\util\\ObjectIdValidator.java": {
+    "mtime": 1780254943.7389884,
+    "ast_hash": "52d2989812a5f41f8fc5b31df088c81c",
+    "semantic_hash": "52d2989812a5f41f8fc5b31df088c81c"
+  },
+  "C:\\Projects\\gym\\backend\\src\\test\\java\\com\\gymhelper\\provider\\ascend\\AscendApiMapperTest.java": {
+    "mtime": 1780668077.946762,
+    "ast_hash": "eed1be32c71cc241e4521e13c8346ce9",
+    "semantic_hash": "eed1be32c71cc241e4521e13c8346ce9"
+  },
+  "C:\\Projects\\gym\\backend\\src\\test\\java\\com\\gymhelper\\service\\ExerciseCatalogNormalizerTest.java": {
+    "mtime": 1780668077.9435582,
+    "ast_hash": "7933162f59809284bc248412ca6c3f3e",
+    "semantic_hash": "7933162f59809284bc248412ca6c3f3e"
+  },
+  "C:\\Projects\\gym\\frontend\\.postcssrc.json": {
+    "mtime": 1780254943.7852705,
+    "ast_hash": "d8997b164e9f8b10663ab88c151cef29",
+    "semantic_hash": "d8997b164e9f8b10663ab88c151cef29"
+  },
+  "C:\\Projects\\gym\\frontend\\.vscode\\extensions.json": {
+    "mtime": 1780254943.7884085,
+    "ast_hash": "66fd9e60d4633b6099fe02e06a7075ea",
+    "semantic_hash": "66fd9e60d4633b6099fe02e06a7075ea"
+  },
+  "C:\\Projects\\gym\\frontend\\.vscode\\launch.json": {
+    "mtime": 1780254943.7890506,
+    "ast_hash": "430386a2f03e9d559664c196344c121b",
+    "semantic_hash": "430386a2f03e9d559664c196344c121b"
+  },
+  "C:\\Projects\\gym\\frontend\\.vscode\\mcp.json": {
+    "mtime": 1780254943.7890506,
+    "ast_hash": "a73020575e74990ecd722ccc5122bb0c",
+    "semantic_hash": "a73020575e74990ecd722ccc5122bb0c"
+  },
+  "C:\\Projects\\gym\\frontend\\.vscode\\tasks.json": {
+    "mtime": 1780254943.7890506,
+    "ast_hash": "cb7ed9a56930402d9059ea5a9773d60e",
+    "semantic_hash": "cb7ed9a56930402d9059ea5a9773d60e"
+  },
+  "C:\\Projects\\gym\\frontend\\angular.json": {
+    "mtime": 1780663661.508728,
+    "ast_hash": "47cd3088135d8501af0832f56660dc65",
+    "semantic_hash": "47cd3088135d8501af0832f56660dc65"
+  },
+  "C:\\Projects\\gym\\frontend\\package.json": {
+    "mtime": 1780254943.794247,
+    "ast_hash": "9273f87ae6a21a2394ef77b0bef710f7",
+    "semantic_hash": "9273f87ae6a21a2394ef77b0bef710f7"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\app.config.ts": {
+    "mtime": 1780254943.794247,
+    "ast_hash": "549b3bf5c9ca5632d4126e06aeba3091",
+    "semantic_hash": "549b3bf5c9ca5632d4126e06aeba3091"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\app.routes.ts": {
+    "mtime": 1780949994.2385695,
+    "ast_hash": "11e92137f402dc0a9e05fdff552417b1",
+    "semantic_hash": "11e92137f402dc0a9e05fdff552417b1"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\app.spec.ts": {
+    "mtime": 1780254943.799929,
+    "ast_hash": "d51f8dbcff203c1761eea9a3a811b72b",
+    "semantic_hash": "d51f8dbcff203c1761eea9a3a811b72b"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\app\\app.ts": {
+    "mtime": 1780254943.8019657,
+    "ast_hash": "e0685a4a17e417abd93032b858528189",
+    "semantic_hash": "e0685a4a17e417abd93032b858528189"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\core\\api\\api-response.ts": {
+    "mtime": 1780254943.802974,
+    "ast_hash": "785f0845c04f2dbb658d078dcdc82d0f",
+    "semantic_hash": "785f0845c04f2dbb658d078dcdc82d0f"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\core\\api\\api.config.ts": {
+    "mtime": 1780254943.803978,
+    "ast_hash": "cebfd927ac124cddb0d430cbd1b01ab0",
+    "semantic_hash": "cebfd927ac124cddb0d430cbd1b01ab0"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\core\\auth\\auth-api-error.ts": {
+    "mtime": 1780254943.8049817,
+    "ast_hash": "02598f280e98518a0d7c17e588ef2a77",
+    "semantic_hash": "02598f280e98518a0d7c17e588ef2a77"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\core\\auth\\auth.context.ts": {
+    "mtime": 1780254943.8049817,
+    "ast_hash": "d4a42f755810e77661e086c05dfa8c37",
+    "semantic_hash": "d4a42f755810e77661e086c05dfa8c37"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\core\\auth\\auth.guard.ts": {
+    "mtime": 1780254943.8059857,
+    "ast_hash": "77004b47ed0c06876c0567b9ea68ebe6",
+    "semantic_hash": "77004b47ed0c06876c0567b9ea68ebe6"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\core\\auth\\auth.interceptor.ts": {
+    "mtime": 1780254943.806992,
+    "ast_hash": "b7e6e1d9e0f719746d9163a96356b374",
+    "semantic_hash": "b7e6e1d9e0f719746d9163a96356b374"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\core\\auth\\auth.models.ts": {
+    "mtime": 1780254943.807996,
+    "ast_hash": "11b57e703b7f0c0a581231b3c3f77b91",
+    "semantic_hash": "11b57e703b7f0c0a581231b3c3f77b91"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\core\\auth\\auth.service.ts": {
+    "mtime": 1780254943.8089998,
+    "ast_hash": "26b667d3ffaff714e8302fb4d1a8fa30",
+    "semantic_hash": "26b667d3ffaff714e8302fb4d1a8fa30"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\auth\\auth-shell\\auth-shell.ts": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "6d25a22a60e4380012e5bc273c0c440b",
+    "semantic_hash": "6d25a22a60e4380012e5bc273c0c440b"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\auth\\auth.routes.ts": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "1738ebe085c2e32e8294cb41ee496fc4",
+    "semantic_hash": "1738ebe085c2e32e8294cb41ee496fc4"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\auth\\login-page\\login-page.ts": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "c062411758d88d4e6f48baf722729b2f",
+    "semantic_hash": "c062411758d88d4e6f48baf722729b2f"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\auth\\signup-page\\signup-page.ts": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "83c655962b66c2cccf3eda5b873df56c",
+    "semantic_hash": "83c655962b66c2cccf3eda5b873df56c"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\dashboard\\dashboard-page\\dashboard-page.ts": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "7e03fbab2e90b60a1be5b1bc81fb56ad",
+    "semantic_hash": "7e03fbab2e90b60a1be5b1bc81fb56ad"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\exercises\\exercise-detail-page\\exercise-detail-page.ts": {
+    "mtime": 1780949961.8436348,
+    "ast_hash": "2cc89ec76016e498b2a1e61b2948f747",
+    "semantic_hash": "2cc89ec76016e498b2a1e61b2948f747"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\exercises\\exercise.models.ts": {
+    "mtime": 1780949902.2507856,
+    "ast_hash": "1a1d887ec80d6203034ae5916f745293",
+    "semantic_hash": "1a1d887ec80d6203034ae5916f745293"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\exercises\\exercise.service.ts": {
+    "mtime": 1780949908.230164,
+    "ast_hash": "c4c65045ff43657ffa1b091bce30ad20",
+    "semantic_hash": "c4c65045ff43657ffa1b091bce30ad20"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\exercises\\exercises-page\\exercises-page.ts": {
+    "mtime": 1780949930.935412,
+    "ast_hash": "c0c6a09e1e309796ac9a2408e1b85d37",
+    "semantic_hash": "c0c6a09e1e309796ac9a2408e1b85d37"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\exercises\\exercises.routes.ts": {
+    "mtime": 1780949909.445219,
+    "ast_hash": "f0ebbc8b4afb86f873050ca3a55c20c3",
+    "semantic_hash": "f0ebbc8b4afb86f873050ca3a55c20c3"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\workouts\\live-workout-page\\live-workout-page.ts": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "f92248691db3c64809163829461afd6c",
+    "semantic_hash": "f92248691db3c64809163829461afd6c"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\workouts\\live-workout.models.ts": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "ef0f917d031ad58a581a8be0de5bddc6",
+    "semantic_hash": "ef0f917d031ad58a581a8be0de5bddc6"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\workouts\\live-workout.store.ts": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "8643a5270b02fdbef4756ff1076bda29",
+    "semantic_hash": "8643a5270b02fdbef4756ff1076bda29"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\shared\\forms\\auth-form-field\\auth-form-field.ts": {
+    "mtime": 1780254943.827894,
+    "ast_hash": "f8e59f7d8f39d262afe76a32c22b9eb6",
+    "semantic_hash": "f8e59f7d8f39d262afe76a32c22b9eb6"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\main.ts": {
+    "mtime": 1780254943.827894,
+    "ast_hash": "40cc583b8f03b6764d426385b12cebcf",
+    "semantic_hash": "40cc583b8f03b6764d426385b12cebcf"
+  },
+  "C:\\Projects\\gym\\frontend\\tsconfig.app.json": {
+    "mtime": 1780254943.827894,
+    "ast_hash": "f0ed6c81d0a374939052cff4567f713f",
+    "semantic_hash": "f0ed6c81d0a374939052cff4567f713f"
+  },
+  "C:\\Projects\\gym\\frontend\\tsconfig.json": {
+    "mtime": 1780254943.8346517,
+    "ast_hash": "46e70ba7bf6d021351390882a69f0ba9",
+    "semantic_hash": "46e70ba7bf6d021351390882a69f0ba9"
+  },
+  "C:\\Projects\\gym\\frontend\\tsconfig.spec.json": {
+    "mtime": 1780254943.8346517,
+    "ast_hash": "bd7d8d4dcf7261c37c6a35a892af2f35",
+    "semantic_hash": "bd7d8d4dcf7261c37c6a35a892af2f35"
+  },
+  "C:\\Projects\\gym\\.claude\\CLAUDE.md": {
+    "mtime": 1780950985.7703357,
+    "ast_hash": "817fe671013b35ae0bc9301dfe449a87",
+    "semantic_hash": "817fe671013b35ae0bc9301dfe449a87"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\SKILL.md": {
+    "mtime": 1780950985.7678723,
+    "ast_hash": "98afc2b1cdf1ec2e2aa4b429d7b3163a",
+    "semantic_hash": "98afc2b1cdf1ec2e2aa4b429d7b3163a"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\references\\add-watch.md": {
+    "mtime": 1780950969.4928393,
+    "ast_hash": "0df0589623217ca38a12bdcabfb42f4c",
+    "semantic_hash": "0df0589623217ca38a12bdcabfb42f4c"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\references\\exports.md": {
+    "mtime": 1780950969.4948387,
+    "ast_hash": "7fb1a81aca17a462db70684a324fcfb0",
+    "semantic_hash": "7fb1a81aca17a462db70684a324fcfb0"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\references\\extraction-spec.md": {
+    "mtime": 1780950969.500842,
+    "ast_hash": "24808b03abfeaf5f6435bb69c0125b2c",
+    "semantic_hash": "24808b03abfeaf5f6435bb69c0125b2c"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\references\\github-and-merge.md": {
+    "mtime": 1780950969.509843,
+    "ast_hash": "cde13df085e4c492aeb7ba298a996d0d",
+    "semantic_hash": "cde13df085e4c492aeb7ba298a996d0d"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\references\\hooks.md": {
+    "mtime": 1780950969.5318494,
+    "ast_hash": "3f545db6ce646650bb9de588f5512a27",
+    "semantic_hash": "3f545db6ce646650bb9de588f5512a27"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\references\\query.md": {
+    "mtime": 1780950969.5408502,
+    "ast_hash": "c2a8e798674a81b02aa9975f43023819",
+    "semantic_hash": "c2a8e798674a81b02aa9975f43023819"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\references\\transcribe.md": {
+    "mtime": 1780950969.5508566,
+    "ast_hash": "70f6aa30d6211f3a2c7e9fc45479f50c",
+    "semantic_hash": "70f6aa30d6211f3a2c7e9fc45479f50c"
+  },
+  "C:\\Projects\\gym\\.claude\\skills\\graphify\\references\\update.md": {
+    "mtime": 1780950969.5682173,
+    "ast_hash": "0dad167a95bdb389f02fecffb60b1bc8",
+    "semantic_hash": "0dad167a95bdb389f02fecffb60b1bc8"
+  },
+  "C:\\Projects\\gym\\AGENTS.md": {
+    "mtime": 1780864640.8193076,
+    "ast_hash": "c84bef38d2d88c3d8ece956a350f158d",
+    "semantic_hash": "c84bef38d2d88c3d8ece956a350f158d"
+  },
+  "C:\\Projects\\gym\\CLAUDE.md": {
+    "mtime": 1780950985.77237,
+    "ast_hash": "376a07044f4613ec17ddebd40194b34c",
+    "semantic_hash": "376a07044f4613ec17ddebd40194b34c"
+  },
+  "C:\\Projects\\gym\\PROJECT_SNAPSHOT.md": {
+    "mtime": 1780655578.409248,
+    "ast_hash": "34ce6bcf4cc254f9c73e092da74c7e87",
+    "semantic_hash": "34ce6bcf4cc254f9c73e092da74c7e87"
+  },
+  "C:\\Projects\\gym\\README.md": {
+    "mtime": 1780254943.6897917,
+    "ast_hash": "96e93e77e3adae9a8a8c1c6e5683ed2c",
+    "semantic_hash": "96e93e77e3adae9a8a8c1c6e5683ed2c"
+  },
+  "C:\\Projects\\gym\\docs\\APP_FLOW.md": {
+    "mtime": 1780653023.0350435,
+    "ast_hash": "d1b25e1a5fe391c6c929617faaf51e7b",
+    "semantic_hash": "d1b25e1a5fe391c6c929617faaf51e7b"
+  },
+  "C:\\Projects\\gym\\docs\\BACKEND_SCHEMA.md": {
+    "mtime": 1780667911.3950634,
+    "ast_hash": "5cb20add79cc59aa1d7615daa3687132",
+    "semantic_hash": "5cb20add79cc59aa1d7615daa3687132"
+  },
+  "C:\\Projects\\gym\\docs\\IMPLEMENTATION_PLAN.md": {
+    "mtime": 1780653230.4927049,
+    "ast_hash": "623f885327478d1cce0842736d7d9726",
+    "semantic_hash": "623f885327478d1cce0842736d7d9726"
+  },
+  "C:\\Projects\\gym\\docs\\PRODUCT_REQUIREMENTS_DOCUMENT.md": {
+    "mtime": 1780652727.9037178,
+    "ast_hash": "383b3298732f5d09e168480040bac40b",
+    "semantic_hash": "383b3298732f5d09e168480040bac40b"
+  },
+  "C:\\Projects\\gym\\docs\\README.md": {
+    "mtime": 1780254943.743363,
+    "ast_hash": "ea4e85c36c2103676711bd6aa023628d",
+    "semantic_hash": "ea4e85c36c2103676711bd6aa023628d"
+  },
+  "C:\\Projects\\gym\\docs\\TECHINAL_REQUIREMENTS_DOCUMENT.md": {
+    "mtime": 1780652945.3067367,
+    "ast_hash": "f90fa9d1e9787591574abbe2be0226f5",
+    "semantic_hash": "f90fa9d1e9787591574abbe2be0226f5"
+  },
+  "C:\\Projects\\gym\\docs\\UI-UX_BRIEF.md": {
+    "mtime": 1780653081.6682339,
+    "ast_hash": "84ae85bb26d8e2411d077bc29bb43a6b",
+    "semantic_hash": "84ae85bb26d8e2411d077bc29bb43a6b"
+  },
+  "C:\\Projects\\gym\\docs\\api\\README.md": {
+    "mtime": 1780667775.5262222,
+    "ast_hash": "4cac5869d5f224b5dab80a795a29990b",
+    "semantic_hash": "4cac5869d5f224b5dab80a795a29990b"
+  },
+  "C:\\Projects\\gym\\docs\\api\\auth.md": {
+    "mtime": 1780254943.745846,
+    "ast_hash": "e2b9288a1c478631e5da154966ece43e",
+    "semantic_hash": "e2b9288a1c478631e5da154966ece43e"
+  },
+  "C:\\Projects\\gym\\docs\\api\\conventions.md": {
+    "mtime": 1780254943.745846,
+    "ast_hash": "3f1c33b8903e3ad062222561d7cb06ba",
+    "semantic_hash": "3f1c33b8903e3ad062222561d7cb06ba"
+  },
+  "C:\\Projects\\gym\\docs\\api\\exercises.md": {
+    "mtime": 1780667718.4792137,
+    "ast_hash": "81bea6ea4a3fb00871acd0822c204525",
+    "semantic_hash": "81bea6ea4a3fb00871acd0822c204525"
+  },
+  "C:\\Projects\\gym\\docs\\api\\workouts.md": {
+    "mtime": 1780254943.745846,
+    "ast_hash": "6b48e2ee079a96750a5255c31d89777b",
+    "semantic_hash": "6b48e2ee079a96750a5255c31d89777b"
+  },
+  "C:\\Projects\\gym\\docs\\architecture\\README.md": {
+    "mtime": 1780667775.5198314,
+    "ast_hash": "e4ec950fb78d80de2c5f289de3f78a01",
+    "semantic_hash": "e4ec950fb78d80de2c5f289de3f78a01"
+  },
+  "C:\\Projects\\gym\\docs\\architecture\\backend.md": {
+    "mtime": 1780254943.751338,
+    "ast_hash": "3bf6c44c82d87c74316826c143bd3a7d",
+    "semantic_hash": "3bf6c44c82d87c74316826c143bd3a7d"
+  },
+  "C:\\Projects\\gym\\docs\\architecture\\data-model.md": {
+    "mtime": 1780667840.3251104,
+    "ast_hash": "3d546ecf1ad409d401fc42e01a52c7b5",
+    "semantic_hash": "3d546ecf1ad409d401fc42e01a52c7b5"
+  },
+  "C:\\Projects\\gym\\docs\\architecture\\deployment.md": {
+    "mtime": 1780254943.7529097,
+    "ast_hash": "4c05cc3d047ed34d8358cebcd9661436",
+    "semantic_hash": "4c05cc3d047ed34d8358cebcd9661436"
+  },
+  "C:\\Projects\\gym\\docs\\architecture\\exercise-module.md": {
+    "mtime": 1780668049.1000829,
+    "ast_hash": "c6756f41754133cdb9ef3a492ce1ea5b",
+    "semantic_hash": "c6756f41754133cdb9ef3a492ce1ea5b"
+  },
+  "C:\\Projects\\gym\\docs\\architecture\\frontend.md": {
+    "mtime": 1780254943.7529097,
+    "ast_hash": "94743b1bdc55293245dda3ad112c4bc6",
+    "semantic_hash": "94743b1bdc55293245dda3ad112c4bc6"
+  },
+  "C:\\Projects\\gym\\docs\\architecture\\overview.md": {
+    "mtime": 1780254943.7529097,
+    "ast_hash": "89e07565da31e991845429119f4b87b5",
+    "semantic_hash": "89e07565da31e991845429119f4b87b5"
+  },
+  "C:\\Projects\\gym\\docs\\architecture\\security.md": {
+    "mtime": 1780254943.7529097,
+    "ast_hash": "032c6b8496f5c7d0fc3851eda6a93e07",
+    "semantic_hash": "032c6b8496f5c7d0fc3851eda6a93e07"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\0001-documentation-structure.md": {
+    "mtime": 1780254943.7572596,
+    "ast_hash": "b8e0120d5adfecec299cfcfc86f89291",
+    "semantic_hash": "b8e0120d5adfecec299cfcfc86f89291"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\0002-jwt-refresh-token-strategy.md": {
+    "mtime": 1780254943.7583008,
+    "ast_hash": "ba71c03f12b4b55d1249be7e2443fdff",
+    "semantic_hash": "ba71c03f12b4b55d1249be7e2443fdff"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\0003-exercise-catalog-api-design.md": {
+    "mtime": 1780254943.7596977,
+    "ast_hash": "00e1673fc38c1fbf4849b65035a1de73",
+    "semantic_hash": "00e1673fc38c1fbf4849b65035a1de73"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\0004-workout-session-schema-design.md": {
+    "mtime": 1780254943.7596977,
+    "ast_hash": "05971d27540d5a87631e4aba391f5aa8",
+    "semantic_hash": "05971d27540d5a87631e4aba391f5aa8"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\0005-angular-auth-flow-design.md": {
+    "mtime": 1780254943.7596977,
+    "ast_hash": "48e1fdf6c9450c9c1eb40ea712131fdf",
+    "semantic_hash": "48e1fdf6c9450c9c1eb40ea712131fdf"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\0006-live-workout-ui-state.md": {
+    "mtime": 1780254943.7596977,
+    "ast_hash": "b1bb888c63b4535b1e279a415dae09aa",
+    "semantic_hash": "b1bb888c63b4535b1e279a415dae09aa"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\0007-spring-boot-backend-migration.md": {
+    "mtime": 1780254943.7596977,
+    "ast_hash": "3f41586b356697511d6cd32280a633df",
+    "semantic_hash": "3f41586b356697511d6cd32280a633df"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\0008-provider-independent-exercise-catalog.md": {
+    "mtime": 1780667718.4846342,
+    "ast_hash": "1972d8fd01298b98bdc491a48ded346a",
+    "semantic_hash": "1972d8fd01298b98bdc491a48ded346a"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\README.md": {
+    "mtime": 1780667775.524125,
+    "ast_hash": "8c3e00b30935a6c046b617f9d2cf2d63",
+    "semantic_hash": "8c3e00b30935a6c046b617f9d2cf2d63"
+  },
+  "C:\\Projects\\gym\\docs\\decisions\\adr-template.md": {
+    "mtime": 1780254943.7646651,
+    "ast_hash": "758537347e3c1fc984b920f2ac0327df",
+    "semantic_hash": "758537347e3c1fc984b920f2ac0327df"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\README.md": {
+    "mtime": 1780254943.7657316,
+    "ast_hash": "42f771c94fed30317af2bb2af79020ea",
+    "semantic_hash": "42f771c94fed30317af2bb2af79020ea"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\implementation-summaries\\2026-05-10-angular-auth-flow.md": {
+    "mtime": 1780254943.7668164,
+    "ast_hash": "1b6259944876bd33b3644183e5cc5af8",
+    "semantic_hash": "1b6259944876bd33b3644183e5cc5af8"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\implementation-summaries\\2026-05-10-angular-component-file-structure-refactor.md": {
+    "mtime": 1780254943.7668164,
+    "ast_hash": "6ebb70c06e26e531931bdec74cc85ff0",
+    "semantic_hash": "6ebb70c06e26e531931bdec74cc85ff0"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\implementation-summaries\\2026-05-10-exercise-database-module.md": {
+    "mtime": 1780254943.7668164,
+    "ast_hash": "cbd22c7961afde6856843559a4bfe176",
+    "semantic_hash": "cbd22c7961afde6856843559a4bfe176"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\implementation-summaries\\2026-05-10-jwt-auth-module.md": {
+    "mtime": 1780254943.7668164,
+    "ast_hash": "ae21910cd61d394c66f77c5c19799900",
+    "semantic_hash": "ae21910cd61d394c66f77c5c19799900"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\implementation-summaries\\2026-05-10-live-workout-logging-ui.md": {
+    "mtime": 1780254943.7668164,
+    "ast_hash": "179c90d34de65181b79290f1ce4c87e7",
+    "semantic_hash": "179c90d34de65181b79290f1ce4c87e7"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\implementation-summaries\\2026-05-10-spring-boot-backend-migration.md": {
+    "mtime": 1780254943.7715166,
+    "ast_hash": "0b054a8926f4aa44a4ca90058c33be8e",
+    "semantic_hash": "0b054a8926f4aa44a4ca90058c33be8e"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\implementation-summaries\\2026-05-10-workout-session-module.md": {
+    "mtime": 1780254943.7725594,
+    "ast_hash": "d7a6804153b282596281f79ab4ff1c47",
+    "semantic_hash": "d7a6804153b282596281f79ab4ff1c47"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\mvp-roadmap.md": {
+    "mtime": 1780254943.7734141,
+    "ast_hash": "428827abd5c5e51a563029ea917a5f30",
+    "semantic_hash": "428827abd5c5e51a563029ea917a5f30"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\open-tasks.md": {
+    "mtime": 1780254943.7734141,
+    "ast_hash": "d0031c05338b6fb25ea10e4254e20b93",
+    "semantic_hash": "d0031c05338b6fb25ea10e4254e20b93"
+  },
+  "C:\\Projects\\gym\\docs\\progress\\progress-log.md": {
+    "mtime": 1780668127.7171679,
+    "ast_hash": "5730ac5d2bfe4b465246da0b406388e0",
+    "semantic_hash": "5730ac5d2bfe4b465246da0b406388e0"
+  },
+  "C:\\Projects\\gym\\docs\\prompts\\README.md": {
+    "mtime": 1780254943.7734141,
+    "ast_hash": "69f2d06ff98653f2bf9522312a94f0b2",
+    "semantic_hash": "69f2d06ff98653f2bf9522312a94f0b2"
+  },
+  "C:\\Projects\\gym\\docs\\prompts\\prompt-log.md": {
+    "mtime": 1780667874.4473867,
+    "ast_hash": "9f51c136e60734371e3c683b19663647",
+    "semantic_hash": "9f51c136e60734371e3c683b19663647"
+  },
+  "C:\\Projects\\gym\\docs\\prompts\\reusable-prompts.md": {
+    "mtime": 1780254943.7734141,
+    "ast_hash": "eadfb87667956f03314f1737f5105eae",
+    "semantic_hash": "eadfb87667956f03314f1737f5105eae"
+  },
+  "C:\\Projects\\gym\\docs\\workflows\\README.md": {
+    "mtime": 1780667775.5228288,
+    "ast_hash": "223f6eb540390cbd11180d34b43d896d",
+    "semantic_hash": "223f6eb540390cbd11180d34b43d896d"
+  },
+  "C:\\Projects\\gym\\docs\\workflows\\ai-workflow.md": {
+    "mtime": 1780254943.7791233,
+    "ast_hash": "e04d131f8d233e5c8d36f4ed0163a04e",
+    "semantic_hash": "e04d131f8d233e5c8d36f4ed0163a04e"
+  },
+  "C:\\Projects\\gym\\docs\\workflows\\development.md": {
+    "mtime": 1780254943.7801273,
+    "ast_hash": "d7142e8092aeca196006548df178d501",
+    "semantic_hash": "d7142e8092aeca196006548df178d501"
+  },
+  "C:\\Projects\\gym\\docs\\workflows\\exercise-sync.md": {
+    "mtime": 1780668049.102155,
+    "ast_hash": "fe0976265ad9e27b1052a359a5367ac7",
+    "semantic_hash": "fe0976265ad9e27b1052a359a5367ac7"
+  },
+  "C:\\Projects\\gym\\docs\\workflows\\release.md": {
+    "mtime": 1780254943.781325,
+    "ast_hash": "e4c28405b027b134798721ae47b81b84",
+    "semantic_hash": "e4c28405b027b134798721ae47b81b84"
+  },
+  "C:\\Projects\\gym\\docs\\workflows\\testing.md": {
+    "mtime": 1780254943.781325,
+    "ast_hash": "41c5d170dd18d155c94f002cbc56450f",
+    "semantic_hash": "41c5d170dd18d155c94f002cbc56450f"
+  },
+  "C:\\Projects\\gym\\frontend\\README.md": {
+    "mtime": 1780254943.7890506,
+    "ast_hash": "925ef32416ff5cdac64fc986a5d633ba",
+    "semantic_hash": "925ef32416ff5cdac64fc986a5d633ba"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\app\\app.html": {
+    "mtime": 1780254943.800938,
+    "ast_hash": "ca8227d75de4e8e15bf204e2cd477251",
+    "semantic_hash": "ca8227d75de4e8e15bf204e2cd477251"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\auth\\auth-shell\\auth-shell.html": {
+    "mtime": 1780254943.8111506,
+    "ast_hash": "7d60e31a51f859c35f88bd1dcad11f7d",
+    "semantic_hash": "7d60e31a51f859c35f88bd1dcad11f7d"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\auth\\login-page\\login-page.html": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "4e2f4bf05060804bab46cb3213bfa94a",
+    "semantic_hash": "4e2f4bf05060804bab46cb3213bfa94a"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\auth\\signup-page\\signup-page.html": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "d6ef1bd007b6154b12c5909bc626ff80",
+    "semantic_hash": "d6ef1bd007b6154b12c5909bc626ff80"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\dashboard\\dashboard-page\\dashboard-page.html": {
+    "mtime": 1780950003.7740195,
+    "ast_hash": "747fcce29524eef14135d48b55bacf63",
+    "semantic_hash": "747fcce29524eef14135d48b55bacf63"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\exercises\\exercise-detail-page\\exercise-detail-page.html": {
+    "mtime": 1780949983.461018,
+    "ast_hash": "572041ebdef426c336cfc6a8d6381912",
+    "semantic_hash": "572041ebdef426c336cfc6a8d6381912"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\exercises\\exercises-page\\exercises-page.html": {
+    "mtime": 1780949951.5654569,
+    "ast_hash": "d3878134d5967d4a84d22f21df9f588f",
+    "semantic_hash": "d3878134d5967d4a84d22f21df9f588f"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\features\\workouts\\live-workout-page\\live-workout-page.html": {
+    "mtime": 1780254943.812829,
+    "ast_hash": "3f1fa2fa5d2487a52cc355b9920c924f",
+    "semantic_hash": "3f1fa2fa5d2487a52cc355b9920c924f"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\app\\shared\\forms\\auth-form-field\\auth-form-field.html": {
+    "mtime": 1780254943.827894,
+    "ast_hash": "0f4f018706d8d2b152113429cb2ed975",
+    "semantic_hash": "0f4f018706d8d2b152113429cb2ed975"
+  },
+  "C:\\Projects\\gym\\frontend\\src\\index.html": {
+    "mtime": 1780952052.2507658,
+    "ast_hash": "c4cfe8eb2366bee979a89e4c0e9011b9",
+    "semantic_hash": "c4cfe8eb2366bee979a89e4c0e9011b9"
+  }
+}
