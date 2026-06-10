@@ -6,11 +6,7 @@ import com.gymhelper.dto.ExerciseDtos.ExerciseDto;
 import com.gymhelper.dto.ExerciseDtos.ListExercisesQuery;
 import com.gymhelper.dto.ExerciseDtos.SearchExercisesQuery;
 import com.gymhelper.entity.Exercise;
-import com.gymhelper.entity.ExerciseProviderMapping;
 import com.gymhelper.exception.AppException;
-import com.gymhelper.provider.ExerciseProviderRegistry;
-import com.gymhelper.provider.ProviderExerciseContent;
-import com.gymhelper.repository.ExerciseProviderMappingRepository;
 import com.gymhelper.repository.ExerciseQueryRepository;
 import com.gymhelper.repository.ExerciseRepository;
 import java.time.Instant;
@@ -24,8 +20,6 @@ public class ExerciseService {
 
   private final ExerciseRepository exerciseRepository;
   private final ExerciseQueryRepository exerciseQueryRepository;
-  private final ExerciseProviderMappingRepository mappingRepository;
-  private final ExerciseProviderRegistry providerRegistry;
 
   public CursorPageDto list(ListExercisesQuery query) {
     ExerciseQueryRepository.CursorResult result = exerciseQueryRepository.list(query);
@@ -53,29 +47,16 @@ public class ExerciseService {
             HttpStatus.NOT_FOUND
         ));
 
-    return toDto(exercise, includeContent ? fetchContent(exerciseId) : null);
-  }
+    ExerciseContentDto content = null;
+    if (includeContent && exercise.getContentCachedAt() != null) {
+      content = new ExerciseContentDto(
+          exercise.getCachedOverview(),
+          exercise.getCachedInstructions(),
+          exercise.getCachedTips()
+      );
+    }
 
-  private ExerciseContentDto fetchContent(String exerciseId) {
-    ExerciseProviderMapping mapping = mappingRepository
-        .findFirstByExerciseIdAndActiveTrueOrderByPreferredForContentDescProviderAsc(exerciseId)
-        .orElseThrow(() -> new AppException(
-            "EXERCISE_CONTENT_UNAVAILABLE",
-            "Exercise content is currently unavailable",
-            HttpStatus.SERVICE_UNAVAILABLE
-        ));
-
-    ProviderExerciseContent content = providerRegistry.get(mapping.getProvider())
-        .fetchContent(mapping.getProviderExerciseId());
-
-    return new ExerciseContentDto(
-        mapping.getProvider(),
-        content.overview(),
-        content.instructions(),
-        content.tips(),
-        content.imageUrls(),
-        content.videoUrl()
-    );
+    return toDto(exercise, content);
   }
 
   private ExerciseDto toDto(Exercise exercise, ExerciseContentDto content) {

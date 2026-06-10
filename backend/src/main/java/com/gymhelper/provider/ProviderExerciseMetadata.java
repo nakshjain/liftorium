@@ -15,6 +15,9 @@ public record ProviderExerciseMetadata(
     MovementPattern movementPattern,
     ExerciseType exerciseType,
     String providerDatasetVersion,
-    String contentFingerprint
+    String contentFingerprint,
+    String overview,
+    List<String> instructions,
+    List<String> tips
 ) {
 }

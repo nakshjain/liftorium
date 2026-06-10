@@ -2,7 +2,6 @@ package com.gymhelper.provider.ascend;
 
 import com.gymhelper.entity.ExerciseType;
 import com.gymhelper.entity.MovementPattern;
-import com.gymhelper.provider.ProviderExerciseContent;
 import com.gymhelper.provider.ProviderExerciseMetadata;
 import com.gymhelper.provider.ascend.AscendApiModels.Exercise;
 import java.nio.charset.StandardCharsets;
@@ -12,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -47,22 +45,10 @@ public class AscendApiMapper {
         MovementPattern.UNKNOWN,
         exerciseType,
         DATASET_VERSION,
-        sha256(fingerprintSource)
-    );
-  }
-
-  public ProviderExerciseContent toContent(Exercise source) {
-    Map<String, String> images = source.imageUrls() == null ? Map.of() : Map.copyOf(source.imageUrls());
-    if (images.isEmpty() && source.imageUrl() != null && !source.imageUrl().isBlank()) {
-      images = Map.of("default", source.imageUrl());
-    }
-
-    return new ProviderExerciseContent(
+        sha256(fingerprintSource),
         source.overview(),
         safeList(source.instructions()),
-        safeList(source.exerciseTips()),
-        images,
-        source.videoUrl()
+        safeList(source.exerciseTips())
     );
   }
 

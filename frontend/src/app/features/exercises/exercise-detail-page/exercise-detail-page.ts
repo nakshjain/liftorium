@@ -15,7 +15,6 @@ export class ExerciseDetailPageComponent implements OnInit {
 
   protected readonly exercise = signal<Exercise | null>(null);
   protected readonly loading = signal(true);
-  protected readonly loadingContent = signal(false);
   protected readonly error = signal<string | null>(null);
 
   public ngOnInit(): void {
@@ -26,7 +25,7 @@ export class ExerciseDetailPageComponent implements OnInit {
       return;
     }
 
-    this.exerciseService.getById(id).subscribe({
+    this.exerciseService.getById(id, true).subscribe({
       next: (exercise) => {
         this.exercise.set(exercise);
         this.loading.set(false);
@@ -34,22 +33,6 @@ export class ExerciseDetailPageComponent implements OnInit {
       error: () => {
         this.error.set('Failed to load exercise. Please try again.');
         this.loading.set(false);
-      }
-    });
-  }
-
-  protected loadContent(): void {
-    const id = this.exercise()?.id;
-    if (!id || this.loadingContent()) return;
-
-    this.loadingContent.set(true);
-    this.exerciseService.getById(id, true).subscribe({
-      next: (exercise) => {
-        this.exercise.set(exercise);
-        this.loadingContent.set(false);
-      },
-      error: () => {
-        this.loadingContent.set(false);
       }
     });
   }

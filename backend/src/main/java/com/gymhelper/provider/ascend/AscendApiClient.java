@@ -43,18 +43,6 @@ public class AscendApiClient {
     }
   }
 
-  public Envelope<Exercise> fetchById(String providerExerciseId) {
-    try {
-      return restClient.get()
-          .uri("/api/v1/exercises/{exerciseId}", providerExerciseId)
-          .retrieve()
-          .body(new ParameterizedTypeReference<>() {
-          });
-    } catch (RestClientException exception) {
-      throw providerFailure(exception);
-    }
-  }
-
   private AppException providerFailure(RestClientException exception) {
     return new AppException(
         "EXERCISE_PROVIDER_ERROR",

@@ -1,6 +1,5 @@
 package com.gymhelper.dto;
 
-import com.gymhelper.entity.ExerciseProviderType;
 import com.gymhelper.entity.ExerciseType;
 import com.gymhelper.entity.MovementPattern;
 import jakarta.validation.constraints.Max;
@@ -8,7 +7,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
-import java.util.Map;
 
 public final class ExerciseDtos {
 
@@ -34,12 +32,17 @@ public final class ExerciseDtos {
   }
 
   public record ExerciseContentDto(
-      ExerciseProviderType provider,
       String overview,
       List<String> instructions,
-      List<String> tips,
-      Map<String, String> imageUrls,
-      String videoUrl
+      List<String> tips
+  ) {
+  }
+
+  public record SyncResultDto(
+      int created,
+      int updated,
+      int unchanged,
+      int deactivated
   ) {
   }
 

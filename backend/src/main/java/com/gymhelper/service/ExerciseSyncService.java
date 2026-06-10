@@ -14,8 +14,8 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +62,7 @@ public class ExerciseSyncService {
         .orElse(null);
 
     if (mapping == null) {
-      Exercise exercise = exerciseRepository.save(newExercise(source));
+      Exercise exercise = exerciseRepository.save(newExercise(providerType, source, seenAt));
       mappingRepository.save(ExerciseProviderMapping.builder()
           .provider(providerType)
           .providerExerciseId(source.providerExerciseId())
@@ -82,7 +82,7 @@ public class ExerciseSyncService {
     Exercise exercise = exerciseRepository.findById(mapping.getExerciseId()).orElseThrow();
     boolean changed = !source.contentFingerprint().equals(mapping.getContentFingerprint()) || !mapping.isActive();
     if (changed) {
-      updateExercise(exercise, source);
+      updateExercise(providerType, exercise, source, seenAt);
       exerciseRepository.save(exercise);
     }
 
@@ -97,7 +97,7 @@ public class ExerciseSyncService {
     return changed ? SyncAction.UPDATED : SyncAction.UNCHANGED;
   }
 
-  private Exercise newExercise(ProviderExerciseMetadata source) {
+  private Exercise newExercise(ExerciseProviderType providerType, ProviderExerciseMetadata source, Instant seenAt) {
     return Exercise.builder()
         .name(source.name())
         .normalizedName(normalizer.normalizeName(source.name()))
@@ -111,10 +111,15 @@ public class ExerciseSyncService {
         .movementPattern(source.movementPattern())
         .exerciseType(source.exerciseType())
         .active(true)
+        .contentProvider(providerType)
+        .cachedOverview(source.overview())
+        .cachedInstructions(source.instructions() != null ? source.instructions() : List.of())
+        .cachedTips(source.tips() != null ? source.tips() : List.of())
+        .contentCachedAt(seenAt)
         .build();
   }
 
-  private void updateExercise(Exercise exercise, ProviderExerciseMetadata source) {
+  private void updateExercise(ExerciseProviderType providerType, Exercise exercise, ProviderExerciseMetadata source, Instant seenAt) {
     List<String> aliases = new ArrayList<>(exercise.getAliases());
     if (!exercise.getName().equals(source.name()) && !aliases.contains(exercise.getName())) {
       aliases.add(exercise.getName());
@@ -134,6 +139,11 @@ public class ExerciseSyncService {
     exercise.setMovementPattern(source.movementPattern());
     exercise.setExerciseType(source.exerciseType());
     exercise.setActive(true);
+    exercise.setContentProvider(providerType);
+    exercise.setCachedOverview(source.overview());
+    exercise.setCachedInstructions(source.instructions() != null ? source.instructions() : List.of());
+    exercise.setCachedTips(source.tips() != null ? source.tips() : List.of());
+    exercise.setContentCachedAt(seenAt);
   }
 
   private int deactivateMissing(ExerciseProviderType providerType, Instant syncStartedAt) {

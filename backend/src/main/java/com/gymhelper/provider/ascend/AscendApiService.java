@@ -3,7 +3,6 @@ package com.gymhelper.provider.ascend;
 import com.gymhelper.entity.ExerciseProviderType;
 import com.gymhelper.exception.AppException;
 import com.gymhelper.provider.ExerciseProvider;
-import com.gymhelper.provider.ProviderExerciseContent;
 import com.gymhelper.provider.ProviderExercisePage;
 import com.gymhelper.provider.ascend.AscendApiModels.Envelope;
 import com.gymhelper.provider.ascend.AscendApiModels.Exercise;
@@ -41,12 +40,6 @@ public class AscendApiService implements ExerciseProvider {
         nextCursor,
         hasNext
     );
-  }
-
-  @Override
-  public ProviderExerciseContent fetchContent(String providerExerciseId) {
-    Envelope<Exercise> response = requireResponse(client.fetchById(providerExerciseId));
-    return mapper.toContent(response.data());
   }
 
   private <T> Envelope<T> requireResponse(Envelope<T> response) {

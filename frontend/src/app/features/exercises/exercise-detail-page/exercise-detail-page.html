@@ -119,15 +119,7 @@
           </div>
         } @else {
           <div class="rounded-lg border border-zinc-800 bg-zinc-900/40 px-5 py-6 text-center">
-            <p class="text-sm text-zinc-400">Instructions and tips available on demand.</p>
-            <button
-              class="mt-4 h-10 rounded-lg border border-zinc-700 px-5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
-              type="button"
-              [disabled]="loadingContent()"
-              (click)="loadContent()"
-            >
-              {{ loadingContent() ? 'Loading...' : 'Load instructions' }}
-            </button>
+            <p class="text-sm text-zinc-500">Content not yet available. Run a sync to populate exercise details.</p>
           </div>
         }
       </section>

@@ -2,7 +2,6 @@ package com.gymhelper.provider.ascend;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.List;
-import java.util.Map;
 
 public final class AscendApiModels {
 
@@ -35,10 +34,7 @@ public final class AscendApiModels {
       List<String> secondaryMuscles,
       String overview,
       List<String> instructions,
-      List<String> exerciseTips,
-      Map<String, String> imageUrls,
-      String imageUrl,
-      String videoUrl
+      List<String> exerciseTips
   ) {
   }
 }

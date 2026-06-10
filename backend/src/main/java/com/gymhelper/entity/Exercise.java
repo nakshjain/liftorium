@@ -67,6 +67,18 @@ public class Exercise {
   @Builder.Default
   private boolean active = true;
 
+  private ExerciseProviderType contentProvider;
+
+  private String cachedOverview;
+
+  @Builder.Default
+  private List<String> cachedInstructions = new ArrayList<>();
+
+  @Builder.Default
+  private List<String> cachedTips = new ArrayList<>();
+
+  private Instant contentCachedAt;
+
   @CreatedDate
   private Instant createdAt;
 

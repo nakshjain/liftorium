@@ -24,12 +24,9 @@ export type MovementPattern =
   | 'OTHER';
 
 export type ExerciseContent = {
-  provider: string;
   overview: string;
   instructions: string[];
   tips: string[];
-  imageUrls: Record<string, string>;
-  videoUrl: string | null;
 };
 
 export type Exercise = {
