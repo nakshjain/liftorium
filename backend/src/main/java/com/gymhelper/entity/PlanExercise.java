@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@NoArgsConstructor4
+@NoArgsConstructor
 @AllArgsConstructor
 public class PlanExercise {
 
