@@ -172,42 +172,62 @@
 
                 <!-- Exercise list -->
                 @if (day.exercises.length) {
-                  <div class="space-y-2">
-                    @for (exercise of day.exercises; track exercise.exerciseId + '-' + $index) {
-                      <div class="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2.5">
-                        <p class="min-w-0 flex-1 truncate text-sm font-medium text-zinc-200">{{ exercise.exerciseName }}</p>
-
-                        <!-- Sets input -->
-                        <div class="flex items-center gap-1">
-                          <input
-                            class="h-7 w-10 rounded border border-zinc-700 bg-zinc-950 text-center text-xs text-zinc-50 outline-none transition focus:border-teal-400/60"
-                            type="number"
-                            min="1"
-                            max="20"
-                            [ngModel]="exercise.sets"
-                            (ngModelChange)="onSetsChange(day.dayOfWeek, $index, $event)"
-                          />
-                          <span class="text-xs text-zinc-500">×</span>
-                          <input
-                            class="h-7 w-10 rounded border border-zinc-700 bg-zinc-950 text-center text-xs text-zinc-50 outline-none transition focus:border-teal-400/60"
-                            type="number"
-                            min="1"
-                            max="100"
-                            [ngModel]="exercise.reps"
-                            (ngModelChange)="onRepsChange(day.dayOfWeek, $index, $event)"
-                          />
+                  <div class="space-y-3">
+                    @for (exercise of day.exercises; track exercise.exerciseId + '-' + $index; let exIdx = $index) {
+                      <div class="rounded-lg border border-zinc-800 bg-zinc-900/40">
+                        <!-- Exercise header -->
+                        <div class="flex items-center gap-3 px-3 py-2.5">
+                          <p class="min-w-0 flex-1 truncate text-sm font-medium text-zinc-200">{{ exercise.exerciseName }}</p>
+                          <span class="text-xs text-zinc-500">{{ exercise.sets.length }} set{{ exercise.sets.length === 1 ? '' : 's' }}</span>
+                          <button
+                            class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-zinc-600 transition hover:bg-red-500/10 hover:text-red-400"
+                            type="button"
+                            (click)="removeExercise(day.dayOfWeek, exIdx)"
+                          >
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                            </svg>
+                          </button>
                         </div>
 
-                        <!-- Remove button -->
-                        <button
-                          class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-zinc-600 transition hover:bg-red-500/10 hover:text-red-400"
-                          type="button"
-                          (click)="removeExercise(day.dayOfWeek, $index)"
-                        >
-                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                        <!-- Sets sub-section -->
+                        <div class="border-t border-zinc-800 px-3 py-2 space-y-1.5">
+                          @for (set of exercise.sets; track $index; let setIdx = $index) {
+                            <div class="flex items-center gap-2">
+                              <span class="w-14 text-xs text-zinc-500">Set {{ setIdx + 1 }}</span>
+                              <input
+                                class="h-7 w-14 rounded border border-zinc-700 bg-zinc-950 text-center text-xs text-zinc-50 outline-none transition focus:border-teal-400/60"
+                                type="number"
+                                min="1"
+                                max="100"
+                                [value]="set.reps"
+                                (input)="onSetRepsChange(day.dayOfWeek, exIdx, setIdx, $any($event.target).value)"
+                              />
+                              <span class="text-xs text-zinc-500">reps</span>
+                              @if (exercise.sets.length > 1) {
+                                <button
+                                  class="ml-auto flex h-5 w-5 items-center justify-center rounded text-zinc-600 transition hover:text-red-400"
+                                  type="button"
+                                  (click)="removeSet(day.dayOfWeek, exIdx, setIdx)"
+                                >
+                                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+                                  </svg>
+                                </button>
+                              }
+                            </div>
+                          }
+                          <button
+                            class="flex h-7 w-full items-center justify-center gap-1 rounded border border-dashed border-zinc-700 text-xs text-zinc-500 transition hover:border-teal-400/40 hover:text-teal-300"
+                            type="button"
+                            (click)="addSet(day.dayOfWeek, exIdx)"
+                          >
+                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Add set
+                          </button>
+                        </div>
                       </div>
                     }
                   </div>

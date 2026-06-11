@@ -1,5 +1,7 @@
 package com.gymhelper.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,9 +17,8 @@ public class PlanExercise {
 
   private String exerciseName;
 
-  private int sets;
-
-  private int reps;
+  @Builder.Default
+  private List<PlanSet> sets = new ArrayList<>();
 
   private int order;
 }

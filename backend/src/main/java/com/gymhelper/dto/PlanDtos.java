@@ -11,11 +11,14 @@ public final class PlanDtos {
 
   private PlanDtos() {}
 
+  public record PlanSetRequest(
+      @Min(1) @Max(100) int reps
+  ) {}
+
   public record PlanExerciseRequest(
       @NotNull @Size(max = 50) String exerciseId,
       @NotNull @Size(max = 120) String exerciseName,
-      @Min(1) @Max(20) int sets,
-      @Min(1) @Max(100) int reps,
+      @NotNull @Size(min = 1, max = 20) @Valid List<PlanSetRequest> sets,
       @Min(0) @Max(50) int order
   ) {}
 
@@ -31,11 +34,14 @@ public final class PlanDtos {
       @NotNull @Size(min = 7, max = 7) @Valid List<PlanDayRequest> days
   ) {}
 
+  public record PlanSetDto(
+      int reps
+  ) {}
+
   public record PlanExerciseDto(
       String exerciseId,
       String exerciseName,
-      int sets,
-      int reps,
+      List<PlanSetDto> sets,
       int order
   ) {}
 

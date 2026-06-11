@@ -9,11 +9,14 @@ interface ApiResponse<T> {
   data: T;
 }
 
+interface PlanSetPayload {
+  reps: number;
+}
+
 interface PlanExercisePayload {
   exerciseId: string;
   exerciseName: string;
-  sets: number;
-  reps: number;
+  sets: PlanSetPayload[];
   order: number;
 }
 
@@ -56,8 +59,7 @@ export class PlanService {
         exercises: d.exercises.map((e) => ({
           exerciseId: e.exerciseId,
           exerciseName: e.exerciseName,
-          sets: e.sets,
-          reps: e.reps,
+          sets: e.sets.map((s) => ({ reps: s.reps })),
           order: e.order,
         })),
         rest: d.rest,
@@ -79,8 +81,7 @@ export class PlanService {
         exercises: (d.exercises ?? []).map((e) => ({
           exerciseId: e.exerciseId,
           exerciseName: e.exerciseName,
-          sets: e.sets,
-          reps: e.reps,
+          sets: (e.sets ?? []).map((s) => ({ reps: s.reps })),
           order: e.order,
         })),
         rest: d.rest,

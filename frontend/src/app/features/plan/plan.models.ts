@@ -14,11 +14,14 @@ export const MUSCLE_GROUPS: MuscleGroup[] = [
 
 export const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+export type PlanSet = {
+  reps: number;
+};
+
 export type PlanExercise = {
   exerciseId: string;
   exerciseName: string;
-  sets: number;
-  reps: number;
+  sets: PlanSet[];
   order: number;
 };
 

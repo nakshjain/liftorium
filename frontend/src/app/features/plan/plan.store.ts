@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { MuscleGroup, PlanDay, PlanExercise, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
+import { MuscleGroup, PlanDay, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
 import { PlanService } from './plan.service';
 
 const STORAGE_KEY = 'gym_workout_plan';
@@ -109,13 +109,13 @@ export class PlanStore {
     this.afterMutation();
   }
 
-  addExercise(dayOfWeek: number, exercise: Omit<PlanExercise, 'order'>): void {
+  addExercise(dayOfWeek: number, exercise: { exerciseId: string; exerciseName: string }): void {
     this.plan.update((p) => ({
       ...p,
       days: p.days.map((d) => {
         if (d.dayOfWeek !== dayOfWeek) return d;
         const order = d.exercises.length;
-        return { ...d, exercises: [...d.exercises, { ...exercise, order }] };
+        return { ...d, exercises: [...d.exercises, { ...exercise, sets: [{ reps: 10 }], order }] };
       }),
     }));
     this.activeTemplateId.set(null);
@@ -137,13 +137,45 @@ export class PlanStore {
     this.afterMutation();
   }
 
-  updateExercise(dayOfWeek: number, exerciseIndex: number, updates: { sets?: number; reps?: number }): void {
+  addSet(dayOfWeek: number, exerciseIndex: number): void {
     this.plan.update((p) => ({
       ...p,
       days: p.days.map((d) => {
         if (d.dayOfWeek !== dayOfWeek) return d;
         const exercises = d.exercises.map((e, i) =>
-          i === exerciseIndex ? { ...e, ...updates } : e,
+          i === exerciseIndex ? { ...e, sets: [...e.sets, { reps: 10 }] } : e,
+        );
+        return { ...d, exercises };
+      }),
+    }));
+    this.activeTemplateId.set(null);
+    this.afterMutation();
+  }
+
+  removeSet(dayOfWeek: number, exerciseIndex: number, setIndex: number): void {
+    this.plan.update((p) => ({
+      ...p,
+      days: p.days.map((d) => {
+        if (d.dayOfWeek !== dayOfWeek) return d;
+        const exercises = d.exercises.map((e, i) =>
+          i === exerciseIndex ? { ...e, sets: e.sets.filter((_, si) => si !== setIndex) } : e,
+        );
+        return { ...d, exercises };
+      }),
+    }));
+    this.activeTemplateId.set(null);
+    this.afterMutation();
+  }
+
+  updateSetReps(dayOfWeek: number, exerciseIndex: number, setIndex: number, reps: number): void {
+    this.plan.update((p) => ({
+      ...p,
+      days: p.days.map((d) => {
+        if (d.dayOfWeek !== dayOfWeek) return d;
+        const exercises = d.exercises.map((e, i) =>
+          i === exerciseIndex
+            ? { ...e, sets: e.sets.map((s, si) => (si === setIndex ? { ...s, reps } : s)) }
+            : e,
         );
         return { ...d, exercises };
       }),

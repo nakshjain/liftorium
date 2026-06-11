@@ -117,23 +117,22 @@ export class PlanPageComponent {
     this.store.addExercise(dayOfWeek, {
       exerciseId: exercise.id,
       exerciseName: exercise.name,
-      sets: 3,
-      reps: 10,
     });
     this.closeExerciseSearch();
   }
 
-  protected onSetsChange(dayOfWeek: number, exerciseIndex: number, value: string): void {
-    const sets = parseInt(value, 10);
-    if (sets > 0 && sets <= 20) {
-      this.store.updateExercise(dayOfWeek, exerciseIndex, { sets });
-    }
+  protected addSet(dayOfWeek: number, exerciseIndex: number): void {
+    this.store.addSet(dayOfWeek, exerciseIndex);
   }
 
-  protected onRepsChange(dayOfWeek: number, exerciseIndex: number, value: string): void {
+  protected removeSet(dayOfWeek: number, exerciseIndex: number, setIndex: number): void {
+    this.store.removeSet(dayOfWeek, exerciseIndex, setIndex);
+  }
+
+  protected onSetRepsChange(dayOfWeek: number, exerciseIndex: number, setIndex: number, value: string): void {
     const reps = parseInt(value, 10);
     if (reps > 0 && reps <= 100) {
-      this.store.updateExercise(dayOfWeek, exerciseIndex, { reps });
+      this.store.updateSetReps(dayOfWeek, exerciseIndex, setIndex, reps);
     }
   }
 

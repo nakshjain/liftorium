@@ -4,10 +4,12 @@ import com.gymhelper.dto.PlanDtos.PlanDayDto;
 import com.gymhelper.dto.PlanDtos.PlanDayRequest;
 import com.gymhelper.dto.PlanDtos.PlanExerciseDto;
 import com.gymhelper.dto.PlanDtos.PlanExerciseRequest;
+import com.gymhelper.dto.PlanDtos.PlanSetDto;
 import com.gymhelper.dto.PlanDtos.UpsertPlanRequest;
 import com.gymhelper.dto.PlanDtos.WorkoutPlanDto;
 import com.gymhelper.entity.PlanDay;
 import com.gymhelper.entity.PlanExercise;
+import com.gymhelper.entity.PlanSet;
 import com.gymhelper.entity.WorkoutPlan;
 import com.gymhelper.repository.WorkoutPlanRepository;
 import java.util.List;
@@ -53,8 +55,9 @@ public class WorkoutPlanService {
         .map(r -> PlanExercise.builder()
             .exerciseId(r.exerciseId())
             .exerciseName(r.exerciseName())
-            .sets(r.sets())
-            .reps(r.reps())
+            .sets(r.sets().stream()
+                .map(s -> PlanSet.builder().reps(s.reps()).build())
+                .toList())
             .order(r.order())
             .build())
         .toList();
@@ -67,7 +70,13 @@ public class WorkoutPlanService {
             d.getLabel(),
             d.getMuscleGroups(),
             d.getExercises() == null ? List.of() : d.getExercises().stream()
-                .map(e -> new PlanExerciseDto(e.getExerciseId(), e.getExerciseName(), e.getSets(), e.getReps(), e.getOrder()))
+                .map(e -> new PlanExerciseDto(
+                    e.getExerciseId(),
+                    e.getExerciseName(),
+                    e.getSets() == null ? List.of() : e.getSets().stream()
+                        .map(s -> new PlanSetDto(s.getReps()))
+                        .toList(),
+                    e.getOrder()))
                 .toList(),
             d.isRest()))
         .toList();
