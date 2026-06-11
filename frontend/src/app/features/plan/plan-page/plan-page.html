@@ -88,7 +88,9 @@
                 <p class="text-sm font-medium text-zinc-600">Rest</p>
               } @else if (day.label) {
                 <p class="text-sm font-semibold text-zinc-50">{{ day.label }}</p>
-                @if (day.muscleGroups.length) {
+                @if (day.exercises.length) {
+                  <p class="mt-0.5 truncate text-xs text-zinc-500">{{ day.exercises.length }} exercise{{ day.exercises.length === 1 ? '' : 's' }} · {{ muscleGroupChips($index) }}</p>
+                } @else if (day.muscleGroups.length) {
                   <p class="mt-0.5 truncate text-xs text-zinc-500">{{ muscleGroupChips($index) }}</p>
                 }
               } @else if (day.muscleGroups.length) {
@@ -138,8 +140,8 @@
                   type="text"
                   placeholder="e.g. Push, Chest day, Leg day..."
                   maxlength="40"
-                  [ngModel]="getDayLabel($index)"
-                  (ngModelChange)="onLabelChange($index, $event)"
+                  [ngModel]="getDayLabel(day.dayOfWeek)"
+                  (ngModelChange)="onLabelChange(day.dayOfWeek, $event)"
                 />
               </label>
 
@@ -150,18 +152,122 @@
                   @for (group of muscleGroups; track group) {
                     <button
                       class="h-8 rounded-full border px-3 text-xs font-medium transition active:scale-[0.97]"
-                      [class.border-teal-400]="hasMuscleGroup($index, group)"
-                      [class.bg-teal-400]="hasMuscleGroup($index, group)"
-                      [class.text-zinc-950]="hasMuscleGroup($index, group)"
-                      [class.border-zinc-700]="!hasMuscleGroup($index, group)"
-                      [class.text-zinc-300]="!hasMuscleGroup($index, group)"
+                      [class.border-teal-400]="hasMuscleGroup(day.dayOfWeek, group)"
+                      [class.bg-teal-400]="hasMuscleGroup(day.dayOfWeek, group)"
+                      [class.text-zinc-950]="hasMuscleGroup(day.dayOfWeek, group)"
+                      [class.border-zinc-700]="!hasMuscleGroup(day.dayOfWeek, group)"
+                      [class.text-zinc-300]="!hasMuscleGroup(day.dayOfWeek, group)"
                       type="button"
-                      (click)="store.toggleMuscleGroup($index, group)"
+                      (click)="store.toggleMuscleGroup(day.dayOfWeek, group)"
                     >
                       {{ group }}
                     </button>
                   }
                 </div>
+              </div>
+
+              <!-- Exercises section -->
+              <div class="mt-5">
+                <p class="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Exercises</p>
+
+                <!-- Exercise list -->
+                @if (day.exercises.length) {
+                  <div class="space-y-2">
+                    @for (exercise of day.exercises; track exercise.exerciseId + '-' + $index) {
+                      <div class="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2.5">
+                        <p class="min-w-0 flex-1 truncate text-sm font-medium text-zinc-200">{{ exercise.exerciseName }}</p>
+
+                        <!-- Sets input -->
+                        <div class="flex items-center gap-1">
+                          <input
+                            class="h-7 w-10 rounded border border-zinc-700 bg-zinc-950 text-center text-xs text-zinc-50 outline-none transition focus:border-teal-400/60"
+                            type="number"
+                            min="1"
+                            max="20"
+                            [ngModel]="exercise.sets"
+                            (ngModelChange)="onSetsChange(day.dayOfWeek, $index, $event)"
+                          />
+                          <span class="text-xs text-zinc-500">×</span>
+                          <input
+                            class="h-7 w-10 rounded border border-zinc-700 bg-zinc-950 text-center text-xs text-zinc-50 outline-none transition focus:border-teal-400/60"
+                            type="number"
+                            min="1"
+                            max="100"
+                            [ngModel]="exercise.reps"
+                            (ngModelChange)="onRepsChange(day.dayOfWeek, $index, $event)"
+                          />
+                        </div>
+
+                        <!-- Remove button -->
+                        <button
+                          class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-zinc-600 transition hover:bg-red-500/10 hover:text-red-400"
+                          type="button"
+                          (click)="removeExercise(day.dayOfWeek, $index)"
+                        >
+                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+
+                <!-- Add exercise button / search -->
+                @if (searchingDay() === day.dayOfWeek) {
+                  <div class="mt-3 rounded-lg border border-teal-400/30 bg-zinc-900/60 p-3">
+                    <input
+                      class="h-9 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-50 outline-none transition placeholder:text-zinc-600 focus:border-teal-400/60 focus:ring-1 focus:ring-teal-400/30"
+                      type="text"
+                      placeholder="Search exercises..."
+                      [value]="searchQuery()"
+                      (input)="onSearchInput($any($event.target).value)"
+                      autofocus
+                    />
+
+                    @if (exercisesLoading()) {
+                      <p class="mt-2 text-xs text-zinc-500">Loading exercises...</p>
+                    } @else if (exerciseCount === 0) {
+                      <p class="mt-2 text-xs text-red-400">Failed to load exercises — check backend connection</p>
+                    }
+
+                    @if (searchResults().length) {
+                      <div class="mt-2 max-h-48 space-y-1 overflow-y-auto">
+                        @for (result of searchResults(); track result.id) {
+                          <button
+                            class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition hover:bg-zinc-800"
+                            type="button"
+                            (click)="selectExercise(result)"
+                          >
+                            <span class="flex-1 truncate text-sm text-zinc-200">{{ result.name }}</span>
+                            <span class="shrink-0 text-xs text-zinc-500">{{ result.primaryMuscles.join(', ') }}</span>
+                          </button>
+                        }
+                      </div>
+                    } @else if (!exercisesLoading() && searchQuery().length >= 2) {
+                      <p class="mt-2 text-xs text-zinc-500">No exercises found</p>
+                    }
+
+                    <button
+                      class="mt-2 text-xs font-medium text-zinc-500 transition hover:text-zinc-300"
+                      type="button"
+                      (click)="closeExerciseSearch()"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                } @else {
+                  <button
+                    class="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 text-sm font-medium text-zinc-400 transition hover:border-teal-400/40 hover:text-teal-300"
+                    type="button"
+                    (click)="openExerciseSearch(day.dayOfWeek)"
+                  >
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Add exercise
+                  </button>
+                }
               </div>
 
             </div>

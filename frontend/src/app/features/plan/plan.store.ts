@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { MuscleGroup, PlanDay, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
+import { MuscleGroup, PlanDay, PlanExercise, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
 import { PlanService } from './plan.service';
 
 const STORAGE_KEY = 'gym_workout_plan';
@@ -63,7 +63,7 @@ export class PlanStore {
   clearTemplate(): void {
     this.plan.update((p) => ({
       ...p,
-      days: p.days.map((d) => ({ ...d, label: '', muscleGroups: [], rest: true })),
+      days: p.days.map((d) => ({ ...d, label: '', muscleGroups: [], exercises: [], rest: true })),
     }));
     this.activeTemplateId.set(null);
     this.afterMutation();
@@ -74,7 +74,7 @@ export class PlanStore {
       ...p,
       days: p.days.map((d) =>
         d.dayOfWeek === dayOfWeek
-          ? { ...d, rest: !d.rest, muscleGroups: d.rest ? d.muscleGroups : [], label: d.rest ? d.label : '' }
+          ? { ...d, rest: !d.rest, muscleGroups: d.rest ? d.muscleGroups : [], exercises: d.rest ? d.exercises : [], label: d.rest ? d.label : '' }
           : d,
       ),
     }));
@@ -103,6 +103,49 @@ export class PlanStore {
             ? d.muscleGroups.filter((g) => g !== group)
             : [...d.muscleGroups, group],
         };
+      }),
+    }));
+    this.activeTemplateId.set(null);
+    this.afterMutation();
+  }
+
+  addExercise(dayOfWeek: number, exercise: Omit<PlanExercise, 'order'>): void {
+    this.plan.update((p) => ({
+      ...p,
+      days: p.days.map((d) => {
+        if (d.dayOfWeek !== dayOfWeek) return d;
+        const order = d.exercises.length;
+        return { ...d, exercises: [...d.exercises, { ...exercise, order }] };
+      }),
+    }));
+    this.activeTemplateId.set(null);
+    this.afterMutation();
+  }
+
+  removeExercise(dayOfWeek: number, exerciseIndex: number): void {
+    this.plan.update((p) => ({
+      ...p,
+      days: p.days.map((d) => {
+        if (d.dayOfWeek !== dayOfWeek) return d;
+        const exercises = d.exercises
+          .filter((_, i) => i !== exerciseIndex)
+          .map((e, i) => ({ ...e, order: i }));
+        return { ...d, exercises };
+      }),
+    }));
+    this.activeTemplateId.set(null);
+    this.afterMutation();
+  }
+
+  updateExercise(dayOfWeek: number, exerciseIndex: number, updates: { sets?: number; reps?: number }): void {
+    this.plan.update((p) => ({
+      ...p,
+      days: p.days.map((d) => {
+        if (d.dayOfWeek !== dayOfWeek) return d;
+        const exercises = d.exercises.map((e, i) =>
+          i === exerciseIndex ? { ...e, ...updates } : e,
+        );
+        return { ...d, exercises };
       }),
     }));
     this.activeTemplateId.set(null);

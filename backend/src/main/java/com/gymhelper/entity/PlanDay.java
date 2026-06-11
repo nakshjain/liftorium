@@ -20,5 +20,8 @@ public class PlanDay {
   @Builder.Default
   private List<String> muscleGroups = new ArrayList<>();
 
+  @Builder.Default
+  private List<PlanExercise> exercises = new ArrayList<>();
+
   private boolean rest;
 }

@@ -11,10 +11,19 @@ public final class PlanDtos {
 
   private PlanDtos() {}
 
+  public record PlanExerciseRequest(
+      @NotNull @Size(max = 50) String exerciseId,
+      @NotNull @Size(max = 120) String exerciseName,
+      @Min(1) @Max(20) int sets,
+      @Min(1) @Max(100) int reps,
+      @Min(0) @Max(50) int order
+  ) {}
+
   public record PlanDayRequest(
       @Min(0) @Max(6) int dayOfWeek,
       @Size(max = 60) String label,
       @NotNull @Size(max = 10) List<@Size(max = 30) String> muscleGroups,
+      @NotNull @Size(max = 20) @Valid List<PlanExerciseRequest> exercises,
       boolean rest
   ) {}
 
@@ -22,10 +31,19 @@ public final class PlanDtos {
       @NotNull @Size(min = 7, max = 7) @Valid List<PlanDayRequest> days
   ) {}
 
+  public record PlanExerciseDto(
+      String exerciseId,
+      String exerciseName,
+      int sets,
+      int reps,
+      int order
+  ) {}
+
   public record PlanDayDto(
       int dayOfWeek,
       String label,
       List<String> muscleGroups,
+      List<PlanExerciseDto> exercises,
       boolean rest
   ) {}
 
