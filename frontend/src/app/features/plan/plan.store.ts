@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { MuscleGroup, PlanDay, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
+import { MuscleGroup, PlanDay, PLAN_TEMPLATES, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
 import { PlanService } from './plan.service';
 
 const STORAGE_KEY = 'gym_workout_plan';
@@ -13,6 +13,7 @@ export class PlanStore {
   readonly syncing = signal(false);
   readonly syncError = signal(false);
   readonly syncSuccess = signal(false);
+  readonly resetting = signal(false);
 
   readonly activeDayCount = computed(
     () => this.plan().days.filter((d) => !d.rest).length,
@@ -50,6 +51,28 @@ export class PlanStore {
       error: () => {
         this.syncing.set(false);
         this.syncError.set(true);
+      },
+    });
+  }
+
+  reset(): void {
+    this.resetting.set(true);
+    this.planService.get().subscribe({
+      next: (serverPlan) => {
+        this.plan.set(serverPlan);
+        this.persist(serverPlan);
+        this.activeTemplateId.set(null);
+        this.resetting.set(false);
+      },
+      error: () => {
+        const defaultPlan: WorkoutPlan = {
+          ...emptyPlan(),
+          days: PLAN_TEMPLATES[0].days.map((d) => ({ ...d })),
+        };
+        this.plan.set(defaultPlan);
+        this.persist(defaultPlan);
+        this.activeTemplateId.set(PLAN_TEMPLATES[0].id);
+        this.resetting.set(false);
       },
     });
   }

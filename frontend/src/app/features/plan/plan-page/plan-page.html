@@ -316,14 +316,24 @@
       } @else {
         <p class="text-sm text-zinc-500">{{ store.activeDayCount() }} active {{ store.activeDayCount() === 1 ? 'day' : 'days' }} scheduled</p>
       }
-      <button
-        class="rounded-lg bg-teal-500 px-5 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-teal-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
-        type="button"
-        [disabled]="store.syncing()"
-        (click)="store.save()"
-      >
-        {{ store.syncing() ? 'Saving…' : 'Save plan' }}
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          class="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-300 transition hover:border-zinc-500 hover:text-zinc-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          type="button"
+          [disabled]="store.resetting()"
+          (click)="store.reset()"
+        >
+          {{ store.resetting() ? 'Resetting…' : 'Reset' }}
+        </button>
+        <button
+          class="rounded-lg bg-teal-500 px-5 py-2 text-sm font-semibold text-zinc-950 transition hover:bg-teal-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+          type="button"
+          [disabled]="store.syncing()"
+          (click)="store.save()"
+        >
+          {{ store.syncing() ? 'Saving…' : 'Save plan' }}
+        </button>
+      </div>
     </div>
   </div>
 
