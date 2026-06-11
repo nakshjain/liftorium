@@ -1,8 +1,10 @@
-import { Component, OnDestroy, OnInit, computed, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LiveWorkout } from '../live-workout.models';
 import { LiveWorkoutStore } from '../live-workout.store';
+import { PlanStore } from '../../plan/plan.store';
+import { DAY_LABELS, PlanDay } from '../../plan/plan.models';
 
 type FinishedWorkoutSummary = {
   exercises: number;
@@ -18,7 +20,19 @@ type FinishedWorkoutSummary = {
 })
 export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly store = inject(LiveWorkoutStore);
+  protected readonly planStore = inject(PlanStore);
   private timerId: number | null = null;
+
+  protected readonly dayLabels = DAY_LABELS;
+  protected readonly selectedDayIndex = signal(this.getTodayIndex());
+
+  protected readonly selectedDay = computed((): PlanDay => {
+    return this.planStore.getDay(this.selectedDayIndex());
+  });
+
+  protected readonly hasPlan = computed(() => {
+    return this.planStore.plan().days.some((d) => !d.rest && d.exercises.length > 0);
+  });
 
   protected readonly addedExerciseIds = computed(
     () => new Set(this.store.activeWorkout()?.exercises.map((exercise) => exercise.exerciseId) ?? [])
@@ -81,5 +95,23 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
         0
       )
     };
+  }
+
+  protected onDayChange(value: string): void {
+    this.selectedDayIndex.set(parseInt(value, 10));
+  }
+
+  protected startFromPlan(): void {
+    const day = this.selectedDay();
+    if (day.exercises.length > 0) {
+      this.store.startWorkoutFromPlan(day.exercises, day.label);
+    } else {
+      this.store.startNewWorkout();
+    }
+  }
+
+  protected getTodayIndex(): number {
+    const jsDay = new Date().getDay();
+    return jsDay === 0 ? 6 : jsDay - 1;
   }
 }

@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
 import { Subject } from 'rxjs';
 import { ExerciseService } from '../exercises/exercise.service';
+import { PlanExercise } from '../plan/plan.models';
 import { WorkoutService } from './workout.service';
 import { ExerciseOption, LiveWorkout, PreviousSet, WorkoutExercise, WorkoutSet } from './live-workout.models';
 
@@ -222,6 +223,31 @@ export class LiveWorkoutStore {
   startNewWorkout(): void {
     this.clearFinishedWorkout();
     this.startWorkout();
+  }
+
+  startWorkoutFromPlan(planExercises: PlanExercise[], dayLabel: string): void {
+    this.clearFinishedWorkout();
+    if (this.workout()) return;
+
+    const exercises: WorkoutExercise[] = planExercises.map((pe) => ({
+      id: crypto.randomUUID(),
+      exerciseId: pe.exerciseId,
+      name: pe.exerciseName,
+      target: '',
+      equipment: '',
+      previous: [],
+      sets: pe.sets.map((s, i) => this.createWorkoutSet(i + 1, { reps: s.reps, weight: 20 })),
+    }));
+
+    const workout: LiveWorkout = {
+      id: crypto.randomUUID(),
+      name: dayLabel || 'Today',
+      startedAt: Date.now(),
+      finishedAt: null,
+      exercises,
+    };
+    this.workout.set(workout);
+    this.persist(workout);
   }
 
   private persist(workout: LiveWorkout): void {

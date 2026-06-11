@@ -33,10 +33,68 @@
           <button
             class="mt-8 h-14 w-full rounded-lg bg-teal-400 px-5 text-base font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99] sm:w-auto sm:px-10"
             type="button"
-            (click)="store.startNewWorkout()"
+            (click)="startFromPlan()"
           >
             Start workout
           </button>
+        </div>
+
+        <!-- Today's Plan -->
+        <div class="mt-6 rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+          <div class="flex items-center justify-between gap-3">
+            <h2 class="text-sm font-medium uppercase tracking-wider text-zinc-500">Today's plan</h2>
+            <select
+              class="h-8 rounded-lg border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-50 outline-none transition focus:border-teal-400/60"
+              [value]="selectedDayIndex()"
+              (change)="onDayChange($any($event.target).value)"
+            >
+              @for (label of dayLabels; track $index) {
+                <option [value]="$index" [selected]="$index === selectedDayIndex()">
+                  {{ label }}{{ $index === getTodayIndex() ? ' (Today)' : '' }}
+                </option>
+              }
+            </select>
+          </div>
+
+          @if (!hasPlan()) {
+            <div class="mt-4 text-center">
+              <p class="text-sm text-zinc-400">No workout plan created yet.</p>
+              <a
+                class="mt-3 inline-block rounded-lg border border-teal-400/40 px-4 py-2 text-sm font-medium text-teal-300 transition hover:border-teal-400 hover:text-teal-200"
+                routerLink="/app/plan"
+              >
+                Create a plan
+              </a>
+            </div>
+          } @else if (selectedDay().rest) {
+            <p class="mt-4 text-sm text-zinc-500">Rest day — no exercises scheduled.</p>
+          } @else if (selectedDay().exercises.length === 0) {
+            <div class="mt-4">
+              <p class="text-sm text-zinc-400">
+                {{ selectedDay().label || dayLabels[selectedDayIndex()] }} — no exercises added yet.
+              </p>
+              <a
+                class="mt-2 inline-block text-sm font-medium text-teal-400 transition hover:text-teal-300"
+                routerLink="/app/plan"
+              >
+                Add exercises to this day
+              </a>
+            </div>
+          } @else {
+            <div class="mt-4">
+              @if (selectedDay().label) {
+                <p class="mb-3 text-base font-semibold text-zinc-50">{{ selectedDay().label }}</p>
+              }
+              <div class="space-y-2">
+                @for (exercise of selectedDay().exercises; track exercise.exerciseId) {
+                  <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-800 px-3 py-2.5">
+                    <span class="truncate text-sm font-medium text-zinc-200">{{ exercise.exerciseName }}</span>
+                    <span class="shrink-0 text-xs text-zinc-500">{{ exercise.sets.length }} × {{ exercise.sets[0]?.reps ?? 0 }} reps</span>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
       </section>
     } @else {
