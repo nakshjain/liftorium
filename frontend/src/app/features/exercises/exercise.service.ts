@@ -16,6 +16,7 @@ export class ExerciseService {
     if (params.cursor) httpParams = httpParams.set('cursor', params.cursor);
     if (params.muscle) httpParams = httpParams.set('muscle', params.muscle);
     if (params.equipment) httpParams = httpParams.set('equipment', params.equipment);
+    if (params.bodyPart) httpParams = httpParams.set('bodyPart', params.bodyPart);
     if (params.exerciseType) httpParams = httpParams.set('exerciseType', params.exerciseType);
     if (params.movementPattern) httpParams = httpParams.set('movementPattern', params.movementPattern);
 

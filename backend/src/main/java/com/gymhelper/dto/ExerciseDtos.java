@@ -51,6 +51,7 @@ public final class ExerciseDtos {
       @Size(max = 500) String cursor,
       @Size(max = 80) String muscle,
       @Size(max = 80) String equipment,
+      @Size(max = 80) String bodyPart,
       ExerciseType exerciseType,
       MovementPattern movementPattern
   ) {

@@ -23,6 +23,24 @@
 
     <section class="mt-4">
       <div class="flex items-center gap-2 overflow-x-auto pb-1">
+        <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Body</span>
+        @for (part of bodyParts; track part) {
+          <button
+            class="h-8 shrink-0 rounded-full border px-3 text-xs font-medium transition"
+            [class.border-teal-400]="filters().bodyPart === part"
+            [class.bg-teal-400]="filters().bodyPart === part"
+            [class.text-zinc-950]="filters().bodyPart === part"
+            [class.border-zinc-700]="filters().bodyPart !== part"
+            [class.text-zinc-300]="filters().bodyPart !== part"
+            type="button"
+            (click)="onBodyPartFilter(part)"
+          >
+            {{ part }}
+          </button>
+        }
+      </div>
+
+      <div class="mt-2 flex items-center gap-2 overflow-x-auto pb-1">
         <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Type</span>
         @for (type of exerciseTypes; track type.value) {
           <button

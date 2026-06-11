@@ -57,6 +57,7 @@ export type ListExercisesParams = {
   cursor?: string;
   muscle?: string;
   equipment?: string;
+  bodyPart?: string;
   exerciseType?: ExerciseType;
   movementPattern?: MovementPattern;
 };

@@ -31,6 +31,7 @@ public class ExerciseQueryRepository {
     List<Criteria> criteria = baseFilters(
         input.muscle(),
         input.equipment(),
+        input.bodyPart(),
         input.exerciseType() == null ? null : input.exerciseType().name(),
         input.movementPattern() == null ? null : input.movementPattern().name()
     );
@@ -50,7 +51,7 @@ public class ExerciseQueryRepository {
   }
 
   public CursorResult search(SearchExercisesQuery input) {
-    List<Criteria> criteria = baseFilters(input.muscle(), input.equipment(), null, null);
+    List<Criteria> criteria = baseFilters(input.muscle(), input.equipment(), null, null, null);
     criteria.add(Criteria.where("searchPrefixes").is(normalize(input.query())));
     return execute(criteria, input.limit());
   }
@@ -71,6 +72,7 @@ public class ExerciseQueryRepository {
   private List<Criteria> baseFilters(
       String muscle,
       String equipment,
+      String bodyPart,
       String exerciseType,
       String movementPattern
   ) {
@@ -86,6 +88,9 @@ public class ExerciseQueryRepository {
     }
     if (equipment != null) {
       criteria.add(Criteria.where("equipment").is(normalize(equipment)));
+    }
+    if (bodyPart != null) {
+      criteria.add(Criteria.where("bodyParts").is(normalize(bodyPart)));
     }
     if (exerciseType != null) {
       criteria.add(Criteria.where("exerciseType").is(exerciseType));

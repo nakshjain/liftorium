@@ -8,6 +8,7 @@ import { Exercise, ExercisePage, ExerciseType, MovementPattern } from '../exerci
 
 type FilterState = {
   query: string;
+  bodyPart: string;
   exerciseType: ExerciseType | '';
   movementPattern: MovementPattern | '';
 };
@@ -31,13 +32,18 @@ export class ExercisesPageComponent implements OnInit {
 
   protected readonly filters = signal<FilterState>({
     query: '',
+    bodyPart: '',
     exerciseType: '',
     movementPattern: ''
   });
 
   protected readonly hasActiveFilters = computed(
-    () => this.filters().exerciseType !== '' || this.filters().movementPattern !== ''
+    () => this.filters().bodyPart !== '' || this.filters().exerciseType !== '' || this.filters().movementPattern !== ''
   );
+
+  protected readonly bodyParts: string[] = [
+    'Back', 'Biceps', 'Chest', 'Core', 'Forearms', 'Legs', 'Shoulders', 'Triceps', 'Full Body'
+  ];
 
   protected readonly exerciseTypes: { value: ExerciseType; label: string }[] = [
     { value: 'STRENGTH', label: 'Strength' },
@@ -100,6 +106,11 @@ export class ExercisesPageComponent implements OnInit {
     this.search$.next(query);
   }
 
+  protected onBodyPartFilter(value: string): void {
+    this.filters.update((f) => ({ ...f, bodyPart: f.bodyPart === value ? '' : value }));
+    this.fetchList(false);
+  }
+
   protected onTypeFilter(value: ExerciseType | ''): void {
     this.filters.update((f) => ({ ...f, exerciseType: value }));
     this.fetchList(false);
@@ -116,7 +127,7 @@ export class ExercisesPageComponent implements OnInit {
   }
 
   protected clearFilters(): void {
-    this.filters.set({ query: '', exerciseType: '', movementPattern: '' });
+    this.filters.set({ query: '', bodyPart: '', exerciseType: '', movementPattern: '' });
     this.fetchList(false);
   }
 
@@ -151,6 +162,7 @@ export class ExercisesPageComponent implements OnInit {
     return this.exerciseService.list({
       limit: 25,
       cursor,
+      bodyPart: f.bodyPart || undefined,
       exerciseType: f.exerciseType || undefined,
       movementPattern: f.movementPattern || undefined
     });

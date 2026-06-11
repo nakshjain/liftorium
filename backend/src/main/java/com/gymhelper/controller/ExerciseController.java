@@ -35,6 +35,7 @@ public class ExerciseController {
       @RequestParam(required = false) @Size(max = 500) String cursor,
       @RequestParam(required = false) @Size(max = 80) String muscle,
       @RequestParam(required = false) @Size(max = 80) String equipment,
+      @RequestParam(required = false) @Size(max = 80) String bodyPart,
       @RequestParam(required = false) ExerciseType exerciseType,
       @RequestParam(required = false) MovementPattern movementPattern
   ) {
@@ -43,6 +44,7 @@ public class ExerciseController {
         blankToNull(cursor),
         blankToNull(muscle),
         blankToNull(equipment),
+        blankToNull(bodyPart),
         exerciseType,
         movementPattern
     )));
