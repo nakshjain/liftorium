@@ -1,5 +1,4 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Subject, debounceTime, switchMap } from 'rxjs';
 import { MuscleGroup, PlanDay, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
 import { PlanService } from './plan.service';
 
@@ -13,6 +12,7 @@ export class PlanStore {
   readonly activeTemplateId = signal<string | null>(null);
   readonly syncing = signal(false);
   readonly syncError = signal(false);
+  readonly syncSuccess = signal(false);
 
   readonly activeDayCount = computed(
     () => this.plan().days.filter((d) => !d.rest).length,
@@ -23,30 +23,7 @@ export class PlanStore {
     return jsDay === 0 ? 6 : jsDay - 1;
   });
 
-  private readonly syncTrigger$ = new Subject<WorkoutPlan>();
-
   constructor() {
-    // Debounce: only fire PUT 1.5s after the last mutation
-    this.syncTrigger$.pipe(
-      debounceTime(1500),
-      switchMap((plan) => {
-        this.syncing.set(true);
-        this.syncError.set(false);
-        return this.planService.save(plan);
-      }),
-    ).subscribe({
-      next: (saved) => {
-        // Update id in case this was the first save
-        this.plan.update((p) => ({ ...p, id: saved.id }));
-        this.persist(this.plan());
-        this.syncing.set(false);
-      },
-      error: () => {
-        this.syncing.set(false);
-        this.syncError.set(true);
-      },
-    });
-
     // Load from server on init — server wins over localStorage
     this.planService.get().subscribe({
       next: (serverPlan) => {
@@ -54,6 +31,26 @@ export class PlanStore {
         this.persist(serverPlan);
       },
       error: () => { /* offline — keep localStorage copy */ },
+    });
+  }
+
+  save(): void {
+    if (this.syncing()) return;
+    this.syncing.set(true);
+    this.syncError.set(false);
+    this.syncSuccess.set(false);
+    this.planService.save(this.plan()).subscribe({
+      next: (saved) => {
+        this.plan.update((p) => ({ ...p, id: saved.id }));
+        this.persist(this.plan());
+        this.syncing.set(false);
+        this.syncSuccess.set(true);
+        setTimeout(() => this.syncSuccess.set(false), 2000);
+      },
+      error: () => {
+        this.syncing.set(false);
+        this.syncError.set(true);
+      },
     });
   }
 
@@ -118,7 +115,6 @@ export class PlanStore {
 
   private afterMutation(): void {
     this.persist(this.plan());
-    this.syncTrigger$.next(this.plan());
   }
 
   private persist(plan: WorkoutPlan): void {
