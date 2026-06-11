@@ -1,267 +1,255 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
+import { Subject } from 'rxjs';
+import { ExerciseService } from '../exercises/exercise.service';
+import { WorkoutService } from './workout.service';
 import { ExerciseOption, LiveWorkout, PreviousSet, WorkoutExercise, WorkoutSet } from './live-workout.models';
 
-const defaultRestSeconds = 90;
-
-const exerciseCatalog: ExerciseOption[] = [
-  {
-    id: 'barbell-bench-press',
-    name: 'Bench Press',
-    target: 'Chest',
-    equipment: 'Barbell',
-    previous: [
-      { reps: 8, weight: 75 },
-      { reps: 7, weight: 75 },
-      { reps: 6, weight: 75 }
-    ]
-  },
-  {
-    id: 'back-squat',
-    name: 'Back Squat',
-    target: 'Quads',
-    equipment: 'Barbell',
-    previous: [
-      { reps: 6, weight: 105 },
-      { reps: 6, weight: 105 },
-      { reps: 5, weight: 110 }
-    ]
-  },
-  {
-    id: 'lat-pulldown',
-    name: 'Lat Pulldown',
-    target: 'Back',
-    equipment: 'Cable',
-    previous: [
-      { reps: 10, weight: 60 },
-      { reps: 9, weight: 60 },
-      { reps: 8, weight: 65 }
-    ]
-  },
-  {
-    id: 'dumbbell-shoulder-press',
-    name: 'Shoulder Press',
-    target: 'Shoulders',
-    equipment: 'Dumbbells',
-    previous: [
-      { reps: 10, weight: 22.5 },
-      { reps: 8, weight: 22.5 },
-      { reps: 8, weight: 22.5 }
-    ]
-  },
-  {
-    id: 'romanian-deadlift',
-    name: 'Romanian Deadlift',
-    target: 'Hamstrings',
-    equipment: 'Barbell',
-    previous: [
-      { reps: 8, weight: 95 },
-      { reps: 8, weight: 95 },
-      { reps: 7, weight: 100 }
-    ]
-  }
-];
+const STORAGE_KEY = 'gym_active_workout';
+const DEFAULT_REST_SECONDS = 90;
 
 @Injectable({ providedIn: 'root' })
 export class LiveWorkoutStore {
-  private readonly workout = signal<LiveWorkout | null>(null);
+  private readonly exerciseService = inject(ExerciseService);
+  private readonly workoutService = inject(WorkoutService);
+
+  private readonly workout = signal<LiveWorkout | null>(this.loadFromStorage());
   private readonly finishedWorkout = signal<LiveWorkout | null>(null);
   private readonly now = signal(Date.now());
   private readonly restEndsAt = signal<number | null>(null);
 
-  public readonly exercises = signal<ExerciseOption[]>(exerciseCatalog);
-  public readonly activeWorkout = this.workout.asReadonly();
-  public readonly lastFinishedWorkout = this.finishedWorkout.asReadonly();
-  public readonly restRemainingSeconds = computed(() => {
+  private readonly exerciseSearch$ = new Subject<string>();
+  readonly exerciseQuery = signal('');
+  readonly exercises = signal<ExerciseOption[]>([]);
+  readonly exercisesLoading = signal(false);
+
+  readonly activeWorkout = this.workout.asReadonly();
+  readonly lastFinishedWorkout = this.finishedWorkout.asReadonly();
+
+  readonly restRemainingSeconds = computed(() => {
     const endsAt = this.restEndsAt();
-
-    if (!endsAt) {
-      return 0;
-    }
-
+    if (!endsAt) return 0;
     return Math.max(0, Math.ceil((endsAt - this.now()) / 1000));
   });
-  public readonly restTimerActive = computed(() => this.restRemainingSeconds() > 0);
-  public readonly elapsedSeconds = computed(() => {
+  readonly restTimerActive = computed(() => this.restRemainingSeconds() > 0);
+  readonly elapsedSeconds = computed(() => {
     const workout = this.workout();
-
-    if (!workout) {
-      return 0;
-    }
-
+    if (!workout) return 0;
     const end = workout.finishedAt ?? this.now();
     return Math.max(0, Math.floor((end - workout.startedAt) / 1000));
   });
-  public readonly completedSetCount = computed(
-    () => this.workout()?.exercises.reduce((count, exercise) => count + exercise.sets.filter((set) => set.completed).length, 0) ?? 0
+  readonly completedSetCount = computed(
+    () => this.workout()?.exercises.reduce(
+      (count, ex) => count + ex.sets.filter((s) => s.completed).length, 0
+    ) ?? 0
   );
-  public readonly totalVolume = computed(
-    () =>
-      this.workout()?.exercises.reduce(
-        (exerciseTotal, exercise) =>
-          exerciseTotal +
-          exercise.sets.reduce((setTotal, set) => setTotal + (set.completed ? set.reps * set.weight : 0), 0),
-        0
-      ) ?? 0
+  readonly totalVolume = computed(
+    () => this.workout()?.exercises.reduce(
+      (total, ex) => total + ex.sets.reduce(
+        (t, s) => t + (s.completed ? s.reps * s.weight : 0), 0
+      ), 0
+    ) ?? 0
   );
 
-  public tick(): void {
+  constructor() {
+    this.exerciseSearch$.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap((q) => {
+        this.exercisesLoading.set(true);
+        const call = q.length >= 2
+          ? this.exerciseService.search({ q, limit: 30 })
+          : this.exerciseService.list({ limit: 30 });
+        return call;
+      }),
+      takeUntilDestroyed(),
+    ).subscribe({
+      next: (page) => {
+        this.exercises.set(page.items.map((ex) => ({
+          id: ex.id,
+          name: ex.name,
+          target: ex.primaryMuscles[0] ?? ex.bodyParts[0] ?? '',
+          equipment: ex.equipment[0] ?? '',
+          previous: [],
+        })));
+        this.exercisesLoading.set(false);
+      },
+      error: () => this.exercisesLoading.set(false),
+    });
+
+    // Initial load
+    this.exerciseSearch$.next('');
+  }
+
+  searchExercises(query: string): void {
+    this.exerciseQuery.set(query);
+    this.exerciseSearch$.next(query);
+  }
+
+  tick(): void {
     this.now.set(Date.now());
   }
 
-  public startWorkout(): void {
-    if (this.workout()) {
-      return;
-    }
-
-    const firstExercise = exerciseCatalog[0];
-    this.workout.set({
+  startWorkout(): void {
+    if (this.workout()) return;
+    const workout: LiveWorkout = {
       id: crypto.randomUUID(),
       name: 'Today',
       startedAt: Date.now(),
       finishedAt: null,
-      exercises: firstExercise ? [this.createWorkoutExercise(firstExercise)] : []
-    });
+      exercises: [],
+    };
+    this.workout.set(workout);
+    this.persist(workout);
   }
 
-  public addExercise(exerciseId: string): void {
-    const option = exerciseCatalog.find((exercise) => exercise.id === exerciseId);
-
-    if (!option) {
-      return;
-    }
+  addExercise(exerciseId: string): void {
+    const option = this.exercises().find((ex) => ex.id === exerciseId);
+    if (!option) return;
 
     this.workout.update((workout) => {
-      if (!workout || workout.exercises.some((exercise) => exercise.exerciseId === exerciseId)) {
-        return workout;
-      }
-
-      return {
-        ...workout,
-        exercises: [...workout.exercises, this.createWorkoutExercise(option)]
-      };
+      if (!workout || workout.exercises.some((ex) => ex.exerciseId === exerciseId)) return workout;
+      const updated = { ...workout, exercises: [...workout.exercises, this.createWorkoutExercise(option)] };
+      this.persist(updated);
+      return updated;
     });
   }
 
-  public removeExercise(workoutExerciseId: string): void {
+  removeExercise(workoutExerciseId: string): void {
     this.workout.update((workout) => {
-      if (!workout) {
-        return workout;
-      }
-
-      return {
-        ...workout,
-        exercises: workout.exercises.filter((exercise) => exercise.id !== workoutExerciseId)
-      };
+      if (!workout) return workout;
+      const updated = { ...workout, exercises: workout.exercises.filter((ex) => ex.id !== workoutExerciseId) };
+      this.persist(updated);
+      return updated;
     });
   }
 
-  public addSet(workoutExerciseId: string): void {
-    this.workout.update((workout) => this.updateExercise(workout, workoutExerciseId, (exercise) => {
-      const previousSet = exercise.sets.at(-1);
-      const comparisonSet = exercise.previous[exercise.sets.length] ?? exercise.previous.at(-1);
-      const baseSet = previousSet ?? this.createWorkoutSet(1, comparisonSet);
+  addSet(workoutExerciseId: string): void {
+    this.workout.update((workout) => {
+      const updated = this.updateExercise(workout, workoutExerciseId, (exercise) => {
+        const previousSet = exercise.sets.at(-1);
+        const comparisonSet = exercise.previous[exercise.sets.length] ?? exercise.previous.at(-1);
+        const baseSet = previousSet ?? this.createWorkoutSet(1, comparisonSet);
+        return {
+          ...exercise,
+          sets: [...exercise.sets, this.createWorkoutSet(exercise.sets.length + 1, { reps: baseSet.reps, weight: baseSet.weight })],
+        };
+      });
+      if (updated) this.persist(updated);
+      return updated;
+    });
+  }
 
-      return {
+  removeSet(workoutExerciseId: string, setId: string): void {
+    this.workout.update((workout) => {
+      const updated = this.updateExercise(workout, workoutExerciseId, (exercise) => ({
         ...exercise,
-        sets: [
-          ...exercise.sets,
-          this.createWorkoutSet(exercise.sets.length + 1, {
-            reps: baseSet.reps,
-            weight: baseSet.weight
-          })
-        ]
-      };
-    }));
+        sets: exercise.sets
+          .filter((s) => s.id !== setId)
+          .map((s, i) => ({ ...s, order: i + 1 })),
+      }));
+      if (updated) this.persist(updated);
+      return updated;
+    });
   }
 
-  public removeSet(workoutExerciseId: string, setId: string): void {
-    this.workout.update((workout) => this.updateExercise(workout, workoutExerciseId, (exercise) => ({
-      ...exercise,
-      sets: exercise.sets
-        .filter((set) => set.id !== setId)
-        .map((set, index) => ({
-          ...set,
-          order: index + 1
-        }))
-    })));
+  adjustSet(workoutExerciseId: string, setId: string, field: 'reps' | 'weight', amount: number): void {
+    this.workout.update((workout) => {
+      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => {
+        const next = Math.max(0, set[field] + amount);
+        return { ...set, [field]: field === 'reps' ? Math.round(next) : Number(next.toFixed(1)) };
+      });
+      if (updated) this.persist(updated);
+      return updated;
+    });
   }
 
-  public adjustSet(workoutExerciseId: string, setId: string, field: 'reps' | 'weight', amount: number): void {
-    this.workout.update((workout) => this.updateSet(workout, workoutExerciseId, setId, (set) => {
-      const nextValue = Math.max(0, set[field] + amount);
+  setValue(workoutExerciseId: string, setId: string, field: 'reps' | 'weight', value: string): void {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return;
 
-      return {
+    this.workout.update((workout) => {
+      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => ({
         ...set,
-        [field]: field === 'reps' ? Math.round(nextValue) : Number(nextValue.toFixed(1))
-      };
-    }));
+        [field]: field === 'reps' ? Math.max(0, Math.round(parsed)) : Math.max(0, Number(parsed.toFixed(1))),
+      }));
+      if (updated) this.persist(updated);
+      return updated;
+    });
   }
 
-  public setValue(workoutExerciseId: string, setId: string, field: 'reps' | 'weight', value: string): void {
-    const parsedValue = Number(value);
-
-    if (!Number.isFinite(parsedValue)) {
-      return;
-    }
-
-    this.workout.update((workout) => this.updateSet(workout, workoutExerciseId, setId, (set) => ({
-      ...set,
-      [field]: field === 'reps' ? Math.max(0, Math.round(parsedValue)) : Math.max(0, Number(parsedValue.toFixed(1)))
-    })));
+  toggleSetComplete(workoutExerciseId: string, setId: string): void {
+    this.workout.update((workout) => {
+      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => {
+        const completed = !set.completed;
+        if (completed) this.restEndsAt.set(Date.now() + DEFAULT_REST_SECONDS * 1000);
+        return { ...set, completed, completedAt: completed ? new Date().toISOString() : null };
+      });
+      if (updated) this.persist(updated);
+      return updated;
+    });
   }
 
-  public toggleSetComplete(workoutExerciseId: string, setId: string): void {
-    this.workout.update((workout) => this.updateSet(workout, workoutExerciseId, setId, (set) => {
-      const completed = !set.completed;
-
-      if (completed) {
-        this.restEndsAt.set(Date.now() + defaultRestSeconds * 1000);
-      }
-
-      return {
-        ...set,
-        completed,
-        completedAt: completed ? new Date().toISOString() : null
-      };
-    }));
-  }
-
-  public addRestTime(seconds: number): void {
+  addRestTime(seconds: number): void {
     const base = this.restEndsAt() ?? Date.now();
     this.restEndsAt.set(Math.max(Date.now(), base) + seconds * 1000);
   }
 
-  public skipRest(): void {
+  skipRest(): void {
     this.restEndsAt.set(null);
   }
 
-  public finishWorkout(): void {
+  finishWorkout(): void {
     const workout = this.workout();
+    if (!workout || workout.finishedAt) return;
 
-    if (!workout || workout.finishedAt) {
-      return;
-    }
-
-    this.finishedWorkout.set({
-      ...workout,
-      finishedAt: Date.now()
-    });
+    const finished: LiveWorkout = { ...workout, finishedAt: Date.now() };
+    this.finishedWorkout.set(finished);
     this.workout.set(null);
     this.restEndsAt.set(null);
+    this.clearStorage();
+
+    this.workoutService.save(finished).subscribe({
+      error: (err) => console.error('Failed to save workout to server', err),
+    });
   }
 
-  public clearFinishedWorkout(): void {
+  clearFinishedWorkout(): void {
     this.finishedWorkout.set(null);
   }
 
-  public startNewWorkout(): void {
+  startNewWorkout(): void {
     this.clearFinishedWorkout();
     this.startWorkout();
   }
 
-  private createWorkoutExercise(option: ExerciseOption): WorkoutExercise {
-    const startingSet = this.createWorkoutSet(1, option.previous[0]);
+  private persist(workout: LiveWorkout): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(workout));
+    } catch {
+      // storage quota exceeded — non-fatal
+    }
+  }
 
+  private clearStorage(): void {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  private loadFromStorage(): LiveWorkout | null {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as LiveWorkout;
+      // Only restore if it was started today
+      const startedToday = new Date(parsed.startedAt).toDateString() === new Date().toDateString();
+      return startedToday && !parsed.finishedAt ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private createWorkoutExercise(option: ExerciseOption): WorkoutExercise {
     return {
       id: crypto.randomUUID(),
       exerciseId: option.id,
@@ -269,7 +257,7 @@ export class LiveWorkoutStore {
       target: option.target,
       equipment: option.equipment,
       previous: option.previous,
-      sets: [startingSet]
+      sets: [this.createWorkoutSet(1, option.previous[0])],
     };
   }
 
@@ -280,34 +268,28 @@ export class LiveWorkoutStore {
       reps: previousSet?.reps ?? 8,
       weight: previousSet?.weight ?? 20,
       completed: false,
-      completedAt: null
+      completedAt: null,
     };
   }
 
   private updateExercise(
     workout: LiveWorkout | null,
     workoutExerciseId: string,
-    update: (exercise: WorkoutExercise) => WorkoutExercise
+    update: (exercise: WorkoutExercise) => WorkoutExercise,
   ): LiveWorkout | null {
-    if (!workout) {
-      return workout;
-    }
-
-    return {
-      ...workout,
-      exercises: workout.exercises.map((exercise) => (exercise.id === workoutExerciseId ? update(exercise) : exercise))
-    };
+    if (!workout) return workout;
+    return { ...workout, exercises: workout.exercises.map((ex) => ex.id === workoutExerciseId ? update(ex) : ex) };
   }
 
   private updateSet(
     workout: LiveWorkout | null,
     workoutExerciseId: string,
     setId: string,
-    update: (set: WorkoutSet) => WorkoutSet
+    update: (set: WorkoutSet) => WorkoutSet,
   ): LiveWorkout | null {
-    return this.updateExercise(workout, workoutExerciseId, (exercise) => ({
-      ...exercise,
-      sets: exercise.sets.map((set) => (set.id === setId ? update(set) : set))
+    return this.updateExercise(workout, workoutExerciseId, (ex) => ({
+      ...ex,
+      sets: ex.sets.map((s) => s.id === setId ? update(s) : s),
     }));
   }
 }

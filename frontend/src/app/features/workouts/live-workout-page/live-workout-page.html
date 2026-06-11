@@ -62,24 +62,43 @@
           <h2 class="text-xs font-medium uppercase tracking-wider text-zinc-500">Add exercise</h2>
           <p class="text-xs text-zinc-600">{{ availableExerciseCount() }} available</p>
         </div>
-        <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
-          @for (exercise of store.exercises(); track exercise.id) {
-            <button
-              class="min-h-12 shrink-0 rounded-lg border px-4 py-2 text-left transition active:scale-[0.98]"
-              [class.border-teal-400]="isExerciseAdded(exercise.id)"
-              [class.bg-teal-400]="isExerciseAdded(exercise.id)"
-              [class.text-zinc-950]="isExerciseAdded(exercise.id)"
-              [class.border-zinc-800]="!isExerciseAdded(exercise.id)"
-              [class.bg-zinc-900]="!isExerciseAdded(exercise.id)"
-              [class.text-zinc-100]="!isExerciseAdded(exercise.id)"
-              type="button"
-              (click)="store.addExercise(exercise.id)"
-            >
-              <span class="block text-sm font-semibold">{{ exercise.name }}</span>
-              <span class="block text-xs opacity-70">{{ exercise.target }}</span>
-            </button>
-          }
-        </div>
+        <input
+          class="mb-3 h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-50 placeholder-zinc-500 outline-none transition focus:border-teal-400/60 focus:ring-1 focus:ring-teal-400/30"
+          type="search"
+          placeholder="Search exercises..."
+          autocomplete="off"
+          [ngModel]="store.exerciseQuery()"
+          (ngModelChange)="store.searchExercises($event)"
+        />
+        @if (store.exercisesLoading()) {
+          <div class="flex gap-2 overflow-x-auto pb-2">
+            @for (i of [1,2,3,4]; track i) {
+              <div class="h-12 w-28 shrink-0 animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
+            }
+          </div>
+        } @else {
+          <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
+            @for (exercise of store.exercises(); track exercise.id) {
+              <button
+                class="min-h-12 shrink-0 rounded-lg border px-4 py-2 text-left transition active:scale-[0.98]"
+                [class.border-teal-400]="isExerciseAdded(exercise.id)"
+                [class.bg-teal-400]="isExerciseAdded(exercise.id)"
+                [class.text-zinc-950]="isExerciseAdded(exercise.id)"
+                [class.border-zinc-800]="!isExerciseAdded(exercise.id)"
+                [class.bg-zinc-900]="!isExerciseAdded(exercise.id)"
+                [class.text-zinc-100]="!isExerciseAdded(exercise.id)"
+                type="button"
+                (click)="store.addExercise(exercise.id)"
+              >
+                <span class="block text-sm font-semibold">{{ exercise.name }}</span>
+                <span class="block text-xs opacity-70">{{ exercise.target }}</span>
+              </button>
+            }
+            @empty {
+              <p class="text-sm text-zinc-500">No exercises found.</p>
+            }
+          </div>
+        }
       </section>
 
       <section class="space-y-4">

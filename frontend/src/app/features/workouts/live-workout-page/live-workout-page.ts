@@ -1,4 +1,5 @@
 import { Component, OnDestroy, OnInit, computed, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LiveWorkout } from '../live-workout.models';
 import { LiveWorkoutStore } from '../live-workout.store';
@@ -11,7 +12,7 @@ type FinishedWorkoutSummary = {
 
 @Component({
   selector: 'app-live-workout-page',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './live-workout-page.html',
   styleUrl: './live-workout-page.scss'
 })
