@@ -1,26 +1,66 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { Subject, debounceTime, switchMap } from 'rxjs';
 import { MuscleGroup, PlanDay, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
+import { PlanService } from './plan.service';
 
 const STORAGE_KEY = 'gym_workout_plan';
 
 @Injectable({ providedIn: 'root' })
 export class PlanStore {
-  readonly plan = signal<WorkoutPlan>(this.load());
-  readonly activeTemplateId = signal<string | null>(this.detectTemplate());
+  private readonly planService = inject(PlanService);
+
+  readonly plan = signal<WorkoutPlan>(this.loadFromStorage());
+  readonly activeTemplateId = signal<string | null>(null);
+  readonly syncing = signal(false);
+  readonly syncError = signal(false);
 
   readonly activeDayCount = computed(
     () => this.plan().days.filter((d) => !d.rest).length,
   );
 
   readonly todayDayOfWeek = computed(() => {
-    const jsDay = new Date().getDay(); // 0 = Sun
-    return jsDay === 0 ? 6 : jsDay - 1; // convert to Mon=0
+    const jsDay = new Date().getDay();
+    return jsDay === 0 ? 6 : jsDay - 1;
   });
+
+  private readonly syncTrigger$ = new Subject<WorkoutPlan>();
+
+  constructor() {
+    // Debounce: only fire PUT 1.5s after the last mutation
+    this.syncTrigger$.pipe(
+      debounceTime(1500),
+      switchMap((plan) => {
+        this.syncing.set(true);
+        this.syncError.set(false);
+        return this.planService.save(plan);
+      }),
+    ).subscribe({
+      next: (saved) => {
+        // Update id in case this was the first save
+        this.plan.update((p) => ({ ...p, id: saved.id }));
+        this.persist(this.plan());
+        this.syncing.set(false);
+      },
+      error: () => {
+        this.syncing.set(false);
+        this.syncError.set(true);
+      },
+    });
+
+    // Load from server on init — server wins over localStorage
+    this.planService.get().subscribe({
+      next: (serverPlan) => {
+        this.plan.set(serverPlan);
+        this.persist(serverPlan);
+      },
+      error: () => { /* offline — keep localStorage copy */ },
+    });
+  }
 
   applyTemplate(template: PlanTemplate): void {
     this.plan.update((p) => ({ ...p, days: template.days.map((d) => ({ ...d })) }));
     this.activeTemplateId.set(template.id);
-    this.persist();
+    this.afterMutation();
   }
 
   clearTemplate(): void {
@@ -29,7 +69,7 @@ export class PlanStore {
       days: p.days.map((d) => ({ ...d, label: '', muscleGroups: [], rest: true })),
     }));
     this.activeTemplateId.set(null);
-    this.persist();
+    this.afterMutation();
   }
 
   toggleRest(dayOfWeek: number): void {
@@ -42,7 +82,7 @@ export class PlanStore {
       ),
     }));
     this.activeTemplateId.set(null);
-    this.persist();
+    this.afterMutation();
   }
 
   setLabel(dayOfWeek: number, label: string): void {
@@ -51,7 +91,7 @@ export class PlanStore {
       days: p.days.map((d) => (d.dayOfWeek === dayOfWeek ? { ...d, label } : d)),
     }));
     this.activeTemplateId.set(null);
-    this.persist();
+    this.afterMutation();
   }
 
   toggleMuscleGroup(dayOfWeek: number, group: MuscleGroup): void {
@@ -69,30 +109,30 @@ export class PlanStore {
       }),
     }));
     this.activeTemplateId.set(null);
-    this.persist();
+    this.afterMutation();
   }
 
   getDay(dayOfWeek: number): PlanDay {
     return this.plan().days.find((d) => d.dayOfWeek === dayOfWeek)!;
   }
 
-  private persist(): void {
+  private afterMutation(): void {
+    this.persist(this.plan());
+    this.syncTrigger$.next(this.plan());
+  }
+
+  private persist(plan: WorkoutPlan): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.plan()));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(plan));
     } catch { /* quota */ }
   }
 
-  private load(): WorkoutPlan {
+  private loadFromStorage(): WorkoutPlan {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       return raw ? (JSON.parse(raw) as WorkoutPlan) : emptyPlan();
     } catch {
       return emptyPlan();
     }
-  }
-
-  private detectTemplate(): string | null {
-    // Detect if loaded plan matches a known template
-    return null;
   }
 }
