@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="GymHelperBackend" type="Application" factoryName="Application">
+    <option name="MAIN_CLASS_NAME" value="com.gymhelper.GymHelperApplication" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend" />
+    <envs>
+      <env name="MONGODB_URI" value="mongodb+srv://admin:MlDYA85ab6sBMDPM@liftorium.f4ydbnk.mongodb.net/gym_helper?retryWrites=true&amp;w=majority&amp;appName=Liftorium" />
+      <env name="JWT_ACCESS_SECRET" value="96b0065905f3226a780aeb7cf735d09b60aa618c505b7551bc13879bb1461e0776e8767e19697490f8c3ffb5966b0905a3f43bbb5fc6b36134526a0591544c55" />
+      <env name="JWT_REFRESH_SECRET" value="086d539bed918bc316aa2fd5478c49a67b0bbcff4b10ee4a6c0a299bba6df43ce5556104afffa3c70894a4cecf02680ecc8b05429da9a8c3a953e910c6580c3b" />
+      <env name="ASCEND_API_KEY" value="6a7d2f7d2emsh7d455ecbceb87ccp11c1c5jsnd6de0c125dc2" />
+    </envs>
+    <module name="gym-helper-backend" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
