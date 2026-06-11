@@ -1,12 +1,10 @@
-<main class="min-h-dvh px-4 py-6 text-zinc-50 sm:px-6">
-  <div class="mx-auto flex min-h-[calc(100dvh-3rem)] w-full max-w-3xl flex-col">
+<main class="min-h-dvh px-4 py-8 text-zinc-50 sm:px-6">
+  <div class="mx-auto w-full max-w-3xl">
+
     <header class="flex items-center justify-between gap-4">
-      <div>
-        <p class="text-sm font-medium text-teal-300">Gym Helper</p>
-        <h1 class="mt-1 text-2xl font-semibold tracking-normal text-zinc-50">Training hub</h1>
-      </div>
+      <span class="text-lg font-semibold tracking-tight text-zinc-50">Gym Helper</span>
       <button
-        class="rounded-lg border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-zinc-600 disabled:cursor-not-allowed disabled:text-zinc-500"
+        class="rounded-lg border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200 disabled:cursor-not-allowed disabled:text-zinc-600"
         type="button"
         [disabled]="loggingOut()"
         (click)="logout()"
@@ -15,25 +13,61 @@
       </button>
     </header>
 
-    <section class="mt-8 rounded-lg border border-zinc-800 bg-zinc-950/70 p-5">
-      <p class="text-sm text-zinc-400">Signed in as</p>
-      <p class="mt-2 text-lg font-semibold text-zinc-50">{{ authService.user()?.displayName }}</p>
-      <p class="text-sm text-zinc-400">{{ authService.user()?.email }}</p>
+    <section class="mt-8 flex items-center gap-4 anim-enter">
+      <div class="h-10 w-10 shrink-0 rounded-full bg-teal-400/15 ring-1 ring-teal-400/30 flex items-center justify-center">
+        <span class="text-sm font-semibold text-teal-300">{{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
+      </div>
+      <div class="min-w-0">
+        <p class="truncate text-sm font-semibold text-zinc-50">{{ authService.user()?.displayName }}</p>
+        <p class="truncate text-xs text-zinc-500">{{ authService.user()?.email }}</p>
+      </div>
     </section>
 
-    <section class="mt-5 grid gap-3 sm:grid-cols-3">
-      <a class="rounded-lg border border-teal-400/30 bg-teal-400/10 p-4 transition hover:border-teal-300" routerLink="/app/workout">
-        <p class="text-sm text-zinc-400">Active workout</p>
-        <p class="mt-2 text-xl font-semibold text-zinc-50">Start logging</p>
+    <section class="mt-10 flex flex-col gap-3">
+
+      <!-- Primary action -->
+      <a
+        class="group relative flex items-center justify-between gap-4 rounded-xl border border-teal-400/25 bg-teal-400/8 p-6 transition hover:border-teal-400/50 hover:bg-teal-400/12 active:scale-[0.99] anim-enter-1"
+        routerLink="/app/workout"
+      >
+        <div>
+          <p class="text-xs font-medium uppercase tracking-wider text-teal-400/70">Active workout</p>
+          <p class="mt-2 text-2xl font-semibold tracking-tight text-zinc-50">Start logging</p>
+          <p class="mt-1 text-sm text-zinc-400">Log sets, track rest, beat last session.</p>
+        </div>
+        <div class="shrink-0 rounded-lg border border-teal-400/20 bg-teal-400/10 p-3">
+          <svg class="h-6 w-6 text-teal-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+          </svg>
+        </div>
       </a>
-      <a class="rounded-lg border border-zinc-800 bg-zinc-950/70 p-4 transition hover:border-zinc-600" routerLink="/app/exercises">
-        <p class="text-sm text-zinc-400">Exercise catalog</p>
-        <p class="mt-2 text-xl font-semibold text-zinc-50">Browse</p>
-      </a>
-      <div class="rounded-lg border border-zinc-800 bg-zinc-950/70 p-4">
-        <p class="text-sm text-zinc-400">History</p>
-        <p class="mt-2 text-xl font-semibold text-zinc-50">Next</p>
+
+      <!-- Secondary actions -->
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 anim-enter-2">
+        <a
+          class="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-600 hover:bg-zinc-900 active:scale-[0.99]"
+          routerLink="/app/exercises"
+        >
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">Exercise catalog</p>
+            <p class="mt-2 text-lg font-semibold text-zinc-50">Browse</p>
+          </div>
+          <svg class="h-5 w-5 shrink-0 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+        </a>
+
+        <div class="flex items-center justify-between gap-4 rounded-xl border border-zinc-800/50 bg-zinc-900/30 p-5 opacity-50 anim-enter-3">
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wider text-zinc-600">History</p>
+            <p class="mt-2 text-lg font-semibold text-zinc-400">Coming soon</p>
+          </div>
+          <svg class="h-5 w-5 shrink-0 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+        </div>
       </div>
+
     </section>
   </div>
 </main>

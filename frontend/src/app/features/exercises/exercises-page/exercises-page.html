@@ -98,17 +98,26 @@
         <div class="space-y-2">
           @for (exercise of exercises(); track exercise.id) {
             <a
-              class="flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900/70 px-4 py-3 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+              class="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
               [routerLink]="['/app/exercises', exercise.id]"
             >
               <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-semibold text-zinc-50">{{ exercise.name }}</p>
-                <p class="mt-0.5 truncate text-xs text-zinc-400">
-                  {{ primaryMuscleLabel(exercise) }} &middot; {{ equipmentLabel(exercise) }}
-                </p>
+                <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
+                  @if (primaryMuscleLabel(exercise)) {
+                    <span class="rounded-full bg-teal-400/10 px-2 py-0.5 text-xs font-medium text-teal-300 ring-1 ring-teal-400/20">
+                      {{ primaryMuscleLabel(exercise) }}
+                    </span>
+                  }
+                  @if (equipmentLabel(exercise)) {
+                    <span class="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400">
+                      {{ equipmentLabel(exercise) }}
+                    </span>
+                  }
+                </div>
               </div>
-              <div class="flex shrink-0 flex-col items-end gap-1">
-                <span class="rounded-full border border-zinc-700 px-2 py-0.5 text-xs font-medium text-zinc-400">
+              <div class="shrink-0">
+                <span class="rounded-full border border-zinc-700/60 px-2.5 py-1 text-xs font-medium text-zinc-500">
                   {{ exercise.exerciseType }}
                 </span>
               </div>
