@@ -24,6 +24,12 @@ export const routes: Routes = [
     loadChildren: () => import('./features/exercises/exercises.routes').then((m) => m.exercisesRoutes)
   },
   {
+    path: 'app/plan',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/plan/plan-page/plan-page').then((m) => m.PlanPageComponent)
+  },
+  {
     path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>
