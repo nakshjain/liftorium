@@ -78,7 +78,7 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     return previousSet ? `${previousSet.weight}x${previousSet.reps}` : 'New';
   }
 
-  private formatTime(totalSeconds: number): string {
+  protected formatTime(totalSeconds: number): string {
     const minutes = Math.floor(totalSeconds / 60);
     const seconds = totalSeconds % 60;
 
@@ -102,6 +102,10 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   }
 
   protected startFromPlan(): void {
+    if (this.store.paused()) {
+      this.store.resumeWorkout();
+      return;
+    }
     const day = this.selectedDay();
     if (day.exercises.length > 0) {
       this.store.startWorkoutFromPlan(day.exercises, day.label);

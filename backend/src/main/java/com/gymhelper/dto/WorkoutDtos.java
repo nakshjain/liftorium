@@ -1,9 +1,6 @@
 package com.gymhelper.dto;
 
-import com.gymhelper.entity.WorkoutSetType;
 import com.gymhelper.entity.WorkoutStatus;
-import com.gymhelper.entity.ExerciseType;
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -16,26 +13,11 @@ public final class WorkoutDtos {
   private WorkoutDtos() {
   }
 
-  public record TempoDto(
-      @Min(0) @Max(20) Integer eccentric,
-      @Min(0) @Max(20) Integer pauseBottom,
-      @Min(0) @Max(20) Integer concentric,
-      @Min(0) @Max(20) Integer pauseTop
-  ) {
-  }
-
   public record WorkoutSetDto(
       String id,
       int order,
       int reps,
       double weight,
-      Integer restTimeSeconds,
-      Integer durationSeconds,
-      Double rpe,
-      boolean isWarmup,
-      WorkoutSetType setType,
-      TempoDto tempo,
-      String notes,
       String completedAt
   ) {
   }
@@ -43,13 +25,7 @@ public final class WorkoutDtos {
   public record WorkoutExerciseDto(
       String id,
       String exerciseId,
-      String exerciseName,
-      List<String> primaryMuscles,
-      List<String> equipment,
-      ExerciseType exerciseType,
       int order,
-      String supersetGroupId,
-      String notes,
       List<WorkoutSetDto> sets
   ) {
   }
@@ -77,22 +53,13 @@ public final class WorkoutDtos {
   }
 
   public record AddWorkoutExerciseRequest(
-      @NotBlank String exerciseId,
-      @Size(min = 1, max = 80) String supersetGroupId,
-      @Size(min = 1, max = 2000) String notes
+      @NotBlank String exerciseId
   ) {
   }
 
   public record AddWorkoutSetRequest(
       @NotNull @Min(0) @Max(1000) Integer reps,
       @NotNull @Min(0) @Max(2000) Double weight,
-      @Min(0) @Max(7200) Integer restTimeSeconds,
-      @Min(0) @Max(7200) Integer durationSeconds,
-      @Min(1) @Max(10) Double rpe,
-      Boolean isWarmup,
-      WorkoutSetType setType,
-      @Valid TempoDto tempo,
-      @Size(min = 1, max = 2000) String notes,
       String completedAt
   ) {
   }

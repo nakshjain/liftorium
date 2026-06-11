@@ -6,24 +6,18 @@ import com.gymhelper.dto.WorkoutDtos.FinishWorkoutRequest;
 import com.gymhelper.dto.WorkoutDtos.ListWorkoutHistoryQuery;
 import com.gymhelper.dto.WorkoutDtos.PaginatedWorkoutsDto;
 import com.gymhelper.dto.WorkoutDtos.StartWorkoutRequest;
-import com.gymhelper.dto.WorkoutDtos.TempoDto;
 import com.gymhelper.dto.WorkoutDtos.WorkoutDto;
 import com.gymhelper.dto.WorkoutDtos.WorkoutExerciseDto;
 import com.gymhelper.dto.WorkoutDtos.WorkoutSetDto;
-import com.gymhelper.entity.Tempo;
-import com.gymhelper.entity.Exercise;
 import com.gymhelper.entity.Workout;
 import com.gymhelper.entity.WorkoutExercise;
 import com.gymhelper.entity.WorkoutSet;
-import com.gymhelper.entity.WorkoutSetType;
 import com.gymhelper.entity.WorkoutStatus;
 import com.gymhelper.exception.AppException;
-import com.gymhelper.repository.ExerciseRepository;
 import com.gymhelper.repository.WorkoutRepository;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,14 +30,8 @@ import org.springframework.stereotype.Service;
 public class WorkoutService {
 
   private final WorkoutRepository workoutRepository;
-  private final ExerciseRepository exerciseRepository;
 
   public WorkoutDto start(String userId, StartWorkoutRequest input) {
-    Optional<Workout> activeWorkout = workoutRepository.findFirstByUserIdAndStatusOrderByStartedAtDesc(userId, WorkoutStatus.active);
-    if (activeWorkout.isPresent()) {
-      throw new AppException("ACTIVE_WORKOUT_EXISTS", "An active workout session already exists", HttpStatus.CONFLICT);
-    }
-
     Workout workout = Workout.builder()
         .userId(userId)
         .name(input.name().trim())
@@ -83,21 +71,12 @@ public class WorkoutService {
   }
 
   public WorkoutDto addExercise(String userId, String workoutId, AddWorkoutExerciseRequest input) {
-    Exercise exercise = exerciseRepository.findByIdAndActiveTrue(input.exerciseId())
-        .orElseThrow(() -> new AppException("EXERCISE_NOT_FOUND", "Exercise was not found", HttpStatus.NOT_FOUND));
-
     Workout workout = findWorkoutForUser(userId, workoutId);
     ensureActive(workout);
 
     workout.getExercises().add(WorkoutExercise.builder()
         .exerciseId(input.exerciseId())
-        .exerciseName(exercise.getName())
-        .primaryMuscles(exercise.getPrimaryMuscles())
-        .equipment(exercise.getEquipment())
-        .exerciseType(exercise.getExerciseType())
         .order(workout.getExercises().size() + 1)
-        .supersetGroupId(trim(input.supersetGroupId()))
-        .notes(trim(input.notes()))
         .build());
 
     return toDto(workoutRepository.save(workout));
@@ -108,21 +87,10 @@ public class WorkoutService {
     ensureActive(workout);
     WorkoutExercise workoutExercise = findWorkoutExercise(workout, workoutExerciseId);
 
-    WorkoutSetType setType = input.setType() == null
-        ? Boolean.TRUE.equals(input.isWarmup()) ? WorkoutSetType.warmup : WorkoutSetType.standard
-        : input.setType();
-
     workoutExercise.getSets().add(WorkoutSet.builder()
         .order(workoutExercise.getSets().size() + 1)
         .reps(input.reps())
         .weight(input.weight())
-        .restTimeSeconds(input.restTimeSeconds())
-        .durationSeconds(input.durationSeconds())
-        .rpe(input.rpe())
-        .isWarmup(input.isWarmup() != null ? input.isWarmup() : setType == WorkoutSetType.warmup)
-        .setType(setType)
-        .tempo(toTempo(input.tempo()))
-        .notes(trim(input.notes()))
         .completedAt(parseInstantOrNow(input.completedAt()))
         .build());
 
@@ -203,13 +171,7 @@ public class WorkoutService {
     return new WorkoutExerciseDto(
         exercise.getId(),
         exercise.getExerciseId(),
-        exercise.getExerciseName(),
-        exercise.getPrimaryMuscles(),
-        exercise.getEquipment(),
-        exercise.getExerciseType(),
         exercise.getOrder(),
-        exercise.getSupersetGroupId(),
-        exercise.getNotes(),
         exercise.getSets().stream().map(this::toSetDto).toList()
     );
   }
@@ -220,36 +182,8 @@ public class WorkoutService {
         set.getOrder(),
         set.getReps(),
         set.getWeight(),
-        set.getRestTimeSeconds(),
-        set.getDurationSeconds(),
-        set.getRpe(),
-        set.isWarmup(),
-        set.getSetType(),
-        toTempoDto(set.getTempo()),
-        set.getNotes(),
         toIso(set.getCompletedAt())
     );
-  }
-
-  private Tempo toTempo(TempoDto tempo) {
-    if (tempo == null) {
-      return null;
-    }
-
-    return Tempo.builder()
-        .eccentric(tempo.eccentric())
-        .pauseBottom(tempo.pauseBottom())
-        .concentric(tempo.concentric())
-        .pauseTop(tempo.pauseTop())
-        .build();
-  }
-
-  private TempoDto toTempoDto(Tempo tempo) {
-    if (tempo == null) {
-      return null;
-    }
-
-    return new TempoDto(tempo.getEccentric(), tempo.getPauseBottom(), tempo.getConcentric(), tempo.getPauseTop());
   }
 
   private Instant parseInstantOrNow(String value) {

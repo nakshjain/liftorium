@@ -21,12 +21,5 @@ public class WorkoutSet {
   private int order;
   private int reps;
   private double weight;
-  private Integer restTimeSeconds;
-  private Integer durationSeconds;
-  private Double rpe;
-  private boolean isWarmup;
-  private WorkoutSetType setType;
-  private Tempo tempo;
-  private String notes;
   private Instant completedAt;
 }

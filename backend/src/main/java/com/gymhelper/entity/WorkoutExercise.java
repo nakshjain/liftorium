@@ -20,18 +20,7 @@ public class WorkoutExercise {
   private String id = new ObjectId().toHexString();
 
   private String exerciseId;
-  private String exerciseName;
-
-  @Builder.Default
-  private List<String> primaryMuscles = new ArrayList<>();
-
-  @Builder.Default
-  private List<String> equipment = new ArrayList<>();
-
-  private ExerciseType exerciseType;
   private int order;
-  private String supersetGroupId;
-  private String notes;
 
   @Builder.Default
   private List<WorkoutSet> sets = new ArrayList<>();

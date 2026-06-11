@@ -7,15 +7,15 @@
           <h1 class="mt-1 text-2xl font-semibold tracking-normal text-zinc-50">Live workout</h1>
         </div>
         @if (store.activeWorkout()) {
-          <div class="rounded-lg border border-teal-400/25 bg-teal-400/10 px-3 py-2 text-right">
-            <p class="text-xs font-medium uppercase tracking-wide text-teal-200">Elapsed</p>
-            <p class="text-lg font-semibold text-teal-100">{{ elapsedTimeLabel() }}</p>
+          <div class="rounded-lg border px-3 py-2 text-right" [class.border-teal-400/25]="!store.paused()" [class.bg-teal-400/10]="!store.paused()" [class.border-amber-400/25]="store.paused()" [class.bg-amber-400/10]="store.paused()">
+            <p class="text-xs font-medium uppercase tracking-wide" [class.text-teal-200]="!store.paused()" [class.text-amber-200]="store.paused()">{{ store.paused() ? 'Paused' : 'Elapsed' }}</p>
+            <p class="text-lg font-semibold" [class.text-teal-100]="!store.paused()" [class.text-amber-100]="store.paused()">{{ elapsedTimeLabel() }}</p>
           </div>
         }
       </div>
     </header>
 
-    @if (!store.activeWorkout()) {
+    @if (!store.activeWorkout() || store.paused()) {
       <section class="flex flex-1 flex-col justify-center py-8">
         <div class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-8">
           @if (finishedSummary(); as summary) {
@@ -35,8 +35,13 @@
             type="button"
             (click)="startFromPlan()"
           >
-            Start workout
+            {{ store.paused() ? 'Resume workout' : 'Start workout' }}
           </button>
+          @if (store.paused()) {
+            <p class="mt-3 text-sm text-zinc-400">
+              Session paused at {{ formatTime(store.elapsedSeconds()) }}
+            </p>
+          }
         </div>
 
         <!-- Today's Plan -->
@@ -255,9 +260,9 @@
     }
   </div>
 
-  @if (store.activeWorkout()) {
+  @if (store.activeWorkout() && !store.paused()) {
     <footer class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-800 bg-zinc-950/95 px-4 py-3 backdrop-blur">
-      <div class="mx-auto grid max-w-3xl grid-cols-[1fr_auto] gap-3">
+      <div class="mx-auto grid max-w-3xl grid-cols-[1fr_auto_auto] gap-3">
         <div class="grid grid-cols-2 gap-2">
           <button
             class="h-12 rounded-lg border border-zinc-700 text-sm font-semibold text-zinc-200 active:bg-zinc-800"
@@ -274,6 +279,13 @@
             Skip rest
           </button>
         </div>
+        <button
+          class="h-12 rounded-lg border border-amber-400/60 px-4 text-sm font-bold text-amber-300 transition active:scale-[0.99]"
+          type="button"
+          (click)="store.pauseWorkout()"
+        >
+          Pause
+        </button>
         <button
           class="h-12 rounded-lg bg-teal-400 px-5 text-sm font-bold text-zinc-950 transition active:scale-[0.99]"
           type="button"

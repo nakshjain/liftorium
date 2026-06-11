@@ -34,11 +34,18 @@ export class LiveWorkoutStore {
     return Math.max(0, Math.ceil((endsAt - this.now()) / 1000));
   });
   readonly restTimerActive = computed(() => this.restRemainingSeconds() > 0);
+  readonly paused = computed(() => {
+    const workout = this.workout();
+    return workout !== null && workout.resumedAt === 0;
+  });
   readonly elapsedSeconds = computed(() => {
     const workout = this.workout();
     if (!workout) return 0;
-    const end = workout.finishedAt ?? this.now();
-    return Math.max(0, Math.floor((end - workout.startedAt) / 1000));
+    if (workout.resumedAt === 0) {
+      return Math.floor(workout.accumulatedMs / 1000);
+    }
+    const currentStretch = (workout.finishedAt ?? this.now()) - workout.resumedAt;
+    return Math.floor((workout.accumulatedMs + currentStretch) / 1000);
   });
   readonly completedSetCount = computed(
     () => this.workout()?.exercises.reduce(
@@ -90,19 +97,54 @@ export class LiveWorkoutStore {
 
   tick(): void {
     this.now.set(Date.now());
+    this.checkDayBoundary();
+  }
+
+  private checkDayBoundary(): void {
+    const workout = this.workout();
+    if (!workout || workout.finishedAt) return;
+    const startedToday = new Date(workout.startedAt).toDateString() === new Date().toDateString();
+    if (!startedToday) {
+      this.autoCompleteStaleWorkout(workout);
+      this.workout.set(null);
+      this.restEndsAt.set(null);
+      this.clearStorage();
+    }
   }
 
   startWorkout(): void {
     if (this.workout()) return;
+    const now = Date.now();
     const workout: LiveWorkout = {
       id: crypto.randomUUID(),
       name: 'Today',
-      startedAt: Date.now(),
+      startedAt: now,
       finishedAt: null,
+      resumedAt: now,
+      accumulatedMs: 0,
       exercises: [],
     };
     this.workout.set(workout);
     this.persist(workout);
+  }
+
+  pauseWorkout(): void {
+    this.workout.update((workout) => {
+      if (!workout || workout.resumedAt === 0) return workout;
+      const elapsed = Date.now() - workout.resumedAt;
+      const updated: LiveWorkout = { ...workout, accumulatedMs: workout.accumulatedMs + elapsed, resumedAt: 0 };
+      this.persist(updated);
+      return updated;
+    });
+  }
+
+  resumeWorkout(): void {
+    this.workout.update((workout) => {
+      if (!workout || workout.resumedAt !== 0) return workout;
+      const updated: LiveWorkout = { ...workout, resumedAt: Date.now() };
+      this.persist(updated);
+      return updated;
+    });
   }
 
   addExercise(exerciseId: string): void {
@@ -205,7 +247,11 @@ export class LiveWorkoutStore {
     const workout = this.workout();
     if (!workout || workout.finishedAt) return;
 
-    const finished: LiveWorkout = { ...workout, finishedAt: Date.now() };
+    const now = Date.now();
+    const finalAccumulated = workout.resumedAt !== 0
+      ? workout.accumulatedMs + (now - workout.resumedAt)
+      : workout.accumulatedMs;
+    const finished: LiveWorkout = { ...workout, finishedAt: now, resumedAt: 0, accumulatedMs: finalAccumulated };
     this.finishedWorkout.set(finished);
     this.workout.set(null);
     this.restEndsAt.set(null);
@@ -222,13 +268,21 @@ export class LiveWorkoutStore {
 
   startNewWorkout(): void {
     this.clearFinishedWorkout();
+    if (this.workout()) {
+      this.resumeWorkout();
+      return;
+    }
     this.startWorkout();
   }
 
   startWorkoutFromPlan(planExercises: PlanExercise[], dayLabel: string): void {
     this.clearFinishedWorkout();
-    if (this.workout()) return;
+    if (this.workout()) {
+      this.resumeWorkout();
+      return;
+    }
 
+    const now = Date.now();
     const exercises: WorkoutExercise[] = planExercises.map((pe) => ({
       id: crypto.randomUUID(),
       exerciseId: pe.exerciseId,
@@ -242,8 +296,10 @@ export class LiveWorkoutStore {
     const workout: LiveWorkout = {
       id: crypto.randomUUID(),
       name: dayLabel || 'Today',
-      startedAt: Date.now(),
+      startedAt: now,
       finishedAt: null,
+      resumedAt: now,
+      accumulatedMs: 0,
       exercises,
     };
     this.workout.set(workout);
@@ -267,12 +323,36 @@ export class LiveWorkoutStore {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return null;
       const parsed = JSON.parse(raw) as LiveWorkout;
-      // Only restore if it was started today
+      if (parsed.finishedAt) return null;
+
       const startedToday = new Date(parsed.startedAt).toDateString() === new Date().toDateString();
-      return startedToday && !parsed.finishedAt ? parsed : null;
+      if (!startedToday) {
+        this.autoCompleteStaleWorkout(parsed);
+        return null;
+      }
+
+      // Restore in paused state — user resumes explicitly
+      const accumulated = parsed.resumedAt !== 0
+        ? parsed.accumulatedMs + (Date.now() - parsed.resumedAt)
+        : parsed.accumulatedMs;
+      return { ...parsed, resumedAt: 0, accumulatedMs: accumulated };
     } catch {
       return null;
     }
+  }
+
+  private autoCompleteStaleWorkout(workout: LiveWorkout): void {
+    const endOfDay = new Date(workout.startedAt);
+    endOfDay.setHours(23, 59, 59, 999);
+    const finishedAt = endOfDay.getTime();
+    const finalAccumulated = workout.resumedAt !== 0
+      ? workout.accumulatedMs + (finishedAt - workout.resumedAt)
+      : workout.accumulatedMs;
+    const finished: LiveWorkout = { ...workout, finishedAt, resumedAt: 0, accumulatedMs: finalAccumulated };
+    this.clearStorage();
+    this.workoutService.save(finished).subscribe({
+      error: (err) => console.error('Failed to auto-complete stale workout', err),
+    });
   }
 
   private createWorkoutExercise(option: ExerciseOption): WorkoutExercise {

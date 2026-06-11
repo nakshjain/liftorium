@@ -35,5 +35,7 @@ export type LiveWorkout = {
   name: string;
   startedAt: number;
   finishedAt: number | null;
+  resumedAt: number;
+  accumulatedMs: number;
   exercises: WorkoutExercise[];
 };

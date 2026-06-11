@@ -5,34 +5,37 @@ import { API_BASE_URL } from '../../core/api/api.config';
 import { ApiSuccessResponse } from '../../core/api/api-response';
 import { LiveWorkout } from './live-workout.models';
 
-type StartResponse = { id: string };
-type AddExerciseResponse = { id: string };
+interface WorkoutDto {
+  id: string;
+  exercises: { id: string; exerciseId: string }[];
+}
 
 @Injectable({ providedIn: 'root' })
 export class WorkoutService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
 
-  // Replay the full local-first session to the backend in sequence:
-  // POST /workouts → POST /workouts/:id/exercises (x N) → POST .../sets (x M) → POST /workouts/:id/finish
   save(workout: LiveWorkout): Observable<string> {
     return this.http
-      .post<ApiSuccessResponse<StartResponse>>(`${this.baseUrl}/workouts`, {
+      .post<ApiSuccessResponse<{ workout: WorkoutDto }>>(`${this.baseUrl}/workouts`, {
         name: workout.name,
         startedAt: new Date(workout.startedAt).toISOString(),
       })
       .pipe(
-        map((res) => res.data.id),
+        map((res) => res.data.workout.id),
         concatMap((workoutId) =>
           from(workout.exercises).pipe(
             concatMap((ex) =>
               this.http
-                .post<ApiSuccessResponse<AddExerciseResponse>>(
+                .post<ApiSuccessResponse<{ workout: WorkoutDto }>>(
                   `${this.baseUrl}/workouts/${workoutId}/exercises`,
                   { exerciseId: ex.exerciseId },
                 )
                 .pipe(
-                  map((res) => res.data.id),
+                  map((res) => {
+                    const added = res.data.workout.exercises.find((e) => e.exerciseId === ex.exerciseId);
+                    return added!.id;
+                  }),
                   concatMap((workoutExerciseId) =>
                     from(ex.sets.filter((s) => s.completed)).pipe(
                       concatMap((set) =>
@@ -54,9 +57,7 @@ export class WorkoutService {
             concatMap(() =>
               this.http.post(`${this.baseUrl}/workouts/${workoutId}/finish`, {
                 finishedAt: new Date(workout.finishedAt!).toISOString(),
-                durationSeconds: workout.finishedAt
-                  ? Math.floor((workout.finishedAt - workout.startedAt) / 1000)
-                  : null,
+                durationSeconds: Math.floor(workout.accumulatedMs / 1000),
               }),
             ),
             map(() => workoutId),
