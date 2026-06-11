@@ -11,11 +11,11 @@
     <relativePath />
   </parent>
 
-  <groupId>com.gymhelper</groupId>
-  <artifactId>gym-helper-backend</artifactId>
+  <groupId>com.liftorium</groupId>
+  <artifactId>liftorium-backend</artifactId>
   <version>0.1.0</version>
-  <name>Gym Helper Backend</name>
-  <description>Spring Boot API for Gym Helper workout tracking</description>
+  <name>Liftorium Backend</name>
+  <description>Spring Boot API for Liftorium workout tracking</description>
 
   <properties>
     <java.version>21</java.version>

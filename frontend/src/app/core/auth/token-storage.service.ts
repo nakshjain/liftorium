@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-const accessTokenKey = 'gym_helper_access_token';
+const accessTokenKey = 'liftorium_access_token';
 
 @Injectable({
   providedIn: 'root'

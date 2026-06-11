@@ -2,7 +2,7 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { MuscleGroup, PlanDay, PLAN_TEMPLATES, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
 import { PlanService } from './plan.service';
 
-const STORAGE_KEY = 'gym_workout_plan';
+const STORAGE_KEY = 'liftorium_workout_plan';
 
 @Injectable({ providedIn: 'root' })
 export class PlanStore {

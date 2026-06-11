@@ -7,7 +7,7 @@ import { PlanExercise } from '../plan/plan.models';
 import { WorkoutService } from './workout.service';
 import { ExerciseOption, LiveWorkout, PreviousSet, WorkoutExercise, WorkoutSet } from './live-workout.models';
 
-const STORAGE_KEY = 'gym_active_workout';
+const STORAGE_KEY = 'liftorium_active_workout';
 const DEFAULT_REST_SECONDS = 90;
 
 @Injectable({ providedIn: 'root' })

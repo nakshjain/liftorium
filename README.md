@@ -1,6 +1,6 @@
-# Gym Helper
+# Liftorium
 
-Gym Helper is a production-minded workout tracking application designed for fast, focused use during real gym sessions.
+Liftorium is a production-minded workout tracking application designed for fast, focused use during real gym sessions.
 
 ## Current Status
 
@@ -106,7 +106,7 @@ Build:
 ```bash
 cd backend
 mvn clean package
-java -jar target/gym-helper-backend-0.1.0.jar
+java -jar target/liftorium-backend-0.1.0.jar
 ```
 
 Configuration is defined with Spring Boot profile-specific `.properties` files:
