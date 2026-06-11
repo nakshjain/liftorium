@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
+import { API_BASE_URL } from '../../core/api/api.config';
 import { WorkoutPlan } from './plan.models';
 
 interface ApiResponse<T> {
@@ -28,7 +29,8 @@ interface PlanDto {
 @Injectable({ providedIn: 'root' })
 export class PlanService {
   private readonly http = inject(HttpClient);
-  private readonly base = '/api/v1/plan';
+  private readonly baseUrl = inject(API_BASE_URL);
+  private readonly base = `${this.baseUrl}/plan`;
 
   get(): Observable<WorkoutPlan> {
     return this.http.get<ApiResponse<{ plan: PlanDto }>>(this.base).pipe(
