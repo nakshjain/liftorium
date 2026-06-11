@@ -1,5 +1,6 @@
 package com.gymhelper.startup;
 
+import com.gymhelper.config.AppProperties;
 import com.gymhelper.entity.ExerciseProviderType;
 import com.gymhelper.service.ExerciseSyncService;
 import lombok.RequiredArgsConstructor;
@@ -14,9 +15,15 @@ import org.springframework.stereotype.Component;
 public class ExerciseSyncStartupRunner implements ApplicationRunner {
 
   private final ExerciseSyncService exerciseSyncService;
+  private final AppProperties appProperties;
 
   @Override
   public void run(ApplicationArguments args) {
+    if (!appProperties.exercises().syncOnStartup()) {
+      log.info("Exercise catalog sync on startup is disabled (app.exercises.sync-on-startup=false)");
+      return;
+    }
+
     log.info("Starting exercise catalog sync on startup...");
     try {
       ExerciseSyncService.SyncResult result = exerciseSyncService.sync(ExerciseProviderType.ASCEND_API);

@@ -9,7 +9,8 @@ import org.springframework.validation.annotation.Validated;
 public record AppProperties(
     Cors cors,
     Jwt jwt,
-    AscendApi ascendApi
+    AscendApi ascendApi,
+    Exercises exercises
 ) {
 
   public record Cors(
@@ -31,6 +32,11 @@ public record AppProperties(
       @NotBlank String baseUrl,
       @NotBlank String host,
       @NotBlank String apiKey
+  ) {
+  }
+
+  public record Exercises(
+      boolean syncOnStartup
   ) {
   }
 }
