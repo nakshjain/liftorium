@@ -1,0 +1,7 @@
+target/
+.idea/
+.run/
+*.iml
+.env
+node_modules/
+.git/
