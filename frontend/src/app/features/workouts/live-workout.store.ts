@@ -147,6 +147,12 @@ export class LiveWorkoutStore {
     });
   }
 
+  resetWorkout(): void {
+    this.workout.set(null);
+    this.restEndsAt.set(null);
+    this.clearStorage();
+  }
+
   addExercise(exerciseId: string): void {
     const option = this.exercises().find((ex) => ex.id === exerciseId);
     if (!option) return;

@@ -101,6 +101,10 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     this.selectedDayIndex.set(parseInt(value, 10));
   }
 
+  protected resetWorkout(): void {
+    this.store.resetWorkout();
+  }
+
   protected startFromPlan(): void {
     if (this.store.paused()) {
       this.store.resumeWorkout();

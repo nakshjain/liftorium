@@ -38,6 +38,13 @@
             {{ store.paused() ? 'Resume workout' : 'Start workout' }}
           </button>
           @if (store.paused()) {
+            <button
+              class="mt-3 h-14 w-full rounded-lg border border-rose-400/40 px-5 text-base font-semibold text-rose-300 transition hover:border-rose-400 hover:text-rose-200 active:scale-[0.99] sm:w-auto sm:px-10"
+              type="button"
+              (click)="resetWorkout()"
+            >
+              Reset workout
+            </button>
             <p class="mt-3 text-sm text-zinc-400">
               Session paused at {{ formatTime(store.elapsedSeconds()) }}
             </p>
