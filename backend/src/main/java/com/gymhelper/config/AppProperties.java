@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 public record AppProperties(
     Cors cors,
     Jwt jwt,
-    AscendApi ascendApi,
     Exercises exercises
 ) {
 
@@ -25,13 +24,6 @@ public record AppProperties(
       @NotBlank String refreshTokenTtl,
       @NotBlank String refreshTokenCookieName,
       @NotBlank String refreshTokenCookiePath
-  ) {
-  }
-
-  public record AscendApi(
-      @NotBlank String baseUrl,
-      @NotBlank String host,
-      @NotBlank String apiKey
   ) {
   }
 

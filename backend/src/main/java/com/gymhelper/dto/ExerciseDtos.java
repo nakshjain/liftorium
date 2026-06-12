@@ -24,6 +24,8 @@ public final class ExerciseDtos {
       List<String> equipment,
       MovementPattern movementPattern,
       ExerciseType exerciseType,
+      String level,
+      String mechanic,
       boolean active,
       ExerciseContentDto content,
       String createdAt,

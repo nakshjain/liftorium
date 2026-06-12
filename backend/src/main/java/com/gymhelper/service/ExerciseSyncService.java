@@ -1,14 +1,13 @@
 package com.gymhelper.service;
 
 import com.gymhelper.entity.Exercise;
-import com.gymhelper.entity.ExerciseProviderMapping;
 import com.gymhelper.entity.ExerciseProviderType;
+import com.gymhelper.entity.ExerciseSourceInfo;
 import com.gymhelper.exception.AppException;
 import com.gymhelper.provider.ExerciseProvider;
 import com.gymhelper.provider.ExerciseProviderRegistry;
 import com.gymhelper.provider.ProviderExerciseMetadata;
 import com.gymhelper.provider.ProviderExercisePage;
-import com.gymhelper.repository.ExerciseProviderMappingRepository;
 import com.gymhelper.repository.ExerciseRepository;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ public class ExerciseSyncService {
   private static final int PROVIDER_PAGE_SIZE = 100;
 
   private final ExerciseRepository exerciseRepository;
-  private final ExerciseProviderMappingRepository mappingRepository;
   private final ExerciseProviderRegistry providerRegistry;
   private final ExerciseCatalogNormalizer normalizer;
 
@@ -57,43 +55,22 @@ public class ExerciseSyncService {
       Instant seenAt
   ) {
     validate(source);
-    ExerciseProviderMapping mapping = mappingRepository
-        .findByProviderAndProviderExerciseId(providerType, source.providerExerciseId())
+    Exercise existing = exerciseRepository
+        .findBySourceProviderAndSourceProviderExerciseId(providerType, source.providerExerciseId())
         .orElse(null);
 
-    if (mapping == null) {
-      Exercise exercise = exerciseRepository.save(newExercise(providerType, source, seenAt));
-      mappingRepository.save(ExerciseProviderMapping.builder()
-          .provider(providerType)
-          .providerExerciseId(source.providerExerciseId())
-          .exerciseId(exercise.getId())
-          .providerDatasetVersion(source.providerDatasetVersion())
-          .providerName(source.name())
-          .contentFingerprint(source.contentFingerprint())
-          .active(true)
-          .preferredForContent(true)
-          .firstSeenAt(seenAt)
-          .lastSeenAt(seenAt)
-          .lastSyncedAt(seenAt)
-          .build());
+    if (existing == null) {
+      exerciseRepository.save(newExercise(providerType, source, seenAt));
       return SyncAction.CREATED;
     }
 
-    Exercise exercise = exerciseRepository.findById(mapping.getExerciseId()).orElseThrow();
-    boolean changed = !source.contentFingerprint().equals(mapping.getContentFingerprint()) || !mapping.isActive();
+    boolean changed = !source.contentFingerprint().equals(existing.getContentFingerprint()) || !existing.isActive();
     if (changed) {
-      updateExercise(providerType, exercise, source, seenAt);
-      exerciseRepository.save(exercise);
+      updateExercise(providerType, existing, source, seenAt);
+    } else {
+      existing.setLastSeenAt(seenAt);
     }
-
-    mapping.setProviderDatasetVersion(source.providerDatasetVersion());
-    mapping.setProviderName(source.name());
-    mapping.setContentFingerprint(source.contentFingerprint());
-    mapping.setActive(true);
-    mapping.setMissingSince(null);
-    mapping.setLastSeenAt(seenAt);
-    mapping.setLastSyncedAt(seenAt);
-    mappingRepository.save(mapping);
+    exerciseRepository.save(existing);
     return changed ? SyncAction.UPDATED : SyncAction.UNCHANGED;
   }
 
@@ -111,11 +88,17 @@ public class ExerciseSyncService {
         .movementPattern(source.movementPattern())
         .exerciseType(source.exerciseType())
         .active(true)
-        .contentProvider(providerType)
-        .cachedOverview(source.overview())
-        .cachedInstructions(source.instructions() != null ? source.instructions() : List.of())
-        .cachedTips(source.tips() != null ? source.tips() : List.of())
-        .contentCachedAt(seenAt)
+        .source(ExerciseSourceInfo.builder()
+            .provider(providerType)
+            .providerExerciseId(source.providerExerciseId())
+            .build())
+        .level(source.level())
+        .mechanic(source.mechanic())
+        .overview(source.overview())
+        .instructions(source.instructions() != null ? source.instructions() : List.of())
+        .tips(source.tips() != null ? source.tips() : List.of())
+        .contentFingerprint(source.contentFingerprint())
+        .lastSeenAt(seenAt)
         .build();
   }
 
@@ -139,29 +122,22 @@ public class ExerciseSyncService {
     exercise.setMovementPattern(source.movementPattern());
     exercise.setExerciseType(source.exerciseType());
     exercise.setActive(true);
-    exercise.setContentProvider(providerType);
-    exercise.setCachedOverview(source.overview());
-    exercise.setCachedInstructions(source.instructions() != null ? source.instructions() : List.of());
-    exercise.setCachedTips(source.tips() != null ? source.tips() : List.of());
-    exercise.setContentCachedAt(seenAt);
+    exercise.setLevel(source.level());
+    exercise.setMechanic(source.mechanic());
+    exercise.setOverview(source.overview());
+    exercise.setInstructions(source.instructions() != null ? source.instructions() : List.of());
+    exercise.setTips(source.tips() != null ? source.tips() : List.of());
+    exercise.setContentFingerprint(source.contentFingerprint());
+    exercise.setLastSeenAt(seenAt);
   }
 
   private int deactivateMissing(ExerciseProviderType providerType, Instant syncStartedAt) {
-    List<ExerciseProviderMapping> missing = mappingRepository
-        .findByProviderAndActiveTrueAndLastSeenAtBefore(providerType, syncStartedAt);
+    List<Exercise> missing = exerciseRepository
+        .findBySourceProviderAndActiveTrueAndLastSeenAtBefore(providerType, syncStartedAt);
 
-    for (ExerciseProviderMapping mapping : missing) {
-      mapping.setActive(false);
-      mapping.setMissingSince(syncStartedAt);
-      mapping.setLastSyncedAt(syncStartedAt);
-      mappingRepository.save(mapping);
-
-      if (!mappingRepository.existsByExerciseIdAndActiveTrue(mapping.getExerciseId())) {
-        exerciseRepository.findById(mapping.getExerciseId()).ifPresent(exercise -> {
-          exercise.setActive(false);
-          exerciseRepository.save(exercise);
-        });
-      }
+    for (Exercise exercise : missing) {
+      exercise.setActive(false);
+      exerciseRepository.save(exercise);
     }
     return missing.size();
   }

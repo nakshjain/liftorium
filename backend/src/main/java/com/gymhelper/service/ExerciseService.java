@@ -48,11 +48,11 @@ public class ExerciseService {
         ));
 
     ExerciseContentDto content = null;
-    if (includeContent && exercise.getContentCachedAt() != null) {
+    if (includeContent) {
       content = new ExerciseContentDto(
-          exercise.getCachedOverview(),
-          exercise.getCachedInstructions(),
-          exercise.getCachedTips()
+          exercise.getOverview(),
+          exercise.getInstructions(),
+          exercise.getTips()
       );
     }
 
@@ -71,6 +71,8 @@ public class ExerciseService {
         exercise.getEquipment(),
         exercise.getMovementPattern(),
         exercise.getExerciseType(),
+        exercise.getLevel(),
+        exercise.getMechanic(),
         exercise.isActive(),
         content,
         toIso(exercise.getCreatedAt()),

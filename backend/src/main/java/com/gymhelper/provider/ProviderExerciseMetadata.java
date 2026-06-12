@@ -18,6 +18,8 @@ public record ProviderExerciseMetadata(
     String contentFingerprint,
     String overview,
     List<String> instructions,
-    List<String> tips
+    List<String> tips,
+    String level,
+    String mechanic
 ) {
 }

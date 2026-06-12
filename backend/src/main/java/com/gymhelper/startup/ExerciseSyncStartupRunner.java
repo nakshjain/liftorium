@@ -26,7 +26,7 @@ public class ExerciseSyncStartupRunner implements ApplicationRunner {
 
     log.info("Starting exercise catalog sync on startup...");
     try {
-      ExerciseSyncService.SyncResult result = exerciseSyncService.sync(ExerciseProviderType.ASCEND_API);
+      ExerciseSyncService.SyncResult result = exerciseSyncService.sync(ExerciseProviderType.FREE_EXERCISE_DB);
       log.info("Exercise catalog sync complete — created={}, updated={}, unchanged={}, deactivated={}",
           result.created(), result.updated(), result.unchanged(), result.deactivated());
     } catch (Exception e) {

@@ -1,70 +1,70 @@
-package com.gymhelper.provider.ascend;
+package com.gymhelper.provider.freedb;
 
 import com.gymhelper.entity.ExerciseType;
 import com.gymhelper.entity.MovementPattern;
 import com.gymhelper.provider.ProviderExerciseMetadata;
-import com.gymhelper.provider.ascend.AscendApiModels.Exercise;
+import com.gymhelper.provider.freedb.FreeExerciseDbModels.Exercise;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import org.springframework.stereotype.Component;
 
 @Component
-public class AscendApiMapper {
+public class FreeExerciseDbMapper {
 
-  private static final String DATASET_VERSION = "exercisedb-v2";
+  private static final String DATASET_VERSION = "free-exercise-db-v1";
 
   public ProviderExerciseMetadata toMetadata(Exercise source) {
-    List<String> primaryMuscles = normalizeList(source.targetMuscles());
+    List<String> primaryMuscles = normalizeList(source.primaryMuscles());
     List<String> secondaryMuscles = normalizeList(source.secondaryMuscles());
-    List<String> bodyParts = normalizeList(source.bodyParts());
-    List<String> equipment = normalizeList(source.equipments());
-    ExerciseType exerciseType = mapExerciseType(source.exerciseType());
+    List<String> equipment = source.equipment() != null && !source.equipment().isBlank()
+        ? List.of(normalize(source.equipment()))
+        : List.of();
+    ExerciseType exerciseType = mapCategory(source.category());
 
     String fingerprintSource = String.join("|",
         normalize(source.name()),
         String.join(",", primaryMuscles),
         String.join(",", secondaryMuscles),
-        String.join(",", bodyParts),
         String.join(",", equipment),
-        exerciseType.name()
+        exerciseType.name(),
+        source.level() != null ? source.level() : "",
+        source.mechanic() != null ? source.mechanic() : ""
     );
 
     return new ProviderExerciseMetadata(
-        source.exerciseId(),
+        source.id(),
         cleanName(source.name()),
         List.of(),
         primaryMuscles,
         secondaryMuscles,
-        bodyParts,
+        List.of(),
         equipment,
         MovementPattern.UNKNOWN,
         exerciseType,
         DATASET_VERSION,
         sha256(fingerprintSource),
-        source.overview(),
+        null,
         safeList(source.instructions()),
-        safeList(source.exerciseTips())
+        List.of(),
+        source.level() != null ? source.level().toLowerCase(Locale.ROOT) : null,
+        source.mechanic() != null ? source.mechanic().toLowerCase(Locale.ROOT) : null
     );
   }
 
-  private ExerciseType mapExerciseType(String value) {
+  private ExerciseType mapCategory(String value) {
     if (value == null) {
       return ExerciseType.OTHER;
     }
 
     return switch (normalize(value).replace('-', '_').replace(' ', '_')) {
-      case "strength" -> ExerciseType.STRENGTH;
+      case "strength", "powerlifting", "olympic_weightlifting", "strongman" -> ExerciseType.STRENGTH;
       case "cardio" -> ExerciseType.CARDIO;
-      case "stretching", "stretch" -> ExerciseType.STRETCHING;
-      case "mobility" -> ExerciseType.MOBILITY;
-      case "balance" -> ExerciseType.BALANCE;
-      case "plyometrics", "plyometric" -> ExerciseType.PLYOMETRICS;
-      case "rehabilitation", "rehab" -> ExerciseType.REHABILITATION;
+      case "stretching" -> ExerciseType.STRETCHING;
+      case "plyometrics" -> ExerciseType.PLYOMETRICS;
       default -> ExerciseType.OTHER;
     };
   }
@@ -83,10 +83,7 @@ public class AscendApiMapper {
   }
 
   private List<String> safeList(List<String> values) {
-    if (values == null) {
-      return List.of();
-    }
-    return List.copyOf(new ArrayList<>(values));
+    return values == null ? List.of() : List.copyOf(values);
   }
 
   private String cleanName(String value) {

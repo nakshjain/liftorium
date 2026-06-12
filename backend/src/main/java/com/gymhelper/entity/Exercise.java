@@ -26,7 +26,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
     @CompoundIndex(name = "active_primary_muscle_name_idx", def = "{'active': 1, 'primaryMuscles': 1, 'normalizedName': 1}"),
     @CompoundIndex(name = "active_secondary_muscle_name_idx", def = "{'active': 1, 'secondaryMuscles': 1, 'normalizedName': 1}"),
     @CompoundIndex(name = "active_equipment_name_idx", def = "{'active': 1, 'equipment': 1, 'normalizedName': 1}"),
-    @CompoundIndex(name = "active_type_name_idx", def = "{'active': 1, 'exerciseType': 1, 'normalizedName': 1}")
+    @CompoundIndex(name = "active_type_name_idx", def = "{'active': 1, 'exerciseType': 1, 'normalizedName': 1}"),
+    @CompoundIndex(name = "source_provider_exercise_id_uq", def = "{'source.provider': 1, 'source.providerExerciseId': 1}", unique = true)
 })
 public class Exercise {
 
@@ -67,17 +68,23 @@ public class Exercise {
   @Builder.Default
   private boolean active = true;
 
-  private ExerciseProviderType contentProvider;
+  private ExerciseSourceInfo source;
 
-  private String cachedOverview;
+  private String level;
+
+  private String mechanic;
+
+  private String overview;
 
   @Builder.Default
-  private List<String> cachedInstructions = new ArrayList<>();
+  private List<String> instructions = new ArrayList<>();
 
   @Builder.Default
-  private List<String> cachedTips = new ArrayList<>();
+  private List<String> tips = new ArrayList<>();
 
-  private Instant contentCachedAt;
+  private String contentFingerprint;
+
+  private Instant lastSeenAt;
 
   @CreatedDate
   private Instant createdAt;
