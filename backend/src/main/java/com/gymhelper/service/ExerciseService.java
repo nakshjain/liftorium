@@ -51,8 +51,7 @@ public class ExerciseService {
     if (includeContent) {
       content = new ExerciseContentDto(
           exercise.getOverview(),
-          exercise.getInstructions(),
-          exercise.getTips()
+          exercise.getInstructions()
       );
     }
 
@@ -64,12 +63,9 @@ public class ExerciseService {
         exercise.getId(),
         exercise.getName(),
         exercise.getSlug(),
-        exercise.getAliases(),
         exercise.getPrimaryMuscles(),
         exercise.getSecondaryMuscles(),
-        exercise.getBodyParts(),
         exercise.getEquipment(),
-        exercise.getMovementPattern(),
         exercise.getExerciseType(),
         exercise.getLevel(),
         exercise.getMechanic(),

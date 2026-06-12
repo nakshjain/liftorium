@@ -27,6 +27,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
     @CompoundIndex(name = "active_secondary_muscle_name_idx", def = "{'active': 1, 'secondaryMuscles': 1, 'normalizedName': 1}"),
     @CompoundIndex(name = "active_equipment_name_idx", def = "{'active': 1, 'equipment': 1, 'normalizedName': 1}"),
     @CompoundIndex(name = "active_type_name_idx", def = "{'active': 1, 'exerciseType': 1, 'normalizedName': 1}"),
+    @CompoundIndex(name = "active_level_name_idx", def = "{'active': 1, 'level': 1, 'normalizedName': 1}"),
     @CompoundIndex(name = "source_provider_exercise_id_uq", def = "{'source.provider': 1, 'source.providerExerciseId': 1}", unique = true)
 })
 public class Exercise {
@@ -42,9 +43,6 @@ public class Exercise {
   private String slug;
 
   @Builder.Default
-  private List<String> aliases = new ArrayList<>();
-
-  @Builder.Default
   private List<String> searchPrefixes = new ArrayList<>();
 
   @Builder.Default
@@ -54,13 +52,7 @@ public class Exercise {
   private List<String> secondaryMuscles = new ArrayList<>();
 
   @Builder.Default
-  private List<String> bodyParts = new ArrayList<>();
-
-  @Builder.Default
   private List<String> equipment = new ArrayList<>();
-
-  @Builder.Default
-  private MovementPattern movementPattern = MovementPattern.UNKNOWN;
 
   @Builder.Default
   private ExerciseType exerciseType = ExerciseType.OTHER;
@@ -78,9 +70,6 @@ public class Exercise {
 
   @Builder.Default
   private List<String> instructions = new ArrayList<>();
-
-  @Builder.Default
-  private List<String> tips = new ArrayList<>();
 
   private String contentFingerprint;
 

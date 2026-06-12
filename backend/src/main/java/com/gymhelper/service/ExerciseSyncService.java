@@ -10,7 +10,6 @@ import com.gymhelper.provider.ProviderExerciseMetadata;
 import com.gymhelper.provider.ProviderExercisePage;
 import com.gymhelper.repository.ExerciseRepository;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -79,13 +78,10 @@ public class ExerciseSyncService {
         .name(source.name())
         .normalizedName(normalizer.normalizeName(source.name()))
         .slug(normalizer.slug(source.name(), source.providerExerciseId()))
-        .aliases(source.aliases())
-        .searchPrefixes(normalizer.searchPrefixes(source.name(), source.aliases()))
+        .searchPrefixes(normalizer.searchPrefixes(source.name(), List.of()))
         .primaryMuscles(source.primaryMuscles())
         .secondaryMuscles(source.secondaryMuscles())
-        .bodyParts(source.bodyParts())
         .equipment(source.equipment())
-        .movementPattern(source.movementPattern())
         .exerciseType(source.exerciseType())
         .active(true)
         .source(ExerciseSourceInfo.builder()
@@ -96,37 +92,24 @@ public class ExerciseSyncService {
         .mechanic(source.mechanic())
         .overview(source.overview())
         .instructions(source.instructions() != null ? source.instructions() : List.of())
-        .tips(source.tips() != null ? source.tips() : List.of())
         .contentFingerprint(source.contentFingerprint())
         .lastSeenAt(seenAt)
         .build();
   }
 
   private void updateExercise(ExerciseProviderType providerType, Exercise exercise, ProviderExerciseMetadata source, Instant seenAt) {
-    List<String> aliases = new ArrayList<>(exercise.getAliases());
-    if (!exercise.getName().equals(source.name()) && !aliases.contains(exercise.getName())) {
-      aliases.add(exercise.getName());
-    }
-    if (aliases.size() > 20) {
-      aliases = new ArrayList<>(aliases.subList(aliases.size() - 20, aliases.size()));
-    }
-
     exercise.setName(source.name());
     exercise.setNormalizedName(normalizer.normalizeName(source.name()));
-    exercise.setAliases(List.copyOf(aliases));
-    exercise.setSearchPrefixes(normalizer.searchPrefixes(source.name(), aliases));
+    exercise.setSearchPrefixes(normalizer.searchPrefixes(source.name(), List.of()));
     exercise.setPrimaryMuscles(source.primaryMuscles());
     exercise.setSecondaryMuscles(source.secondaryMuscles());
-    exercise.setBodyParts(source.bodyParts());
     exercise.setEquipment(source.equipment());
-    exercise.setMovementPattern(source.movementPattern());
     exercise.setExerciseType(source.exerciseType());
     exercise.setActive(true);
     exercise.setLevel(source.level());
     exercise.setMechanic(source.mechanic());
     exercise.setOverview(source.overview());
     exercise.setInstructions(source.instructions() != null ? source.instructions() : List.of());
-    exercise.setTips(source.tips() != null ? source.tips() : List.of());
     exercise.setContentFingerprint(source.contentFingerprint());
     exercise.setLastSeenAt(seenAt);
   }

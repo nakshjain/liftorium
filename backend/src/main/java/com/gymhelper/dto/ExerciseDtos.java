@@ -1,7 +1,6 @@
 package com.gymhelper.dto;
 
 import com.gymhelper.entity.ExerciseType;
-import com.gymhelper.entity.MovementPattern;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -17,12 +16,9 @@ public final class ExerciseDtos {
       String id,
       String name,
       String slug,
-      List<String> aliases,
       List<String> primaryMuscles,
       List<String> secondaryMuscles,
-      List<String> bodyParts,
       List<String> equipment,
-      MovementPattern movementPattern,
       ExerciseType exerciseType,
       String level,
       String mechanic,
@@ -35,8 +31,7 @@ public final class ExerciseDtos {
 
   public record ExerciseContentDto(
       String overview,
-      List<String> instructions,
-      List<String> tips
+      List<String> instructions
   ) {
   }
 
@@ -53,9 +48,8 @@ public final class ExerciseDtos {
       @Size(max = 500) String cursor,
       @Size(max = 80) String muscle,
       @Size(max = 80) String equipment,
-      @Size(max = 80) String bodyPart,
       ExerciseType exerciseType,
-      MovementPattern movementPattern
+      @Size(max = 20) String level
   ) {
   }
 

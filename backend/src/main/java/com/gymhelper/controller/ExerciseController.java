@@ -6,7 +6,6 @@ import com.gymhelper.dto.ExerciseDtos.ExerciseDto;
 import com.gymhelper.dto.ExerciseDtos.ListExercisesQuery;
 import com.gymhelper.dto.ExerciseDtos.SearchExercisesQuery;
 import com.gymhelper.entity.ExerciseType;
-import com.gymhelper.entity.MovementPattern;
 import com.gymhelper.service.ExerciseService;
 import com.gymhelper.util.ObjectIdValidator;
 import jakarta.validation.constraints.Max;
@@ -35,18 +34,16 @@ public class ExerciseController {
       @RequestParam(required = false) @Size(max = 500) String cursor,
       @RequestParam(required = false) @Size(max = 80) String muscle,
       @RequestParam(required = false) @Size(max = 80) String equipment,
-      @RequestParam(required = false) @Size(max = 80) String bodyPart,
       @RequestParam(required = false) ExerciseType exerciseType,
-      @RequestParam(required = false) MovementPattern movementPattern
+      @RequestParam(required = false) @Size(max = 20) String level
   ) {
     return ApiResponse.success(exerciseService.list(new ListExercisesQuery(
         limit,
         blankToNull(cursor),
         blankToNull(muscle),
         blankToNull(equipment),
-        blankToNull(bodyPart),
         exerciseType,
-        movementPattern
+        blankToNull(level)
     )));
   }
 

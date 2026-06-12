@@ -1,7 +1,6 @@
 package com.gymhelper.provider.freedb;
 
 import com.gymhelper.entity.ExerciseType;
-import com.gymhelper.entity.MovementPattern;
 import com.gymhelper.provider.ProviderExerciseMetadata;
 import com.gymhelper.provider.freedb.FreeExerciseDbModels.Exercise;
 import java.nio.charset.StandardCharsets;
@@ -18,10 +17,10 @@ public class FreeExerciseDbMapper {
   private static final String DATASET_VERSION = "free-exercise-db-v1";
 
   public ProviderExerciseMetadata toMetadata(Exercise source) {
-    List<String> primaryMuscles = normalizeList(source.primaryMuscles());
-    List<String> secondaryMuscles = normalizeList(source.secondaryMuscles());
+    List<String> primaryMuscles = titleCaseList(source.primaryMuscles());
+    List<String> secondaryMuscles = titleCaseList(source.secondaryMuscles());
     List<String> equipment = source.equipment() != null && !source.equipment().isBlank()
-        ? List.of(normalize(source.equipment()))
+        ? List.of(titleCase(source.equipment().trim()))
         : List.of();
     ExerciseType exerciseType = mapCategory(source.category());
 
@@ -38,20 +37,16 @@ public class FreeExerciseDbMapper {
     return new ProviderExerciseMetadata(
         source.id(),
         cleanName(source.name()),
-        List.of(),
         primaryMuscles,
         secondaryMuscles,
-        List.of(),
         equipment,
-        MovementPattern.UNKNOWN,
         exerciseType,
         DATASET_VERSION,
         sha256(fingerprintSource),
         null,
         safeList(source.instructions()),
-        List.of(),
-        source.level() != null ? source.level().toLowerCase(Locale.ROOT) : null,
-        source.mechanic() != null ? source.mechanic().toLowerCase(Locale.ROOT) : null
+        source.level() != null ? titleCase(source.level().trim()) : null,
+        source.mechanic() != null ? titleCase(source.mechanic().trim()) : null
     );
   }
 
@@ -69,17 +64,33 @@ public class FreeExerciseDbMapper {
     };
   }
 
-  private List<String> normalizeList(List<String> values) {
+  private List<String> titleCaseList(List<String> values) {
     if (values == null) {
       return List.of();
     }
 
     return values.stream()
         .filter(value -> value != null && !value.isBlank())
-        .map(this::normalize)
+        .map(v -> titleCase(v.trim()))
         .distinct()
         .sorted()
         .toList();
+  }
+
+  private String titleCase(String value) {
+    if (value == null || value.isEmpty()) {
+      return value;
+    }
+    String[] words = value.toLowerCase(Locale.ROOT).split("\\s+");
+    StringBuilder result = new StringBuilder();
+    for (int i = 0; i < words.length; i++) {
+      if (i > 0) {
+        result.append(' ');
+      }
+      result.append(Character.toUpperCase(words[i].charAt(0)));
+      result.append(words[i].substring(1));
+    }
+    return result.toString();
   }
 
   private List<String> safeList(List<String> values) {

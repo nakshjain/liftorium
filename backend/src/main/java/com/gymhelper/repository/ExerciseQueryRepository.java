@@ -31,9 +31,8 @@ public class ExerciseQueryRepository {
     List<Criteria> criteria = baseFilters(
         input.muscle(),
         input.equipment(),
-        input.bodyPart(),
         input.exerciseType() == null ? null : input.exerciseType().name(),
-        input.movementPattern() == null ? null : input.movementPattern().name()
+        input.level()
     );
 
     if (input.cursor() != null) {
@@ -51,7 +50,7 @@ public class ExerciseQueryRepository {
   }
 
   public CursorResult search(SearchExercisesQuery input) {
-    List<Criteria> criteria = baseFilters(input.muscle(), input.equipment(), null, null, null);
+    List<Criteria> criteria = baseFilters(input.muscle(), input.equipment(), null, null);
     criteria.add(Criteria.where("searchPrefixes").is(normalize(input.query())));
     return execute(criteria, input.limit());
   }
@@ -72,34 +71,44 @@ public class ExerciseQueryRepository {
   private List<Criteria> baseFilters(
       String muscle,
       String equipment,
-      String bodyPart,
       String exerciseType,
-      String movementPattern
+      String level
   ) {
     List<Criteria> criteria = new ArrayList<>();
     criteria.add(Criteria.where("active").is(true));
 
     if (muscle != null) {
-      String value = normalize(muscle);
+      String value = titleCase(muscle);
       criteria.add(new Criteria().orOperator(
           Criteria.where("primaryMuscles").is(value),
           Criteria.where("secondaryMuscles").is(value)
       ));
     }
     if (equipment != null) {
-      criteria.add(Criteria.where("equipment").is(normalize(equipment)));
-    }
-    if (bodyPart != null) {
-      criteria.add(Criteria.where("bodyParts").is(normalize(bodyPart)));
+      criteria.add(Criteria.where("equipment").is(titleCase(equipment)));
     }
     if (exerciseType != null) {
       criteria.add(Criteria.where("exerciseType").is(exerciseType));
     }
-    if (movementPattern != null) {
-      criteria.add(Criteria.where("movementPattern").is(movementPattern));
+    if (level != null) {
+      criteria.add(Criteria.where("level").is(titleCase(level)));
     }
 
     return criteria;
+  }
+
+  private String titleCase(String value) {
+    String trimmed = value.trim();
+    String[] words = trimmed.toLowerCase().split("\\s+");
+    StringBuilder result = new StringBuilder();
+    for (int i = 0; i < words.length; i++) {
+      if (i > 0) {
+        result.append(' ');
+      }
+      result.append(Character.toUpperCase(words[i].charAt(0)));
+      result.append(words[i].substring(1));
+    }
+    return result.toString();
   }
 
   private String encodeCursor(Exercise exercise) {
