@@ -8,9 +8,12 @@ import com.gymhelper.dto.WorkoutDtos.ListWorkoutHistoryQuery;
 import com.gymhelper.dto.WorkoutDtos.PaginatedWorkoutsDto;
 import com.gymhelper.dto.WorkoutDtos.StartWorkoutRequest;
 import com.gymhelper.dto.WorkoutDtos.WorkoutDto;
+import com.gymhelper.dto.WorkoutDtos.WorkoutStatsDto;
 import com.gymhelper.security.UserPrincipal;
 import com.gymhelper.service.WorkoutService;
+import com.gymhelper.service.WorkoutStatsService;
 import com.gymhelper.util.ObjectIdValidator;
+import java.time.YearMonth;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class WorkoutController {
 
   private final WorkoutService workoutService;
+  private final WorkoutStatsService workoutStatsService;
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
@@ -59,11 +63,21 @@ public class WorkoutController {
   ) {
     ListWorkoutHistoryQuery normalizedQuery = new ListWorkoutHistoryQuery(
         query.page() == 0 ? 1 : query.page(),
-        query.limit() == 0 ? 20 : query.limit()
+        query.limit() == 0 ? 20 : query.limit(),
+        query.month()
     );
     validatePagination(normalizedQuery.page(), normalizedQuery.limit());
 
     return ApiResponse.success(workoutService.listHistory(principal.getId(), normalizedQuery));
+  }
+
+  @GetMapping("/stats")
+  public ApiResponse<WorkoutStatsDto> getStats(
+      @AuthenticationPrincipal UserPrincipal principal,
+      @org.springframework.web.bind.annotation.RequestParam(required = false) String month
+  ) {
+    YearMonth ym = month != null ? YearMonth.parse(month) : YearMonth.now();
+    return ApiResponse.success(workoutStatsService.getStats(principal.getId(), ym));
   }
 
   @GetMapping("/{workoutId}")
