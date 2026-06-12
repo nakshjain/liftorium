@@ -23,19 +23,19 @@
 
     <section class="mt-4">
       <div class="flex items-center gap-2 overflow-x-auto pb-1">
-        <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Body</span>
-        @for (part of bodyParts; track part) {
+        <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Muscle</span>
+        @for (muscle of muscles; track muscle) {
           <button
             class="h-8 shrink-0 rounded-full border px-3 text-xs font-medium transition"
-            [class.border-teal-400]="filters().bodyPart === part"
-            [class.bg-teal-400]="filters().bodyPart === part"
-            [class.text-zinc-950]="filters().bodyPart === part"
-            [class.border-zinc-700]="filters().bodyPart !== part"
-            [class.text-zinc-300]="filters().bodyPart !== part"
+            [class.border-teal-400]="filters().muscle === muscle"
+            [class.bg-teal-400]="filters().muscle === muscle"
+            [class.text-zinc-950]="filters().muscle === muscle"
+            [class.border-zinc-700]="filters().muscle !== muscle"
+            [class.text-zinc-300]="filters().muscle !== muscle"
             type="button"
-            (click)="onBodyPartFilter(part)"
+            (click)="onMuscleFilter(muscle)"
           >
-            {{ part }}
+            {{ muscle }}
           </button>
         }
       </div>
@@ -59,19 +59,19 @@
       </div>
 
       <div class="mt-2 flex items-center gap-2 overflow-x-auto pb-1">
-        <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Movement</span>
-        @for (pattern of movementPatterns; track pattern.value) {
+        <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Level</span>
+        @for (lvl of levels; track lvl.value) {
           <button
             class="h-8 shrink-0 rounded-full border px-3 text-xs font-medium transition"
-            [class.border-teal-400]="filters().movementPattern === pattern.value"
-            [class.bg-teal-400]="filters().movementPattern === pattern.value"
-            [class.text-zinc-950]="filters().movementPattern === pattern.value"
-            [class.border-zinc-700]="filters().movementPattern !== pattern.value"
-            [class.text-zinc-300]="filters().movementPattern !== pattern.value"
+            [class.border-teal-400]="filters().level === lvl.value"
+            [class.bg-teal-400]="filters().level === lvl.value"
+            [class.text-zinc-950]="filters().level === lvl.value"
+            [class.border-zinc-700]="filters().level !== lvl.value"
+            [class.text-zinc-300]="filters().level !== lvl.value"
             type="button"
-            (click)="onPatternFilter(filters().movementPattern === pattern.value ? '' : pattern.value)"
+            (click)="onLevelFilter(filters().level === lvl.value ? '' : lvl.value)"
           >
-            {{ pattern.label }}
+            {{ lvl.label }}
           </button>
         }
       </div>

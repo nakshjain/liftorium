@@ -77,7 +77,7 @@ export class LiveWorkoutStore {
         this.exercises.set(page.items.map((ex) => ({
           id: ex.id,
           name: ex.name,
-          target: ex.primaryMuscles[0] ?? ex.bodyParts[0] ?? '',
+          target: ex.primaryMuscles[0] ?? '',
           equipment: ex.equipment[0] ?? '',
           previous: [],
         })));

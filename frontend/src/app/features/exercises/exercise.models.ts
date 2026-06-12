@@ -2,44 +2,24 @@ export type ExerciseType =
   | 'STRENGTH'
   | 'CARDIO'
   | 'STRETCHING'
-  | 'MOBILITY'
-  | 'BALANCE'
   | 'PLYOMETRICS'
-  | 'REHABILITATION'
-  | 'OTHER';
-
-export type MovementPattern =
-  | 'HORIZONTAL_PUSH'
-  | 'HORIZONTAL_PULL'
-  | 'VERTICAL_PUSH'
-  | 'VERTICAL_PULL'
-  | 'SQUAT'
-  | 'HIP_HINGE'
-  | 'LUNGE'
-  | 'CARRY'
-  | 'ROTATION'
-  | 'CORE'
-  | 'ISOLATION'
-  | 'CARDIO'
   | 'OTHER';
 
 export type ExerciseContent = {
-  overview: string;
+  overview: string | null;
   instructions: string[];
-  tips: string[];
 };
 
 export type Exercise = {
   id: string;
   name: string;
   slug: string;
-  aliases: string[];
   primaryMuscles: string[];
   secondaryMuscles: string[];
-  bodyParts: string[];
   equipment: string[];
-  movementPattern: MovementPattern | null;
   exerciseType: ExerciseType;
+  level: string | null;
+  mechanic: string | null;
   active: boolean;
   content: ExerciseContent | null;
   createdAt: string;
@@ -57,9 +37,8 @@ export type ListExercisesParams = {
   cursor?: string;
   muscle?: string;
   equipment?: string;
-  bodyPart?: string;
   exerciseType?: ExerciseType;
-  movementPattern?: MovementPattern;
+  level?: string;
 };
 
 export type SearchExercisesParams = {

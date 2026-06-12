@@ -40,9 +40,4 @@ export class ExerciseDetailPageComponent implements OnInit {
   protected muscleList(muscles: string[]): string {
     return muscles.length > 0 ? muscles.join(', ') : '—';
   }
-
-  protected patternLabel(pattern: string | null): string {
-    if (!pattern) return '—';
-    return pattern.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
-  }
 }

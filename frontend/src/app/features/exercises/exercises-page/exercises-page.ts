@@ -4,13 +4,13 @@ import { FormsModule } from '@angular/forms';
 import { debounceTime, distinctUntilChanged, Subject, switchMap, of } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../exercise.service';
-import { Exercise, ExercisePage, ExerciseType, MovementPattern } from '../exercise.models';
+import { Exercise, ExercisePage, ExerciseType } from '../exercise.models';
 
 type FilterState = {
   query: string;
-  bodyPart: string;
+  muscle: string;
   exerciseType: ExerciseType | '';
-  movementPattern: MovementPattern | '';
+  level: string;
 };
 
 @Component({
@@ -32,44 +32,34 @@ export class ExercisesPageComponent implements OnInit {
 
   protected readonly filters = signal<FilterState>({
     query: '',
-    bodyPart: '',
+    muscle: '',
     exerciseType: '',
-    movementPattern: ''
+    level: ''
   });
 
   protected readonly hasActiveFilters = computed(
-    () => this.filters().bodyPart !== '' || this.filters().exerciseType !== '' || this.filters().movementPattern !== ''
+    () => this.filters().muscle !== '' || this.filters().exerciseType !== '' || this.filters().level !== ''
   );
 
-  protected readonly bodyParts: string[] = [
-    'Back', 'Biceps', 'Chest', 'Core', 'Forearms', 'Legs', 'Shoulders', 'Triceps', 'Full Body'
+  protected readonly muscles: string[] = [
+    'Chest', 'Lats', 'Shoulders', 'Biceps', 'Triceps', 'Forearms',
+    'Quadriceps', 'Hamstrings', 'Glutes', 'Calves',
+    'Abdominals', 'Lower Back', 'Middle Back', 'Traps', 'Neck',
+    'Abductors', 'Adductors'
   ];
 
   protected readonly exerciseTypes: { value: ExerciseType; label: string }[] = [
     { value: 'STRENGTH', label: 'Strength' },
     { value: 'CARDIO', label: 'Cardio' },
     { value: 'STRETCHING', label: 'Stretching' },
-    { value: 'MOBILITY', label: 'Mobility' },
-    { value: 'BALANCE', label: 'Balance' },
     { value: 'PLYOMETRICS', label: 'Plyometrics' },
-    { value: 'REHABILITATION', label: 'Rehab' },
     { value: 'OTHER', label: 'Other' }
   ];
 
-  protected readonly movementPatterns: { value: MovementPattern; label: string }[] = [
-    { value: 'HORIZONTAL_PUSH', label: 'Horizontal Push' },
-    { value: 'HORIZONTAL_PULL', label: 'Horizontal Pull' },
-    { value: 'VERTICAL_PUSH', label: 'Vertical Push' },
-    { value: 'VERTICAL_PULL', label: 'Vertical Pull' },
-    { value: 'SQUAT', label: 'Squat' },
-    { value: 'HIP_HINGE', label: 'Hip Hinge' },
-    { value: 'LUNGE', label: 'Lunge' },
-    { value: 'CARRY', label: 'Carry' },
-    { value: 'ROTATION', label: 'Rotation' },
-    { value: 'CORE', label: 'Core' },
-    { value: 'ISOLATION', label: 'Isolation' },
-    { value: 'CARDIO', label: 'Cardio' },
-    { value: 'OTHER', label: 'Other' }
+  protected readonly levels: { value: string; label: string }[] = [
+    { value: 'Beginner', label: 'Beginner' },
+    { value: 'Intermediate', label: 'Intermediate' },
+    { value: 'Expert', label: 'Expert' }
   ];
 
   constructor() {
@@ -106,8 +96,8 @@ export class ExercisesPageComponent implements OnInit {
     this.search$.next(query);
   }
 
-  protected onBodyPartFilter(value: string): void {
-    this.filters.update((f) => ({ ...f, bodyPart: f.bodyPart === value ? '' : value }));
+  protected onMuscleFilter(value: string): void {
+    this.filters.update((f) => ({ ...f, muscle: f.muscle === value ? '' : value }));
     this.fetchList(false);
   }
 
@@ -116,8 +106,8 @@ export class ExercisesPageComponent implements OnInit {
     this.fetchList(false);
   }
 
-  protected onPatternFilter(value: MovementPattern | ''): void {
-    this.filters.update((f) => ({ ...f, movementPattern: value }));
+  protected onLevelFilter(value: string): void {
+    this.filters.update((f) => ({ ...f, level: f.level === value ? '' : value }));
     this.fetchList(false);
   }
 
@@ -127,12 +117,12 @@ export class ExercisesPageComponent implements OnInit {
   }
 
   protected clearFilters(): void {
-    this.filters.set({ query: '', bodyPart: '', exerciseType: '', movementPattern: '' });
+    this.filters.set({ query: '', muscle: '', exerciseType: '', level: '' });
     this.fetchList(false);
   }
 
   protected primaryMuscleLabel(exercise: Exercise): string {
-    return exercise.primaryMuscles[0] ?? exercise.bodyParts[0] ?? '—';
+    return exercise.primaryMuscles[0] ?? '—';
   }
 
   protected equipmentLabel(exercise: Exercise): string {
@@ -162,9 +152,9 @@ export class ExercisesPageComponent implements OnInit {
     return this.exerciseService.list({
       limit: 25,
       cursor,
-      bodyPart: f.bodyPart || undefined,
+      muscle: f.muscle || undefined,
       exerciseType: f.exerciseType || undefined,
-      movementPattern: f.movementPattern || undefined
+      level: f.level || undefined
     });
   }
 
