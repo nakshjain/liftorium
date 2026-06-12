@@ -19,6 +19,18 @@ export const routes: Routes = [
       import('./features/workouts/live-workout-page/live-workout-page').then((module) => module.LiveWorkoutPageComponent)
   },
   {
+    path: 'app/workouts/history',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/workouts/workout-history-page/workout-history-page').then((m) => m.WorkoutHistoryPageComponent)
+  },
+  {
+    path: 'app/workouts/:workoutId',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/workouts/workout-detail-page/workout-detail-page').then((m) => m.WorkoutDetailPageComponent)
+  },
+  {
     path: 'app/exercises',
     canActivate: [authGuard],
     loadChildren: () => import('./features/exercises/exercises.routes').then((m) => m.exercisesRoutes)

@@ -1,9 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, concatMap, from, map, reduce } from 'rxjs';
 import { API_BASE_URL } from '../../core/api/api.config';
 import { ApiSuccessResponse } from '../../core/api/api-response';
 import { LiveWorkout } from './live-workout.models';
+import { PaginatedWorkouts, WorkoutDto as HistoryWorkoutDto, WorkoutStats } from './workout-history.models';
 
 interface WorkoutDto {
   id: string;
@@ -14,6 +15,32 @@ interface WorkoutDto {
 export class WorkoutService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
+
+  getHistory(params: { page?: number; limit?: number; month?: string } = {}): Observable<PaginatedWorkouts> {
+    let httpParams = new HttpParams();
+    if (params.page != null) httpParams = httpParams.set('page', params.page);
+    if (params.limit != null) httpParams = httpParams.set('limit', params.limit);
+    if (params.month) httpParams = httpParams.set('month', params.month);
+
+    return this.http
+      .get<ApiSuccessResponse<PaginatedWorkouts>>(`${this.baseUrl}/workouts/history`, { params: httpParams })
+      .pipe(map((res) => res.data));
+  }
+
+  getStats(month?: string): Observable<WorkoutStats> {
+    let httpParams = new HttpParams();
+    if (month) httpParams = httpParams.set('month', month);
+
+    return this.http
+      .get<ApiSuccessResponse<WorkoutStats>>(`${this.baseUrl}/workouts/stats`, { params: httpParams })
+      .pipe(map((res) => res.data));
+  }
+
+  getById(workoutId: string): Observable<HistoryWorkoutDto> {
+    return this.http
+      .get<ApiSuccessResponse<{ workout: HistoryWorkoutDto }>>(`${this.baseUrl}/workouts/${workoutId}`)
+      .pipe(map((res) => res.data.workout));
+  }
 
   save(workout: LiveWorkout): Observable<string> {
     return this.http
