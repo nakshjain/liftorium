@@ -74,8 +74,10 @@ export class ExercisesPageComponent implements OnInit {
     { value: 'STRENGTH', label: 'Strength' },
     { value: 'CARDIO', label: 'Cardio' },
     { value: 'STRETCHING', label: 'Stretching' },
+    { value: 'MOBILITY', label: 'Mobility' },
+    { value: 'BALANCE', label: 'Balance' },
     { value: 'PLYOMETRICS', label: 'Plyometrics' },
-    { value: 'OTHER', label: 'Other' }
+    { value: 'REHABILITATION', label: 'Rehab' }
   ];
 
   protected readonly levels: { value: string; label: string }[] = [
