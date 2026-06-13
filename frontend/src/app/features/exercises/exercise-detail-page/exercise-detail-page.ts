@@ -45,7 +45,7 @@ export class ExerciseDetailPageComponent implements OnInit {
         this.loading.set(false);
       },
       error: () => {
-        this.error.set('Failed to load exercise. Please try again.');
+        this.error.set('Could not load this exercise. Check your connection and try again.');
         this.loading.set(false);
       }
     });

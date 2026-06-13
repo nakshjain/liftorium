@@ -93,7 +93,7 @@ export class ExercisesPageComponent implements OnInit {
       .subscribe({
         next: (page) => this.applyPage(page, false),
         error: () => {
-          this.error.set('Failed to load exercises. Please try again.');
+          this.error.set('Could not load exercises. Check your connection and try again.');
           this.loading.set(false);
           this.searching.set(false);
         }
@@ -175,7 +175,7 @@ export class ExercisesPageComponent implements OnInit {
     this.loadList(append ? (this.nextCursor() ?? undefined) : undefined).subscribe({
       next: (page) => this.applyPage(page, append),
       error: () => {
-        this.error.set('Failed to load exercises. Please try again.');
+        this.error.set('Could not load exercises. Check your connection and try again.');
         this.loading.set(false);
         this.loadingMore.set(false);
       }

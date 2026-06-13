@@ -57,7 +57,7 @@
         type="button"
         (click)="toggleAdvancedMuscles()"
       >
-        {{ showAdvancedMuscles() ? '− Hide specific muscles' : '+ Choose specific muscle' }}
+        {{ showAdvancedMuscles() ? '− Hide all muscles' : '+ Show all muscles' }}
       </button>
 
       @if (showAdvancedMuscles()) {
@@ -120,17 +120,20 @@
       @if (hasActiveFilters()) {
         <div class="mt-3 flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2">
           <p class="text-xs text-zinc-400">
-            <span class="font-medium text-zinc-300">{{ activeFilterCount() }} filter{{ activeFilterCount() === 1 ? '' : 's' }}</span> applied
-            @if (filters().muscle) { <span class="text-zinc-500">•</span> {{ filters().muscle }} }
-            @if (filters().exerciseType) { <span class="text-zinc-500">•</span> {{ filters().exerciseType }} }
-            @if (filters().level) { <span class="text-zinc-500">•</span> {{ filters().level }} }
+            Showing
+            @if (filters().muscle) { {{ filters().muscle }} }
+            @if (filters().muscle && (filters().exerciseType || filters().level)) { <span class="text-zinc-500">•</span> }
+            @if (filters().exerciseType) { {{ filters().exerciseType }} }
+            @if (filters().exerciseType && filters().level) { <span class="text-zinc-500">•</span> }
+            @if (filters().level) { {{ filters().level }} }
+            exercises
           </p>
           <button
             class="shrink-0 text-xs font-medium text-rose-300 transition hover:text-rose-200"
             type="button"
             (click)="clearFilters()"
           >
-            Clear all
+            Clear
           </button>
         </div>
       }
