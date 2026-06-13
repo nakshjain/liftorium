@@ -4,31 +4,118 @@ import com.liftorium.config.AppProperties;
 import com.liftorium.dto.AuthDtos.AuthSession;
 import com.liftorium.dto.AuthDtos.AuthUserDto;
 import com.liftorium.dto.AuthDtos.LoginRequest;
+import com.liftorium.dto.AuthDtos.RegisterInitiateRequest;
 import com.liftorium.dto.AuthDtos.RegisterRequest;
+import com.liftorium.dto.AuthDtos.RegisterVerifyRequest;
+import com.liftorium.entity.PendingRegistration;
 import com.liftorium.entity.RefreshToken;
 import com.liftorium.entity.User;
 import com.liftorium.exception.AppException;
+import com.liftorium.repository.PendingRegistrationRepository;
 import com.liftorium.repository.RefreshTokenRepository;
 import com.liftorium.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
   private final UserRepository userRepository;
   private final RefreshTokenRepository refreshTokenRepository;
+  private final PendingRegistrationRepository pendingRegistrationRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
+  private final OtpService otpService;
+  private final EmailService emailService;
   private final AppProperties appProperties;
+
+  public void initiateRegistration(RegisterInitiateRequest input) {
+    String email = normalizeEmail(input.email());
+    log.info("Registration initiation requested for email: {}", email);
+
+    if (userRepository.existsByEmail(email)) {
+      log.warn("Registration initiation failed - email already registered: {}", email);
+      throw new AppException("EMAIL_ALREADY_REGISTERED", "Email is already registered", HttpStatus.CONFLICT);
+    }
+
+    PendingRegistration pending = pendingRegistrationRepository.findByEmail(email)
+        .orElse(PendingRegistration.builder().email(email).attemptCount(0).build());
+
+    Instant rateLimitWindow = Instant.now().minus(
+        appProperties.otp().rateLimitWindowMinutes(), ChronoUnit.MINUTES);
+    if (pending.getLastAttemptAt() != null
+        && pending.getLastAttemptAt().isAfter(rateLimitWindow)
+        && pending.getAttemptCount() >= appProperties.otp().maxAttemptsPerWindow()) {
+      log.warn("Registration initiation rate limited for email: {}. Attempts: {}", email, pending.getAttemptCount());
+      throw new AppException("OTP_RATE_LIMITED", "Too many attempts. Please try again later.", HttpStatus.TOO_MANY_REQUESTS);
+    }
+
+    if (pending.getLastAttemptAt() == null || pending.getLastAttemptAt().isBefore(rateLimitWindow)) {
+      pending.setAttemptCount(0);
+      log.debug("Reset attempt count for email: {}", email);
+    }
+
+    String otp = otpService.generateOtp();
+
+    pending.setDisplayName(input.displayName().trim());
+    pending.setPasswordHash(passwordEncoder.encode(input.password()));
+    pending.setOtpHash(otpService.hashOtp(otp));
+    pending.setAttemptCount(pending.getAttemptCount() + 1);
+    pending.setLastAttemptAt(Instant.now());
+    pending.setExpiresAt(Instant.now().plus(appProperties.otp().expiryMinutes(), ChronoUnit.MINUTES));
+
+    pendingRegistrationRepository.save(pending);
+    log.info("Pending registration saved for email: {}. Attempt count: {}", email, pending.getAttemptCount());
+
+    emailService.sendOtp(email, otp);
+  }
+
+  public AuthSession verifyRegistration(RegisterVerifyRequest input) {
+    String email = normalizeEmail(input.email());
+    log.info("Registration verification requested for email: {}", email);
+
+    PendingRegistration pending = pendingRegistrationRepository.findByEmail(email)
+        .orElseThrow(() -> {
+          log.warn("Registration verification failed - no pending registration found for email: {}", email);
+          return new AppException("OTP_EXPIRED", "Verification code has expired. Please request a new one.", HttpStatus.BAD_REQUEST);
+        });
+
+    if (!otpService.verifyOtp(input.otp(), pending.getOtpHash())) {
+      log.warn("Registration verification failed - invalid OTP for email: {}", email);
+      throw new AppException("OTP_INVALID", "Invalid verification code", HttpStatus.BAD_REQUEST);
+    }
+
+    if (userRepository.existsByEmail(email)) {
+      log.warn("Registration verification failed - email already registered: {}", email);
+      pendingRegistrationRepository.deleteByEmail(email);
+      throw new AppException("EMAIL_ALREADY_REGISTERED", "Email is already registered", HttpStatus.CONFLICT);
+    }
+
+    User user = User.builder()
+        .email(email)
+        .displayName(pending.getDisplayName())
+        .passwordHash(pending.getPasswordHash())
+        .build();
+
+    User savedUser = userRepository.save(user);
+    log.info("User created successfully via OTP verification. User ID: {}, Email: {}", savedUser.getId(), email);
+
+    pendingRegistrationRepository.deleteByEmail(email);
+    log.debug("Pending registration cleaned up for email: {}", email);
+
+    return createSession(savedUser);
+  }
 
   public AuthSession register(RegisterRequest input) {
     String email = normalizeEmail(input.email());

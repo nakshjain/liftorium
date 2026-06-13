@@ -13,6 +13,7 @@ export class AuthFormFieldComponent {
   @Input() public type: 'email' | 'password' | 'text' = 'text';
   @Input() public autocomplete = 'off';
   @Input() public placeholder = '';
+  @Input() public inputmode = '';
 
   public get errorMessage(): string {
     if (this.control.hasError('required')) {

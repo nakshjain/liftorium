@@ -2,6 +2,7 @@
   <span class="mb-2 block text-sm font-medium text-zinc-200">{{ label }}</span>
   <input
     class="h-12 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-4 text-base text-zinc-50 outline-none transition placeholder:text-zinc-600 focus:border-teal-400 focus:ring-2 focus:ring-teal-400/20"
+    [attr.inputmode]="inputmode || null"
     [autocomplete]="autocomplete"
     [formControl]="control"
     [placeholder]="placeholder"

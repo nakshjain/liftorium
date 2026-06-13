@@ -6,13 +6,95 @@ Base path:
 /api/v1/auth
 ```
 
-## Register
+## Register with Email Verification (Recommended)
+
+### Initiate Registration
+
+```http
+POST /api/v1/auth/register/initiate
+```
+
+Sends a 6-digit OTP to the provided email. The OTP expires in 5 minutes. Rate limited to 3 attempts per 10-minute window per email.
+
+#### Request Body
+
+```json
+{
+  "email": "user@example.com",
+  "password": "secure-password",
+  "displayName": "Alex"
+}
+```
+
+#### Success Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "message": "Verification code sent to your email"
+  }
+}
+```
+
+#### Error Cases
+
+| Status | Code | Meaning |
+| --- | --- | --- |
+| `409` | `EMAIL_ALREADY_REGISTERED` | Email is already attached to an account |
+| `429` | `OTP_RATE_LIMITED` | Too many OTP requests in the rate limit window |
+| `422` | `VALIDATION_ERROR` | Request body failed validation |
+| `500` | `EMAIL_SEND_FAILED` | Failed to send verification email |
+
+### Verify Registration
+
+```http
+POST /api/v1/auth/register/verify
+```
+
+Verifies the OTP, creates the user account, starts a session, sets an HTTP-only refresh token cookie, and returns an access token.
+
+#### Request Body
+
+```json
+{
+  "email": "user@example.com",
+  "otp": "123456"
+}
+```
+
+#### Success Response
+
+```json
+{
+  "success": true,
+  "data": {
+    "user": {
+      "id": "user_id",
+      "email": "user@example.com",
+      "displayName": "Alex"
+    },
+    "accessToken": "jwt_access_token"
+  }
+}
+```
+
+#### Error Cases
+
+| Status | Code | Meaning |
+| --- | --- | --- |
+| `400` | `OTP_EXPIRED` | Verification code has expired or does not exist |
+| `400` | `OTP_INVALID` | Verification code is incorrect |
+| `409` | `EMAIL_ALREADY_REGISTERED` | Email was registered after OTP was sent |
+| `422` | `VALIDATION_ERROR` | Request body failed validation |
+
+## Register (Direct)
 
 ```http
 POST /api/v1/auth/register
 ```
 
-Creates a user, starts a session, sets an HTTP-only refresh token cookie, and returns an access token.
+Creates a user without email verification, starts a session, sets an HTTP-only refresh token cookie, and returns an access token. Use the OTP flow above for production registrations.
 
 ### Request Body
 

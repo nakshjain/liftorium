@@ -20,6 +20,21 @@ export type SignupRequest = {
   displayName: string;
 };
 
+export type SignupInitiateRequest = {
+  email: string;
+  password: string;
+  displayName: string;
+};
+
+export type SignupVerifyRequest = {
+  email: string;
+  otp: string;
+};
+
+export type SignupInitiateResponse = {
+  message: string;
+};
+
 export type CurrentUserData = {
   user: AuthUser;
 };
