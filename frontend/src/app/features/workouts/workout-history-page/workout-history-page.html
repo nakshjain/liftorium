@@ -1,0 +1,132 @@
+<main class="min-h-dvh bg-zinc-950 pb-16 text-zinc-50">
+  <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
+
+    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+      <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app">Training hub</a>
+      <div class="mt-1 flex items-center justify-between">
+        <h1 class="text-2xl font-semibold tracking-normal text-zinc-50">History</h1>
+        <div class="flex items-center gap-2">
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200"
+            type="button"
+            (click)="prevMonth()"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <span class="min-w-[140px] text-center text-sm font-medium text-zinc-200">{{ monthLabel() }}</span>
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200 disabled:opacity-30"
+            type="button"
+            [disabled]="isCurrentMonth()"
+            (click)="nextMonth()"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    @if (stats(); as s) {
+      <section class="mt-4">
+        @if (s.streak > 0) {
+          <div class="mb-3 flex items-center gap-2 text-sm font-medium text-amber-400">
+            <span class="text-base">&#x1F525;</span>
+            <span>{{ s.streak }} day streak</span>
+          </div>
+        }
+
+        <div class="grid grid-cols-3 gap-3">
+          <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
+            <p class="text-xl font-bold text-zinc-50">{{ s.sessions }}</p>
+            <p class="mt-0.5 text-xs text-zinc-500">sessions</p>
+          </div>
+          <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
+            <p class="text-xl font-bold text-zinc-50">{{ formatVolume(s.totalVolume) }}</p>
+            <p class="mt-0.5 text-xs text-zinc-500">kg volume</p>
+          </div>
+          <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
+            <p class="text-xl font-bold text-zinc-50">{{ s.personalRecords.length }}</p>
+            <p class="mt-0.5 text-xs text-zinc-500">PRs</p>
+          </div>
+        </div>
+
+        @if (volumeChangePercent() !== null) {
+          <div class="mt-3 flex items-center gap-2">
+            <div class="h-2 flex-1 overflow-hidden rounded-full bg-zinc-800">
+              <div
+                class="h-full rounded-full transition-all"
+                [class.bg-teal-400]="volumeChangePercent()! >= 0"
+                [class.bg-rose-400]="volumeChangePercent()! < 0"
+                [style.width.%]="volumeBarWidth()"
+              ></div>
+            </div>
+            <span class="shrink-0 text-xs font-medium" [class.text-teal-400]="volumeChangePercent()! >= 0" [class.text-rose-400]="volumeChangePercent()! < 0">
+              {{ volumeChangePercent()! >= 0 ? '+' : '' }}{{ volumeChangePercent() }}% vs last month
+            </span>
+          </div>
+        }
+
+        @if (s.personalRecords.length > 0) {
+          <div class="mt-3 flex flex-wrap gap-2">
+            @for (pr of s.personalRecords; track pr.exerciseId) {
+              <span class="rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-300 ring-1 ring-amber-400/20">
+                &#x1F3C6; {{ pr.exerciseName }} {{ pr.weight }}kg x{{ pr.reps }}
+              </span>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <section class="mt-5">
+      @if (loading()) {
+        <div class="space-y-3">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <div class="h-[80px] animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
+          }
+        </div>
+      } @else if (workouts().length === 0) {
+        <div class="py-16 text-center">
+          <p class="text-base font-medium text-zinc-400">No workouts this month</p>
+          <p class="mt-1 text-sm text-zinc-600">Complete a workout to see it here.</p>
+        </div>
+      } @else {
+        <div class="space-y-2">
+          @for (workout of workouts(); track workout.id) {
+            <a
+              class="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+              [routerLink]="['/app/workouts', workout.id]"
+            >
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2">
+                  <p class="truncate text-sm font-semibold text-zinc-50">{{ workout.name }}</p>
+                </div>
+                <p class="mt-1 text-xs text-zinc-500">
+                  {{ formatDuration(workout.durationSeconds) }} &bull; {{ exerciseNames(workout) }} &bull; {{ formatVolume(workoutVolume(workout)) }}kg
+                </p>
+              </div>
+              <span class="shrink-0 text-xs font-medium text-zinc-500">{{ formatDate(workout.startedAt) }}</span>
+            </a>
+          }
+        </div>
+
+        @if (page() < totalPages()) {
+          <div class="mt-5 flex justify-center">
+            <button
+              class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500"
+              type="button"
+              (click)="loadMore()"
+            >
+              Load more
+            </button>
+          </div>
+        }
+      }
+    </section>
+
+  </div>
+</main>

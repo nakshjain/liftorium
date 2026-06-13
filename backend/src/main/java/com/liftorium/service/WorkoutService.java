@@ -9,15 +9,22 @@ import com.liftorium.dto.WorkoutDtos.StartWorkoutRequest;
 import com.liftorium.dto.WorkoutDtos.WorkoutDto;
 import com.liftorium.dto.WorkoutDtos.WorkoutExerciseDto;
 import com.liftorium.dto.WorkoutDtos.WorkoutSetDto;
+import com.liftorium.entity.Exercise;
 import com.liftorium.entity.Workout;
 import com.liftorium.entity.WorkoutExercise;
 import com.liftorium.entity.WorkoutSet;
 import com.liftorium.entity.WorkoutStatus;
 import com.liftorium.exception.AppException;
+import com.liftorium.repository.ExerciseRepository;
 import com.liftorium.repository.WorkoutRepository;
 import java.time.Instant;
+import java.time.YearMonth;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -30,6 +37,7 @@ import org.springframework.stereotype.Service;
 public class WorkoutService {
 
   private final WorkoutRepository workoutRepository;
+  private final ExerciseRepository exerciseRepository;
 
   public WorkoutDto start(String userId, StartWorkoutRequest input) {
     Workout workout = Workout.builder()
@@ -57,9 +65,19 @@ public class WorkoutService {
     PageRequest pageRequest = PageRequest.of(
         query.page() - 1,
         query.limit(),
-        Sort.by(Sort.Order.desc("finishedAt"), Sort.Order.desc("startedAt"))
+        Sort.by(Sort.Order.desc("startedAt"))
     );
-    Page<Workout> page = workoutRepository.findByUserIdAndStatus(userId, WorkoutStatus.completed, pageRequest);
+
+    Page<Workout> page;
+    if (query.month() != null && !query.month().isBlank()) {
+      YearMonth ym = YearMonth.parse(query.month());
+      Instant from = ym.atDay(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+      Instant to = ym.plusMonths(1).atDay(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+      page = workoutRepository.findByUserIdAndStatusAndStartedAtBetween(
+          userId, WorkoutStatus.completed, from, to, pageRequest);
+    } else {
+      page = workoutRepository.findByUserIdAndStatus(userId, WorkoutStatus.completed, pageRequest);
+    }
 
     return new PaginatedWorkoutsDto(
         page.getContent().stream().map(this::toDto).toList(),
@@ -152,6 +170,13 @@ public class WorkoutService {
   }
 
   private WorkoutDto toDto(Workout workout) {
+    List<String> exerciseIds = workout.getExercises().stream()
+        .map(WorkoutExercise::getExerciseId)
+        .distinct()
+        .toList();
+    Map<String, String> nameMap = exerciseRepository.findAllById(exerciseIds).stream()
+        .collect(Collectors.toMap(Exercise::getId, Exercise::getName));
+
     return new WorkoutDto(
         workout.getId(),
         workout.getUserId(),
@@ -161,16 +186,17 @@ public class WorkoutService {
         toIso(workout.getFinishedAt()),
         workout.getDurationSeconds(),
         workout.getNotes(),
-        workout.getExercises().stream().map(this::toExerciseDto).toList(),
+        workout.getExercises().stream().map(ex -> toExerciseDto(ex, nameMap)).toList(),
         toIso(workout.getCreatedAt()),
         toIso(workout.getUpdatedAt())
     );
   }
 
-  private WorkoutExerciseDto toExerciseDto(WorkoutExercise exercise) {
+  private WorkoutExerciseDto toExerciseDto(WorkoutExercise exercise, Map<String, String> nameMap) {
     return new WorkoutExerciseDto(
         exercise.getId(),
         exercise.getExerciseId(),
+        nameMap.getOrDefault(exercise.getExerciseId(), "Unknown"),
         exercise.getOrder(),
         exercise.getSets().stream().map(this::toSetDto).toList()
     );

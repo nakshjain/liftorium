@@ -2,6 +2,8 @@ package com.liftorium.repository;
 
 import com.liftorium.entity.Workout;
 import com.liftorium.entity.WorkoutStatus;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,4 +16,12 @@ public interface WorkoutRepository extends MongoRepository<Workout, String> {
   Optional<Workout> findByIdAndUserId(String id, String userId);
 
   Page<Workout> findByUserIdAndStatus(String userId, WorkoutStatus status, Pageable pageable);
+
+  Page<Workout> findByUserIdAndStatusAndStartedAtBetween(
+      String userId, WorkoutStatus status, Instant from, Instant to, Pageable pageable);
+
+  List<Workout> findByUserIdAndStatusAndStartedAtBetween(
+      String userId, WorkoutStatus status, Instant from, Instant to);
+
+  List<Workout> findByUserIdAndStatusOrderByStartedAtDesc(String userId, WorkoutStatus status);
 }

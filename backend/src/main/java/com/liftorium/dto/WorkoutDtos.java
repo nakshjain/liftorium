@@ -25,6 +25,7 @@ public final class WorkoutDtos {
   public record WorkoutExerciseDto(
       String id,
       String exerciseId,
+      String exerciseName,
       int order,
       List<WorkoutSetDto> sets
   ) {
@@ -73,7 +74,8 @@ public final class WorkoutDtos {
 
   public record ListWorkoutHistoryQuery(
       @Min(1) int page,
-      @Min(1) @Max(100) int limit
+      @Min(1) @Max(100) int limit,
+      String month
   ) {
   }
 
@@ -83,6 +85,25 @@ public final class WorkoutDtos {
       int limit,
       long total,
       int totalPages
+  ) {
+  }
+
+  public record WorkoutStatsDto(
+      int sessions,
+      double totalVolume,
+      int totalSets,
+      int streak,
+      double previousMonthVolume,
+      List<PersonalRecordDto> personalRecords
+  ) {
+  }
+
+  public record PersonalRecordDto(
+      String exerciseId,
+      String exerciseName,
+      double weight,
+      int reps,
+      String achievedAt
   ) {
   }
 }

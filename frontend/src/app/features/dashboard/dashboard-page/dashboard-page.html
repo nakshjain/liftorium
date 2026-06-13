@@ -43,7 +43,20 @@
       </a>
 
       <!-- Secondary actions -->
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 anim-enter-2">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 anim-enter-2">
+        <a
+          class="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-600 hover:bg-zinc-900 active:scale-[0.99]"
+          routerLink="/app/workouts/history"
+        >
+          <div>
+            <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">History</p>
+            <p class="mt-2 text-lg font-semibold text-zinc-50">Past workouts</p>
+          </div>
+          <svg class="h-5 w-5 shrink-0 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+        </a>
+
         <a
           class="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-600 hover:bg-zinc-900 active:scale-[0.99]"
           routerLink="/app/exercises"
@@ -58,7 +71,7 @@
         </a>
 
         <a
-          class="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-600 hover:bg-zinc-900 active:scale-[0.99] anim-enter-3"
+          class="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-600 hover:bg-zinc-900 active:scale-[0.99]"
           routerLink="/app/plan"
         >
           <div>
