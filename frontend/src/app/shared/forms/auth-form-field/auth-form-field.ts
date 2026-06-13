@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, signal } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
@@ -15,19 +15,32 @@ export class AuthFormFieldComponent {
   @Input() public placeholder = '';
   @Input() public inputmode = '';
 
+  protected readonly showPassword = signal(false);
+
+  protected get effectiveType(): 'email' | 'password' | 'text' {
+    return this.type === 'password' && this.showPassword() ? 'text' : this.type;
+  }
+
+  protected get effectiveInputMode(): string | null {
+    if (this.inputmode) return this.inputmode;
+    if (this.type === 'email') return 'email';
+    return null;
+  }
+
+  protected togglePassword(): void {
+    this.showPassword.update(v => !v);
+  }
+
   public get errorMessage(): string {
     if (this.control.hasError('required')) {
       return `${this.label} is required.`;
     }
-
     if (this.control.hasError('email')) {
       return 'Enter a valid email address.';
     }
-
     if (this.control.hasError('minlength')) {
       return `${this.label} is too short.`;
     }
-
     return `${this.label} is invalid.`;
   }
 }

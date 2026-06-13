@@ -1,6 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { getApiErrorMessage } from '../../../core/auth/auth-api-error';
@@ -21,6 +22,7 @@ export class LoginPageComponent {
 
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly isCredentialError = signal(false);
 
   protected readonly form = this.formBuilder.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -41,6 +43,7 @@ export class LoginPageComponent {
 
     this.loading.set(true);
     this.errorMessage.set(null);
+    this.isCredentialError.set(false);
 
     this.authService
       .login(this.form.getRawValue())
@@ -51,6 +54,7 @@ export class LoginPageComponent {
         },
         error: (error: unknown) => {
           this.errorMessage.set(getApiErrorMessage(error));
+          this.isCredentialError.set(error instanceof HttpErrorResponse && error.status === 401);
         }
       });
   }

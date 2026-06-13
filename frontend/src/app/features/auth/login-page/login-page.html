@@ -1,7 +1,7 @@
 <app-auth-shell
   eyebrow="Welcome back"
-  title="Log your next session without friction."
-  description="Sign in to continue your workout history, active sessions, and exercise tracking."
+  title="Log your next session."
+  description="Pick up exactly where you left off."
 >
   <form class="space-y-5" [formGroup]="form" (ngSubmit)="submit()">
     <app-auth-form-field
@@ -12,26 +12,54 @@
       [control]="form.controls.email"
     />
 
-    <app-auth-form-field
-      autocomplete="current-password"
-      label="Password"
-      placeholder="Your password"
-      type="password"
-      [control]="form.controls.password"
-    />
+    <div class="space-y-2">
+      <app-auth-form-field
+        autocomplete="current-password"
+        label="Password"
+        placeholder="Your password"
+        type="password"
+        [control]="form.controls.password"
+      />
+      <div class="flex justify-end">
+        <a
+          class="text-sm text-zinc-500 transition hover:text-zinc-300"
+          routerLink="/auth/forgot-password"
+        >Forgot password?</a>
+      </div>
+    </div>
 
     @if (errorMessage()) {
-      <p class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
-        {{ errorMessage() }}
-      </p>
+      <div
+        class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3"
+        role="alert"
+        aria-live="assertive"
+      >
+        <p class="text-sm text-rose-200">{{ errorMessage() }}</p>
+        @if (isCredentialError()) {
+          <a
+            class="mt-1 block text-sm font-medium text-rose-300 underline-offset-2 hover:underline"
+            routerLink="/auth/forgot-password"
+          >Reset your password</a>
+        }
+      </div>
     }
 
     <button
-      class="h-12 w-full rounded-lg bg-teal-400 px-4 text-base font-semibold text-zinc-950 transition hover:bg-teal-300 disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+      class="h-12 w-full rounded-lg bg-teal-400 px-4 text-base font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
       type="submit"
       [disabled]="submitDisabled()"
     >
-      {{ submitButtonLabel() }}
+      @if (loading()) {
+        <span class="flex items-center justify-center gap-2">
+          <svg class="h-4 w-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          Signing in…
+        </span>
+      } @else {
+        Sign in
+      }
     </button>
   </form>
 
