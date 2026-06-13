@@ -108,6 +108,52 @@
           </div>
         }
       </section>
+
+      <!-- Context-aware action toolbar -->
+      <section class="fixed bottom-0 left-0 right-0 z-10 border-t border-zinc-900 bg-zinc-950/95 backdrop-blur">
+        <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
+          @if (hasActiveWorkout()) {
+            @if (isInWorkout()) {
+              <div class="flex items-center gap-3">
+                <button
+                  class="flex h-14 flex-1 items-center justify-center gap-2 rounded-lg bg-zinc-800 text-sm font-semibold text-zinc-400 cursor-not-allowed"
+                  type="button"
+                  disabled
+                >
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                  </svg>
+                  Already in workout
+                </button>
+                <a
+                  class="flex h-14 shrink-0 items-center justify-center rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98]"
+                  routerLink="/app/workout/live"
+                >
+                  Open workout
+                </a>
+              </div>
+            } @else {
+              <button
+                class="h-14 w-full rounded-lg bg-teal-400 text-base font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+                type="button"
+                [disabled]="adding()"
+                (click)="addToWorkout()"
+              >
+                {{ adding() ? 'Adding...' : 'Add to current workout' }}
+              </button>
+            }
+          } @else {
+            <button
+              class="h-14 w-full rounded-lg bg-teal-400 text-base font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-zinc-700 disabled:text-zinc-400"
+              type="button"
+              [disabled]="adding()"
+              (click)="startWorkoutWith()"
+            >
+              {{ adding() ? 'Starting...' : 'Start workout with this' }}
+            </button>
+          }
+        </div>
+      </section>
     }
 
   </div>

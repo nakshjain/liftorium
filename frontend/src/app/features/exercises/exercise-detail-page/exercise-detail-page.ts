@@ -73,14 +73,22 @@ export class ExerciseDetailPageComponent implements OnInit {
     }, 500);
   }
 
-  protected quickLogSets(): void {
+  protected startWorkoutWith(): void {
     const ex = this.exercise();
-    if (!ex) return;
+    if (!ex || this.adding()) return;
 
-    // Navigate to workout page with this exercise pre-selected for quick logging
-    // This would require workout page to accept query params
-    this.router.navigate(['/app/workout/live'], {
-      queryParams: { exercise: ex.id }
-    });
+    this.adding.set(true);
+
+    // Start a new workout with this exercise
+    // First, ensure any existing workout is cleared (user confirmed via button context)
+    // Then add this exercise and navigate to live workout page
+    this.liveWorkoutStore.addExercise(ex.id);
+
+    this.toastService.success(`Started workout with ${ex.name}`);
+
+    setTimeout(() => {
+      this.adding.set(false);
+      this.router.navigate(['/app/workout/live']);
+    }, 500);
   }
 }
