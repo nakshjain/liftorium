@@ -36,6 +36,24 @@ public final class AuthDtos {
   ) {
   }
 
+  public record ForgotPasswordRequest(
+      @NotBlank @Email @Size(max = 320) String email
+  ) {
+  }
+
+  public record ForgotPasswordVerifyRequest(
+      @NotBlank @Email @Size(max = 320) String email,
+      @NotBlank @Size(min = 6, max = 6) String otp
+  ) {
+  }
+
+  public record ResetPasswordRequest(
+      @NotBlank @Email @Size(max = 320) String email,
+      @NotBlank @Size(min = 6, max = 6) String otp,
+      @NotBlank @Size(min = 8, max = 128) String newPassword
+  ) {
+  }
+
   public record AuthUserDto(
       String id,
       String email,

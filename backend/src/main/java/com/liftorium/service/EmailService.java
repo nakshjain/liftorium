@@ -34,4 +34,20 @@ public class EmailService {
       throw new AppException("EMAIL_SEND_FAILED", "Failed to send verification email", HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
+  public void sendPasswordResetOtp(String toEmail, String otp) {
+    log.info("Attempting to send password reset OTP email to: {}", toEmail);
+    try {
+      SimpleMailMessage message = new SimpleMailMessage();
+      message.setFrom(fromEmail);
+      message.setTo(toEmail);
+      message.setSubject("Liftorium — Reset your password");
+      message.setText("Your password reset code is: " + otp + "\n\nThis code expires in 10 minutes.\n\nIf you didn't request this, you can safely ignore this email.");
+      mailSender.send(message);
+      log.info("Password reset OTP email sent successfully to: {}", toEmail);
+    } catch (Exception e) {
+      log.error("Failed to send password reset OTP email to: {}. Error: {}", toEmail, e.getMessage(), e);
+      throw new AppException("EMAIL_SEND_FAILED", "Failed to send password reset email", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

@@ -44,3 +44,13 @@ export type LogoutData = {
 };
 
 export type AuthStatus = 'checking' | 'authenticated' | 'anonymous';
+
+export type ForgotPasswordRequest = {
+  email: string;
+};
+
+export type ResetPasswordRequest = {
+  email: string;
+  otp: string;
+  newPassword: string;
+};
