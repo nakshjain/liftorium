@@ -5,6 +5,9 @@ import { LiveWorkout } from '../live-workout.models';
 import { LiveWorkoutStore } from '../live-workout.store';
 import { PlanStore } from '../../plan/plan.store';
 import { DAY_LABELS, PlanDay } from '../../plan/plan.models';
+import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
+import { ToastService } from '../../../shared/ui/toast/toast.service';
+import { WorkoutService } from '../workout.service';
 
 type FinishedWorkoutSummary = {
   exercises: number;
@@ -14,14 +17,20 @@ type FinishedWorkoutSummary = {
 
 @Component({
   selector: 'app-live-workout-page',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, ConfirmationDialogComponent],
   templateUrl: './live-workout-page.html',
   styleUrl: './live-workout-page.scss'
 })
 export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly store = inject(LiveWorkoutStore);
   protected readonly planStore = inject(PlanStore);
+  private readonly toastService = inject(ToastService);
+  private readonly workoutService = inject(WorkoutService);
   private timerId: number | null = null;
+
+  protected readonly showResetConfirm = signal(false);
+  protected readonly showFinishConfirm = signal(false);
+  private pendingFinishWorkout: LiveWorkout | null = null;
 
   protected readonly dayLabels = DAY_LABELS;
   protected readonly selectedDayIndex = signal(this.getTodayIndex());
@@ -36,9 +45,6 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
 
   protected readonly addedExerciseIds = computed(
     () => new Set(this.store.activeWorkout()?.exercises.map((exercise) => exercise.exerciseId) ?? [])
-  );
-  protected readonly availableExerciseCount = computed(
-    () => this.store.exercises().filter((exercise) => !this.addedExerciseIds().has(exercise.id)).length
   );
   protected readonly elapsedTimeLabel = computed(() => this.formatTime(this.store.elapsedSeconds()));
   protected readonly restTimerLabel = computed(() =>
@@ -56,6 +62,26 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.timerId = window.setInterval(() => this.store.tick(), 1000);
+    this.checkStaleWorkoutNotification();
+  }
+
+  private checkStaleWorkoutNotification(): void {
+    try {
+      const raw = localStorage.getItem('liftorium_stale_workout_notification');
+      if (!raw) return;
+
+      const notification = JSON.parse(raw) as { setCount: number; timestamp: number };
+      const ageHours = (Date.now() - notification.timestamp) / (1000 * 60 * 60);
+
+      // Show if less than 24 hours old
+      if (ageHours < 24) {
+        this.toastService.info(`Yesterday's workout was auto-saved (${notification.setCount} sets).`);
+      }
+
+      localStorage.removeItem('liftorium_stale_workout_notification');
+    } catch {
+      // Invalid JSON or storage error — ignore
+    }
   }
 
   public ngOnDestroy(): void {
@@ -102,7 +128,79 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   }
 
   protected resetWorkout(): void {
+    this.showResetConfirm.set(true);
+  }
+
+  protected confirmReset(): void {
+    this.showResetConfirm.set(false);
     this.store.resetWorkout();
+  }
+
+  protected cancelReset(): void {
+    this.showResetConfirm.set(false);
+  }
+
+  protected finishWorkout(): void {
+    const workout = this.store.activeWorkout();
+    if (!workout) return;
+
+    this.pendingFinishWorkout = this.captureWorkoutSnapshot(workout);
+    this.showFinishConfirm.set(true);
+  }
+
+  protected confirmFinish(): void {
+    this.showFinishConfirm.set(false);
+    if (!this.pendingFinishWorkout) return;
+
+    const finishedWorkout = this.pendingFinishWorkout;
+    this.store.finishWorkout();
+
+    this.workoutService.save(finishedWorkout).subscribe({
+      next: () => {
+        this.toastService.success('Workout saved successfully!');
+      },
+      error: () => {
+        this.toastService.error('Failed to save workout.', {
+          label: 'Retry',
+          handler: () => this.retrySaveWorkout(finishedWorkout)
+        });
+      },
+    });
+
+    this.pendingFinishWorkout = null;
+  }
+
+  protected cancelFinish(): void {
+    this.showFinishConfirm.set(false);
+    this.pendingFinishWorkout = null;
+  }
+
+  protected finishConfirmDetails = computed(() => {
+    if (!this.pendingFinishWorkout) return '';
+    const summary = this.createFinishedSummary(this.pendingFinishWorkout);
+    return `${summary.sets} sets logged • ${summary.volume} kg total volume`;
+  });
+
+  private captureWorkoutSnapshot(workout: LiveWorkout): LiveWorkout {
+    const now = Date.now();
+    const finalAccumulated = workout.resumedAt !== 0
+      ? workout.accumulatedMs + (now - workout.resumedAt)
+      : workout.accumulatedMs;
+    return { ...workout, finishedAt: now, resumedAt: 0, accumulatedMs: finalAccumulated };
+  }
+
+  private retrySaveWorkout(workout: LiveWorkout): void {
+    this.workoutService.save(workout).subscribe({
+      next: () => {
+        this.toastService.success('Workout saved successfully!');
+      },
+      error: () => {
+        this.toastService.error('Failed to save workout.', {
+          label: 'Retry',
+          handler: () => this.retrySaveWorkout(workout)
+        });
+      },
+    });
   }
 
   protected startFromPlan(): void {
