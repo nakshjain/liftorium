@@ -1,0 +1,19 @@
+package com.liftorium.repository;
+
+import com.liftorium.entity.Exercise;
+import com.liftorium.entity.ExerciseProviderType;
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface ExerciseRepository extends MongoRepository<Exercise, String> {
+
+  Optional<Exercise> findByIdAndActiveTrue(String id);
+
+  Optional<Exercise> findBySourceProviderAndSourceProviderExerciseId(
+      ExerciseProviderType provider, String providerExerciseId);
+
+  List<Exercise> findBySourceProviderAndActiveTrueAndLastSeenAtBefore(
+      ExerciseProviderType provider, Instant before);
+}

@@ -249,7 +249,7 @@ Use this file for short, dated progress entries.
 ### Completed
 
 - Removed the root Docker Compose file from the local development setup.
-- Updated local run documentation to prefer IntelliJ's play button on `GymHelperApplication`.
+- Updated local run documentation to prefer IntelliJ's play button on `LiftoriumApplication`.
 - Kept a simple IntelliJ startup flow before the later profile-based refactor.
 
 ### Verification

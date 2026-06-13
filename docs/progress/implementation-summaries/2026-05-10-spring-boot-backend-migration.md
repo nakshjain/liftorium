@@ -7,15 +7,15 @@ Migrated the backend from Express and TypeScript to Spring Boot with Java 21 and
 ## Created Structure
 
 - `backend/pom.xml`
-- `backend/src/main/java/com/gymhelper/config`
-- `backend/src/main/java/com/gymhelper/controller`
-- `backend/src/main/java/com/gymhelper/dto`
-- `backend/src/main/java/com/gymhelper/entity`
-- `backend/src/main/java/com/gymhelper/exception`
-- `backend/src/main/java/com/gymhelper/repository`
-- `backend/src/main/java/com/gymhelper/security`
-- `backend/src/main/java/com/gymhelper/service`
-- `backend/src/main/java/com/gymhelper/util`
+- `backend/src/main/java/com/liftorium/config`
+- `backend/src/main/java/com/liftorium/controller`
+- `backend/src/main/java/com/liftorium/dto`
+- `backend/src/main/java/com/liftorium/entity`
+- `backend/src/main/java/com/liftorium/exception`
+- `backend/src/main/java/com/liftorium/repository`
+- `backend/src/main/java/com/liftorium/security`
+- `backend/src/main/java/com/liftorium/service`
+- `backend/src/main/java/com/liftorium/util`
 - `backend/src/main/resources/application.properties`
 
 ## Architecture Decisions

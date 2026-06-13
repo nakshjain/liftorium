@@ -79,7 +79,7 @@ Advanced AI features are outside the initial MVP.
 
 ### Structure
 
-Backend code belongs under the `com.gymhelper` package and should use a scalable modular structure.
+Backend code belongs under the `com.liftorium` package and should use a scalable modular structure.
 
 Each feature should follow clear responsibility boundaries:
 

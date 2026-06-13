@@ -59,4 +59,4 @@ The backend uses Spring Boot profile-specific properties:
 - `application-development.properties` contains development runtime values.
 - `application-production.properties` contains environment placeholders for deployed runtimes.
 
-For IntelliJ local runs, open `GymHelperApplication` and click the play button. The default development profile loads automatically.
+For IntelliJ local runs, open `LiftoriumApplication` and click the play button. The default development profile loads automatically.
