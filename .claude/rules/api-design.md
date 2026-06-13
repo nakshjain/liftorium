@@ -1,31 +1,118 @@
 ---
-description: REST API design conventions and endpoint patterns
+description: REST API design standards, endpoint conventions, and response contracts
 globs: ["backend/src/main/java/com/liftorium/controller/**", "backend/src/main/java/com/liftorium/dto/**"]
 ---
 
 # API Design
 
-## URL Structure
-- All endpoints under `/api/v1/`.
-- Resource-oriented: `/api/v1/workouts`, `/api/v1/exercises`, `/api/v1/plans`.
-- Nested resources for sub-entities: `/api/v1/workouts/{id}/exercises/{id}/sets`.
+## Versioning
 
-## Response Envelope
-Every response wraps data in:
-```json
-{ "success": true, "data": { ... } }
+* All public endpoints must be versioned.
+* Current version prefix: `/api/v1`.
+
+Examples:
+
+```text
+/api/v1/workouts
+/api/v1/exercises
+/api/v1/plans
 ```
-Errors use:
+
+## Resource Design
+
+* Use resource-oriented URLs.
+* Use nouns, not verbs.
+* Prefer plural resource names.
+
+Examples:
+
+```text
+GET    /api/v1/workouts
+GET    /api/v1/workouts/{workoutId}
+POST   /api/v1/workouts
+PUT    /api/v1/workouts/{workoutId}
+DELETE /api/v1/workouts/{workoutId}
+```
+
+Nested resources:
+
+```text
+/api/v1/workouts/{workoutId}/exercises/{exerciseId}/sets
+```
+
+## Response Contract
+
+Success:
+
 ```json
-{ "success": false, "error": { "code": "ERROR_CODE", "message": "Human-readable message" } }
+{
+  "success": true,
+  "data": {}
+}
+```
+
+Error:
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable message"
+  }
+}
 ```
 
 ## Pagination
-- Query params: `page` (1-based), `limit` (default 20, max 100).
-- Response includes `items`, `totalPages`, `totalItems`, `currentPage`.
-- Cursor-based pagination for exercise catalog (prefix search).
+
+Request:
+
+```text
+?page=1&limit=20
+```
+
+Rules:
+
+* `page` is 1-based.
+* Default limit: 20.
+* Maximum limit: 100.
+
+Response:
+
+```json
+{
+  "items": [],
+  "totalPages": 0,
+  "totalItems": 0,
+  "currentPage": 1
+}
+```
+
+* Use cursor-based pagination for large searchable exercise catalogs.
 
 ## Validation
-- Jakarta Validation on request DTOs (`@Valid @RequestBody`).
-- ObjectId format validated via `ObjectIdValidator.requireValid()` in controllers.
-- Return 422 for validation errors, 404 for not found, 401/403 for auth issues.
+
+* Apply Jakarta Validation annotations to request DTOs.
+* Use `@Valid` on controller request bodies.
+* Validate path IDs before processing requests.
+
+## HTTP Status Codes
+
+Use standard REST status codes:
+
+* 200 OK
+* 201 Created
+* 204 No Content
+* 400 Bad Request
+* 401 Unauthorized
+* 403 Forbidden
+* 404 Not Found
+* 409 Conflict
+* 422 Unprocessable Entity
+* 500 Internal Server Error
+
+## DTO Design
+
+* Use Java records for DTOs.
+* Separate request and response DTOs when responsibilities differ.
+* Never expose persistence entities directly through APIs.
