@@ -71,7 +71,7 @@ Spring Security
 gym/
   backend/
     pom.xml
-    src/main/java/com/gymhelper/
+    src/main/java/com/liftorium/
       config/
       controller/
       dto/

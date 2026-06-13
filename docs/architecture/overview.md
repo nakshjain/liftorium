@@ -22,7 +22,7 @@ User
 
 ## Backend Runtime
 
-The backend is a Java 21 Maven project using Spring Boot 4.0.6. `GymHelperApplication` starts the application, Spring Security protects routes, and Spring Data MongoDB persists users, refresh tokens, exercises, and workouts.
+The backend is a Java 21 Maven project using Spring Boot 4.0.6. `LiftoriumApplication` starts the application, Spring Security protects routes, and Spring Data MongoDB persists users, refresh tokens, exercises, and workouts.
 
 ## Frontend Runtime
 

@@ -74,7 +74,7 @@ The goal is:
 * Use Spring Security for protected routes
 * Use environment variable placeholders in `application.properties`
 * Use JWT auth with refresh tokens
-* Use scalable package structure under `com.gymhelper`
+* Use scalable package structure under `com.liftorium`
 
 ---
 

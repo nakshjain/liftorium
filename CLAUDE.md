@@ -27,7 +27,7 @@ npm test                      # Run tests (Vitest)
 
 Full-stack: Angular 21 frontend → Spring Boot 4 REST API → MongoDB.
 
-**Backend** follows strict controller → service → repository layering under `com.gymhelper`. Request flow: Spring Security JWT filter → controller → service → Spring Data MongoDB repository. All controllers inject `UserPrincipal` from the security context for the authenticated user. Centralized exception handling via `@RestControllerAdvice`. All responses use `{ "success": true/false, "data": {} }` or `{ "success": false, "error": { "code": "", "message": "" } }` envelopes.
+**Backend** follows strict controller → service → repository layering under `com.liftorium`. Request flow: Spring Security JWT filter → controller → service → Spring Data MongoDB repository. All controllers inject `UserPrincipal` from the security context for the authenticated user. Centralized exception handling via `@RestControllerAdvice`. All responses use `{ "success": true/false, "data": {} }` or `{ "success": false, "error": { "code": "", "message": "" } }` envelopes.
 
 **Frontend** uses Angular standalone components with lazy-loaded routes. `AuthService` (signals-based) manages auth state; `AuthInterceptor` injects `Authorization: Bearer` headers and auto-retries on 401 with token refresh. The refresh token is stored in an HTTP-only Strict-SameSite cookie set by Spring; the access token lives in memory/localStorage. `LiveWorkoutStore` (injectable signal service) tracks the active workout session client-side.
 

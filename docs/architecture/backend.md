@@ -23,7 +23,7 @@
 ## Folder Structure
 
 ```text
-backend/src/main/java/com/gymhelper
+backend/src/main/java/com/liftorium
   config/
     cors/
     jwt/
@@ -36,7 +36,7 @@ backend/src/main/java/com/gymhelper
   security/
   service/
   util/
-  GymHelperApplication.java
+  LiftoriumApplication.java
 backend/src/main/resources/application.properties
 ```
 

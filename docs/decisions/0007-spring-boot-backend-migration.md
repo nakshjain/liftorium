@@ -21,7 +21,7 @@ The backend uses:
 - Lombok to reduce boilerplate.
 - Jakarta Validation for DTO validation.
 
-The package structure is rooted at `com.gymhelper` with controller, service, repository, DTO, entity, security, config, exception, and utility layers.
+The package structure is rooted at `com.liftorium` with controller, service, repository, DTO, entity, security, config, exception, and utility layers.
 
 ## Consequences
 
