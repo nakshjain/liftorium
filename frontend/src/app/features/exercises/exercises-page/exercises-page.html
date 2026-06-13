@@ -118,13 +118,19 @@
       </div>
 
       @if (hasActiveFilters()) {
-        <div class="mt-2 flex items-center gap-2">
+        <div class="mt-3 flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2">
+          <p class="text-xs text-zinc-400">
+            <span class="font-medium text-zinc-300">{{ activeFilterCount() }} filter{{ activeFilterCount() === 1 ? '' : 's' }}</span> applied
+            @if (filters().muscle) { <span class="text-zinc-500">•</span> {{ filters().muscle }} }
+            @if (filters().exerciseType) { <span class="text-zinc-500">•</span> {{ filters().exerciseType }} }
+            @if (filters().level) { <span class="text-zinc-500">•</span> {{ filters().level }} }
+          </p>
           <button
-            class="h-10 rounded-full border border-rose-400/40 px-4 text-xs font-medium text-rose-300 transition hover:border-rose-400 active:scale-[0.98]"
+            class="shrink-0 text-xs font-medium text-rose-300 transition hover:text-rose-200"
             type="button"
             (click)="clearFilters()"
           >
-            Clear filters
+            Clear all
           </button>
         </div>
       }
@@ -162,7 +168,11 @@
       } @else if (exercises().length === 0) {
         <div class="py-16 text-center">
           <p class="text-base font-medium text-zinc-400">No exercises found</p>
-          <p class="mt-1 text-sm text-zinc-600">Try a different search or clear filters.</p>
+          @if (hasActiveFilters() || filters().query) {
+            <p class="mt-1 text-sm text-zinc-600">Try different filters or search terms.</p>
+          } @else {
+            <p class="mt-1 text-sm text-zinc-600">The exercise catalog is empty.</p>
+          }
         </div>
       } @else {
         <div class="space-y-2">

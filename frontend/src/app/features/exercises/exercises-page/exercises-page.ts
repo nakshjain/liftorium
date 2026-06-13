@@ -43,6 +43,14 @@ export class ExercisesPageComponent implements OnInit {
     () => this.filters().muscle !== '' || this.filters().exerciseType !== '' || this.filters().level !== ''
   );
 
+  protected readonly activeFilterCount = computed(() => {
+    let count = 0;
+    if (this.filters().muscle) count++;
+    if (this.filters().exerciseType) count++;
+    if (this.filters().level) count++;
+    return count;
+  });
+
   protected readonly muscleGroups = [
     { label: 'Upper', muscles: ['Chest', 'Lats', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Middle Back', 'Traps'] },
     { label: 'Lower', muscles: ['Quadriceps', 'Hamstrings', 'Glutes', 'Calves', 'Abductors', 'Adductors'] },
