@@ -3,7 +3,7 @@
     <option name="envFilePaths">
       <option value="$PROJECT_DIR$/backend/.env" />
     </option>
-    <option name="MAIN_CLASS_NAME" value="com.gymhelper.LiftoriumApplication" />
+    <option name="MAIN_CLASS_NAME" value="com.liftorium.LiftoriumApplication" />
     <module name="gym-helper-backend" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/backend" />
     <method v="2">
