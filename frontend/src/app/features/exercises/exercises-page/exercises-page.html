@@ -258,7 +258,7 @@
         <div class="space-y-2">
           @for (exercise of exercises(); track exercise.id) {
             <a
-              class="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+              class="group flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
               [routerLink]="['/app/exercises', exercise.id]"
             >
               <div class="min-w-0 flex-1">
@@ -288,7 +288,7 @@
                 </div>
               </div>
               <div class="shrink-0">
-                <span class="rounded-full border border-zinc-700/60 px-2.5 py-1 text-xs font-medium text-zinc-500">
+                <span class="rounded-full border border-zinc-700/60 px-2.5 py-1 text-xs font-medium text-zinc-500 transition group-hover:border-zinc-600 group-hover:text-zinc-400">
                   {{ exercise.exerciseType }}
                 </span>
               </div>
