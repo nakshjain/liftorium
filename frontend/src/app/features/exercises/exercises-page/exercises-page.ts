@@ -29,6 +29,8 @@ export class ExercisesPageComponent implements OnInit {
   protected readonly error = signal<string | null>(null);
   protected readonly nextCursor = signal<string | null>(null);
   protected readonly hasNext = signal(false);
+  protected readonly searching = signal(false);
+  protected readonly resultCount = signal<number | null>(null);
 
   protected readonly filters = signal<FilterState>({
     query: '',
@@ -41,12 +43,32 @@ export class ExercisesPageComponent implements OnInit {
     () => this.filters().muscle !== '' || this.filters().exerciseType !== '' || this.filters().level !== ''
   );
 
-  protected readonly muscles: string[] = [
-    'Chest', 'Lats', 'Shoulders', 'Biceps', 'Triceps', 'Forearms',
-    'Quadriceps', 'Hamstrings', 'Glutes', 'Calves',
-    'Abdominals', 'Lower Back', 'Middle Back', 'Traps', 'Neck',
-    'Abductors', 'Adductors'
+  protected readonly activeFilterCount = computed(() => {
+    let count = 0;
+    if (this.filters().muscle) count++;
+    if (this.filters().exerciseType) count++;
+    if (this.filters().level) count++;
+    return count;
+  });
+
+  protected readonly muscleGroups = [
+    { label: 'Upper', muscles: ['Chest', 'Lats', 'Shoulders', 'Biceps', 'Triceps', 'Forearms', 'Middle Back', 'Traps'] },
+    { label: 'Lower', muscles: ['Quadriceps', 'Hamstrings', 'Glutes', 'Calves', 'Abductors', 'Adductors'] },
+    { label: 'Core', muscles: ['Abdominals', 'Lower Back'] }
   ];
+
+  protected readonly showAdvancedMuscles = signal(false);
+
+  // Onboarding tooltips state
+  protected readonly showFilterLogicTooltip = signal(false);
+  protected readonly showExerciseTypeTooltip = signal(false);
+  protected readonly showMuscleGroupTooltip = signal(false);
+
+  private readonly TOOLTIP_STORAGE_KEYS = {
+    filterLogic: 'exercises-tooltip-filter-logic-seen',
+    exerciseType: 'exercises-tooltip-exercise-type-seen',
+    muscleGroup: 'exercises-tooltip-muscle-group-seen'
+  };
 
   protected readonly exerciseTypes: { value: ExerciseType; label: string }[] = [
     { value: 'STRENGTH', label: 'Strength' },
@@ -69,6 +91,7 @@ export class ExercisesPageComponent implements OnInit {
         distinctUntilChanged(),
         switchMap((query) => {
           const trimmed = query.trim();
+          this.searching.set(false);
           this.loading.set(true);
           this.error.set(null);
           if (trimmed.length >= 2) {
@@ -81,18 +104,53 @@ export class ExercisesPageComponent implements OnInit {
       .subscribe({
         next: (page) => this.applyPage(page, false),
         error: () => {
-          this.error.set('Failed to load exercises. Please try again.');
+          this.error.set('Could not load exercises. Check your connection and try again.');
           this.loading.set(false);
+          this.searching.set(false);
         }
       });
   }
 
   public ngOnInit(): void {
     this.fetchList(false);
+    this.checkFirstVisit();
+  }
+
+  private checkFirstVisit(): void {
+    // Show onboarding tooltips on first visit
+    if (!localStorage.getItem(this.TOOLTIP_STORAGE_KEYS.muscleGroup)) {
+      setTimeout(() => this.showMuscleGroupTooltip.set(true), 500);
+    }
+  }
+
+  protected dismissTooltip(type: 'filterLogic' | 'exerciseType' | 'muscleGroup'): void {
+    switch (type) {
+      case 'filterLogic':
+        this.showFilterLogicTooltip.set(false);
+        localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.filterLogic, 'true');
+        break;
+      case 'exerciseType':
+        this.showExerciseTypeTooltip.set(false);
+        localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.exerciseType, 'true');
+        // Chain to next tooltip
+        if (!localStorage.getItem(this.TOOLTIP_STORAGE_KEYS.filterLogic)) {
+          setTimeout(() => this.showFilterLogicTooltip.set(true), 300);
+        }
+        break;
+      case 'muscleGroup':
+        this.showMuscleGroupTooltip.set(false);
+        localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.muscleGroup, 'true');
+        // Chain to next tooltip
+        if (!localStorage.getItem(this.TOOLTIP_STORAGE_KEYS.exerciseType)) {
+          setTimeout(() => this.showExerciseTypeTooltip.set(true), 300);
+        }
+        break;
+    }
   }
 
   protected onQueryChange(query: string): void {
     this.filters.update((f) => ({ ...f, query }));
+    this.searching.set(query.trim().length >= 2);
     this.search$.next(query);
   }
 
@@ -121,12 +179,33 @@ export class ExercisesPageComponent implements OnInit {
     this.fetchList(false);
   }
 
-  protected primaryMuscleLabel(exercise: Exercise): string {
-    return exercise.primaryMuscles[0] ?? '—';
+  protected retryLoad(): void {
+    // Retry with current filters (don't clear them)
+    this.fetchList(false);
   }
 
-  protected equipmentLabel(exercise: Exercise): string {
-    return exercise.equipment.length > 0 ? exercise.equipment.slice(0, 2).join(', ') : 'Bodyweight';
+  protected toggleAdvancedMuscles(): void {
+    this.showAdvancedMuscles.update(v => !v);
+  }
+
+  protected hasGroupSelected(groupMuscles: string[]): boolean {
+    const selected = this.filters().muscle;
+    return groupMuscles.includes(selected);
+  }
+
+  protected toggleMuscleGroup(groupMuscles: string[]): void {
+    const selected = this.filters().muscle;
+    if (groupMuscles.includes(selected)) {
+      // Already have one from this group selected, clear it
+      this.filters.update((f) => ({ ...f, muscle: '' }));
+    } else {
+      // Select first from group
+      this.onMuscleFilter(groupMuscles[0]);
+    }
+  }
+
+  protected primaryMuscleLabel(exercise: Exercise): string {
+    return exercise.primaryMuscles[0] ?? '—';
   }
 
   private fetchList(append: boolean): void {
@@ -140,7 +219,7 @@ export class ExercisesPageComponent implements OnInit {
     this.loadList(append ? (this.nextCursor() ?? undefined) : undefined).subscribe({
       next: (page) => this.applyPage(page, append),
       error: () => {
-        this.error.set('Failed to load exercises. Please try again.');
+        this.error.set('Could not load exercises. Check your connection and try again.');
         this.loading.set(false);
         this.loadingMore.set(false);
       }
@@ -164,5 +243,9 @@ export class ExercisesPageComponent implements OnInit {
     this.hasNext.set(page.hasNext);
     this.loading.set(false);
     this.loadingMore.set(false);
+    this.searching.set(false);
+
+    // Update result count (total items in current view)
+    this.resultCount.set(append ? this.exercises().length : page.items.length);
   }
 }

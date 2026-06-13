@@ -160,6 +160,28 @@ export class PlanStore {
     this.afterMutation();
   }
 
+  moveExercise(dayOfWeek: number, exerciseIndex: number, direction: 'up' | 'down'): void {
+    this.plan.update((p) => ({
+      ...p,
+      days: p.days.map((d) => {
+        if (d.dayOfWeek !== dayOfWeek) return d;
+        const exercises = [...d.exercises];
+        const targetIndex = direction === 'up' ? exerciseIndex - 1 : exerciseIndex + 1;
+
+        if (targetIndex < 0 || targetIndex >= exercises.length) return d;
+
+        // Swap exercises
+        [exercises[exerciseIndex], exercises[targetIndex]] = [exercises[targetIndex], exercises[exerciseIndex]];
+
+        // Update order property
+        const reordered = exercises.map((e, i) => ({ ...e, order: i }));
+        return { ...d, exercises: reordered };
+      }),
+    }));
+    this.activeTemplateId.set(null);
+    this.afterMutation();
+  }
+
   addSet(dayOfWeek: number, exerciseIndex: number): void {
     this.plan.update((p) => ({
       ...p,
