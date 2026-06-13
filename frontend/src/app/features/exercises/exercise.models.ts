@@ -2,7 +2,10 @@ export type ExerciseType =
   | 'STRENGTH'
   | 'CARDIO'
   | 'STRETCHING'
+  | 'MOBILITY'
+  | 'BALANCE'
   | 'PLYOMETRICS'
+  | 'REHABILITATION'
   | 'OTHER';
 
 export type ExerciseContent = {
