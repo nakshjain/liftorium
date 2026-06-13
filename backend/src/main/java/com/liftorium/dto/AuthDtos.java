@@ -10,6 +10,19 @@ public final class AuthDtos {
   private AuthDtos() {
   }
 
+  public record RegisterInitiateRequest(
+      @NotBlank @Email @Size(max = 320) String email,
+      @NotBlank @Size(min = 8, max = 128) String password,
+      @NotBlank @Size(max = 80) String displayName
+  ) {
+  }
+
+  public record RegisterVerifyRequest(
+      @NotBlank @Email @Size(max = 320) String email,
+      @NotBlank @Size(min = 6, max = 6) String otp
+  ) {
+  }
+
   public record RegisterRequest(
       @NotBlank @Email @Size(max = 320) String email,
       @NotBlank @Size(min = 8, max = 128) String password,

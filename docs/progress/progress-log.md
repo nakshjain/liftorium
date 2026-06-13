@@ -336,3 +336,34 @@ Use this file for short, dated progress entries.
 
 - The provider documents cursor pagination but no `updatedSince` feed, so sync scans provider IDs and avoids unchanged writes using fingerprints.
 - Atlas Search is recommended when fuzzy matching and typo tolerance become product requirements.
+
+## 2026-06-14 - Email OTP Verification for Registration
+
+### Completed
+
+- Added email OTP verification flow to registration process.
+- Implemented backend services: `OtpService` (6-digit code generation and bcrypt verification) and `EmailService` (SMTP integration).
+- Added `PendingRegistration` entity with TTL-based expiration, rate limiting (3 attempts per 10-minute window), and OTP hash storage.
+- Added two-step registration endpoints: `/api/v1/auth/register/initiate` (send OTP) and `/api/v1/auth/register/verify` (verify OTP and create user).
+- Configured Spring Mail with SMTP properties and added Gmail app password support.
+- Added OTP configuration properties: 5-minute expiry, rate limiting, and attempt tracking.
+- Updated SecurityConfig to permit new OTP endpoints.
+- Implemented frontend two-step signup flow with OTP input screen, 60-second resend cooldown, and proper error handling.
+- Updated AuthService with `signupInitiate` and `signupVerify` methods.
+- Added TypeScript models for OTP requests and responses.
+- Updated auth-form-field component to support numeric inputmode for OTP entry.
+
+### Verification
+
+- Ran `npm run build` in `frontend` - build successful.
+- Backend compilation verified (Maven not available locally but code structure follows Spring Boot conventions).
+
+### Notes
+
+- SMTP credentials must be configured in environment variables: `SMTP_EMAIL` and `SMTP_PASSWORD`.
+- For Gmail, use an app-specific password if 2FA is enabled, or enable "Less secure app access" for regular passwords.
+- Environment variables should be managed securely - do not encrypt them with JWT secrets; use proper secret management (Vault, cloud secret managers, etc.) for production.
+- MongoDB TTL index on `PendingRegistration.expiresAt` handles automatic cleanup of expired registrations.
+- Rate limiting prevents abuse with 3 attempts per 10-minute window per email.
+- OTP codes are 6 digits, hashed with BCrypt before storage, and expire after 5 minutes.
+- The original direct `/api/v1/auth/register` endpoint remains functional for backward compatibility or testing.

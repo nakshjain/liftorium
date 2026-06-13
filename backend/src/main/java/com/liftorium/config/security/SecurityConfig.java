@@ -38,7 +38,7 @@ public class SecurityConfig {
         .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/health").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/register/initiate", "/api/v1/auth/register/verify", "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/v1/exercises", "/api/v1/exercises/*").permitAll()
             .anyRequest().authenticated()
         )

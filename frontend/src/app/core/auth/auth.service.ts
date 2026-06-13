@@ -11,7 +11,10 @@ import type {
   CurrentUserData,
   LoginRequest,
   LogoutData,
-  SignupRequest
+  SignupInitiateRequest,
+  SignupInitiateResponse,
+  SignupRequest,
+  SignupVerifyRequest
 } from './auth.models';
 import { TokenStorageService } from './token-storage.service';
 
@@ -61,6 +64,23 @@ export class AuthService {
   public signup(input: SignupRequest): Observable<AuthUser> {
     return this.http
       .post<ApiSuccessResponse<AuthSessionData>>(`${this.apiBaseUrl}/auth/register`, input, {
+        context: this.bypassContext(),
+        withCredentials: true
+      })
+      .pipe(map((response) => this.applySession(response.data)));
+  }
+
+  public signupInitiate(input: SignupInitiateRequest): Observable<string> {
+    return this.http
+      .post<ApiSuccessResponse<SignupInitiateResponse>>(`${this.apiBaseUrl}/auth/register/initiate`, input, {
+        context: this.bypassContext()
+      })
+      .pipe(map((response) => response.data.message));
+  }
+
+  public signupVerify(input: SignupVerifyRequest): Observable<AuthUser> {
+    return this.http
+      .post<ApiSuccessResponse<AuthSessionData>>(`${this.apiBaseUrl}/auth/register/verify`, input, {
         context: this.bypassContext(),
         withCredentials: true
       })

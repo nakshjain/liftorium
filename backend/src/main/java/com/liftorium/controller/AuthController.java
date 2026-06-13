@@ -6,7 +6,9 @@ import com.liftorium.dto.AuthDtos;
 import com.liftorium.dto.AuthDtos.AuthSession;
 import com.liftorium.dto.AuthDtos.AuthUserDto;
 import com.liftorium.dto.AuthDtos.LoginRequest;
+import com.liftorium.dto.AuthDtos.RegisterInitiateRequest;
 import com.liftorium.dto.AuthDtos.RegisterRequest;
+import com.liftorium.dto.AuthDtos.RegisterVerifyRequest;
 import com.liftorium.exception.AppException;
 import com.liftorium.security.UserPrincipal;
 import com.liftorium.service.AuthService;
@@ -35,6 +37,18 @@ public class AuthController {
   private final AuthService authService;
   private final AppProperties appProperties;
   private final Environment environment;
+
+  @PostMapping("/register/initiate")
+  public ApiResponse<Map<String, String>> registerInitiate(@Valid @RequestBody RegisterInitiateRequest request) {
+    authService.initiateRegistration(request);
+    return ApiResponse.success(Map.of("message", "Verification code sent to your email"));
+  }
+
+  @PostMapping("/register/verify")
+  public ResponseEntity<ApiResponse<Map<String, Object>>> registerVerify(@Valid @RequestBody RegisterVerifyRequest request) {
+    AuthSession session = authService.verifyRegistration(request);
+    return sendSession(session, HttpStatus.CREATED);
+  }
 
   @PostMapping("/register")
   public ResponseEntity<ApiResponse<Map<String, Object>>> register(@Valid @RequestBody RegisterRequest request) {

@@ -9,7 +9,8 @@ import org.springframework.validation.annotation.Validated;
 public record AppProperties(
     Cors cors,
     Jwt jwt,
-    Exercises exercises
+    Exercises exercises,
+    Otp otp
 ) {
 
   public record Cors(
@@ -29,6 +30,13 @@ public record AppProperties(
 
   public record Exercises(
       boolean syncOnStartup
+  ) {
+  }
+
+  public record Otp(
+      int expiryMinutes,
+      int maxAttemptsPerWindow,
+      int rateLimitWindowMinutes
   ) {
   }
 }
