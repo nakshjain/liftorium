@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-13T00:00:00Z",
+  "title": "Design System: Liftorium",
+  "extensions": {
+    "colorMeta": {
+      "teal-primary": {
+        "role": "primary",
+        "displayName": "Training Teal",
+        "canonical": "oklch(82% 0.15 175)",
+        "tonalRamp": ["#042f2e", "#0d4f4a", "#0f766e", "#0d9488", "#14b8a6", "#2dd4bf", "#5eead4", "#99f6e4"]
+      },
+      "teal-deep": {
+        "role": "primary",
+        "displayName": "Deep Teal",
+        "canonical": "oklch(72% 0.13 175)",
+        "tonalRamp": ["#032726", "#064e3b", "#0f766e", "#0d9488", "#14b8a6", "#2dd4bf", "#5eead4", "#ccfbf1"]
+      },
+      "teal-glow": {
+        "role": "primary",
+        "displayName": "Bright Teal",
+        "canonical": "oklch(88% 0.14 175)",
+        "tonalRamp": ["#042f2e", "#0d4f4a", "#0f766e", "#14b8a6", "#2dd4bf", "#5eead4", "#99f6e4", "#f0fdfa"]
+      },
+      "zinc-bg": {
+        "role": "neutral",
+        "displayName": "Void Black",
+        "canonical": "oklch(13% 0.005 285)",
+        "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8"]
+      },
+      "zinc-surface": {
+        "role": "neutral",
+        "displayName": "Surface Dark",
+        "canonical": "oklch(21% 0.005 285)",
+        "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8"]
+      },
+      "zinc-border": {
+        "role": "neutral",
+        "displayName": "Border Zinc",
+        "canonical": "oklch(28% 0.005 285)",
+        "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8"]
+      },
+      "zinc-muted": {
+        "role": "neutral",
+        "displayName": "Muted Zinc",
+        "canonical": "oklch(55% 0.01 285)",
+        "tonalRamp": ["#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7"]
+      },
+      "zinc-ink": {
+        "role": "neutral",
+        "displayName": "Ink White",
+        "canonical": "oklch(97% 0.005 285)",
+        "tonalRamp": ["#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7", "#f4f4f5", "#fafafa", "#ffffff", "#ffffff"]
+      },
+      "rose-error": {
+        "role": "semantic",
+        "displayName": "Rose Error",
+        "canonical": "oklch(76% 0.12 15)",
+        "tonalRamp": ["#4c0519", "#881337", "#be123c", "#e11d48", "#f43f5e", "#fb7185", "#fda4af", "#ffe4e6"]
+      },
+      "amber-warning": {
+        "role": "semantic",
+        "displayName": "Amber Warning",
+        "canonical": "oklch(83% 0.16 85)",
+        "tonalRamp": ["#451a03", "#78350f", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fcd34d", "#fef3c7"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Hero statements on pre/post-workout screens. One per screen maximum." },
+      "headline": { "displayName": "Headline", "purpose": "Section headings, exercise names, primary stat values." },
+      "title": { "displayName": "Title", "purpose": "Card titles, navigation page headers, secondary stats." },
+      "body": { "displayName": "Body", "purpose": "Descriptions, helper text, workout notes. Max 65ch width." },
+      "label": { "displayName": "Label", "purpose": "Section kickers, stat labels, metadata. Always uppercase + tracked." }
+    },
+    "shadows": [],
+    "motion": [
+      { "name": "ease-out-expo", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Entry animations (fade-slide-up). Fast deceleration into resting position." },
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default hover/focus transitions on buttons and inputs." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main CTA. Start Workout, Finish, Submit. 48-56px tall, full teal fill.",
+      "html": "<button class=\"ds-btn-primary\">Start workout</button>",
+      "css": ".ds-btn-primary { background: #2dd4bf; color: #09090b; font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; font-size: 1rem; font-weight: 600; padding: 0 20px; height: 56px; border: none; border-radius: 8px; cursor: pointer; transition: background 0.15s ease, transform 0.1s ease; } .ds-btn-primary:hover { background: #5eead4; } .ds-btn-primary:focus-visible { outline: 2px solid rgba(45, 212, 191, 0.4); outline-offset: 2px; } .ds-btn-primary:active { transform: scale(0.99); }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary actions. Bordered, transparent fill, zinc text.",
+      "html": "<button class=\"ds-btn-secondary\">Add set</button>",
+      "css": ".ds-btn-secondary { background: transparent; color: #f4f4f5; font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; font-weight: 600; padding: 0 20px; height: 48px; border: 1px solid #3f3f46; border-radius: 8px; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease; } .ds-btn-secondary:hover { border-color: #52525b; color: #ffffff; } .ds-btn-secondary:focus-visible { outline: 2px solid rgba(45, 212, 191, 0.3); outline-offset: 2px; } .ds-btn-secondary:active { transform: scale(0.99); }"
+    },
+    {
+      "name": "Destructive Button",
+      "kind": "button",
+      "refersTo": "button-destructive",
+      "description": "Dangerous actions. Reset workout, remove exercise. Rose-tinted border.",
+      "html": "<button class=\"ds-btn-destructive\">Reset workout</button>",
+      "css": ".ds-btn-destructive { background: transparent; color: #fda4af; font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; font-size: 1rem; font-weight: 600; padding: 0 20px; height: 56px; border: 1px solid rgba(251, 113, 133, 0.4); border-radius: 8px; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease; } .ds-btn-destructive:hover { border-color: #fb7185; color: #fecdd3; } .ds-btn-destructive:focus-visible { outline: 2px solid rgba(251, 113, 133, 0.3); outline-offset: 2px; } .ds-btn-destructive:active { transform: scale(0.99); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard text field. Auth forms, search, exercise filter.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search exercises...\" />",
+      "css": ".ds-input { background: #09090b; color: #f4f4f5; font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; font-size: 0.875rem; padding: 0 16px; height: 48px; width: 100%; border: 1px solid #27272a; border-radius: 8px; outline: none; transition: border-color 0.15s ease, box-shadow 0.15s ease; } .ds-input::placeholder { color: #52525b; } .ds-input:focus { border-color: #2dd4bf; box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.2); }"
+    },
+    {
+      "name": "Exercise Chip",
+      "kind": "chip",
+      "refersTo": "chip-default",
+      "description": "Horizontal scrolling exercise selector during active workout.",
+      "html": "<button class=\"ds-chip\"><span class=\"ds-chip-name\">Bench Press</span><span class=\"ds-chip-meta\">Chest</span></button>",
+      "css": ".ds-chip { background: #18181b; color: #f4f4f5; font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; padding: 8px 16px; min-height: 48px; border: 1px solid #27272a; border-radius: 8px; cursor: pointer; text-align: left; transition: transform 0.1s ease; display: flex; flex-direction: column; gap: 2px; } .ds-chip-name { font-size: 0.875rem; font-weight: 600; } .ds-chip-meta { font-size: 0.75rem; opacity: 0.7; } .ds-chip:active { transform: scale(0.98); } .ds-chip.ds-chip--active { background: #2dd4bf; color: #09090b; border-color: #2dd4bf; }"
+    },
+    {
+      "name": "Surface Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Primary container. Pre-workout hero, today's plan, stats summary.",
+      "html": "<div class=\"ds-card\"><p class=\"ds-card-label\">Active workout</p><h2 class=\"ds-card-title\">Start logging</h2><p class=\"ds-card-desc\">Log sets, track rest, beat last session.</p></div>",
+      "css": ".ds-card { background: rgba(24, 24, 27, 0.4); color: #f4f4f5; font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; padding: 24px; border: 1px solid #27272a; border-radius: 12px; } .ds-card-label { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #71717a; margin: 0 0 8px; } .ds-card-title { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.015em; line-height: 1.3; margin: 0 0 4px; } .ds-card-desc { font-size: 0.875rem; color: #a1a1aa; line-height: 1.75; margin: 0; }"
+    },
+    {
+      "name": "Stat Block",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Compact metric display during active workout (Sets, Volume, Rest).",
+      "html": "<div class=\"ds-stat\"><p class=\"ds-stat-label\">Sets</p><p class=\"ds-stat-value\">12</p></div>",
+      "css": ".ds-stat { background: rgba(24, 24, 27, 0.6); color: #f4f4f5; font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; padding: 16px; border: 1px solid #27272a; border-radius: 8px; } .ds-stat-label { font-size: 0.75rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; color: #71717a; margin: 0 0 8px; } .ds-stat-value { font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; margin: 0; }"
+    },
+    {
+      "name": "Sticky Header",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Fixed top bar during active workout. Backdrop-blur with border-bottom.",
+      "html": "<header class=\"ds-header\"><a class=\"ds-header-back\">Training hub</a><h1 class=\"ds-header-title\">Live workout</h1></header>",
+      "css": ".ds-header { background: rgba(9, 9, 11, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid #18181b; padding: 8px 16px 12px; position: sticky; top: 0; z-index: 20; font-family: 'Geist Variable', ui-sans-serif, system-ui, sans-serif; } .ds-header-back { font-size: 0.875rem; font-weight: 500; color: #a1a1aa; text-decoration: none; transition: color 0.15s ease; } .ds-header-back:hover { color: #e4e4e7; } .ds-header-title { font-size: 1.5rem; font-weight: 600; color: #f4f4f5; margin: 4px 0 0; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Training Partner",
+    "overview": "Liftorium's interface is present, pushing, responsive. It doesn't wait for you — it matches your energy between sets. The system is built for sweaty hands gripping a phone in a rack, overhead fluorescents washing out the screen, divided attention between the bar and the display. Every surface is high-contrast, every target oversized, every animation purposeful and fast.\n\nThe aesthetic is dark, dense, and direct. Zinc-black surfaces recede; teal accents pull the eye exactly where it needs to go — the next set, the rest timer, the finish button. There is no decoration. There are no illustrations. Information replaces ornamentation.\n\nThis system explicitly rejects: bloated fitness apps with ad-stuffed tabs and endless navigation depth; gamified reward loops with badges, streaks, and childish celebration screens; and any surface that asks you to scroll past content to reach your next action.",
+    "keyCharacteristics": [
+      "Dark zinc-950 canvas with teal-400 as the sole accent",
+      "Single font family (Geist Variable) across all hierarchy levels",
+      "Oversized touch targets (minimum 48px, prefer 56px for primary actions)",
+      "Tactile feedback: scale-on-tap, immediate state changes, no choreography",
+      "Information density over visual filler — data the lifter needs is always visible"
+    ],
+    "rules": [
+      { "name": "The One Accent Rule", "body": "Teal is the only saturated hue in the product UI. Rose and amber appear exclusively for semantic state (error, warning, pause). If you're reaching for a second accent color, the design has failed.", "section": "colors" },
+      { "name": "The Weight-Not-Size Rule", "body": "Hierarchy within a section is expressed through font-weight changes (400 → 600), not size jumps. Size steps are reserved for cross-section hierarchy. Within a card or stat block, weight does the lifting.", "section": "typography" },
+      { "name": "The No-Shadow Rule", "body": "No box-shadow anywhere in the product. Elevation is tonal: zinc-950 (floor) → zinc-900/40 (surface) → zinc-900 (elevated). If something needs to feel lifted, increase its background opacity and sharpen its border.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use teal-400 exclusively for actionable elements (buttons, links, active states). It's a signal, not decoration.",
+      "Do make every primary action target at least 48px tall, 56px preferred.",
+      "Do show previous-session data inline with current input.",
+      "Do use active:scale-[0.99] on tappable elements.",
+      "Do keep the bottom toolbar fixed and always-visible during active workouts.",
+      "Do use zinc-900/40 (translucent) for card backgrounds, never solid zinc-900."
+    ],
+    "donts": [
+      "Don't add badges, streaks, achievements, or any gamification elements.",
+      "Don't add social features, feeds, comments, or sharing prompts.",
+      "Don't add ads, upsell banners, or promotional surfaces that interrupt the logging flow.",
+      "Don't use shadows or box-shadow anywhere.",
+      "Don't introduce a second accent color beyond teal.",
+      "Don't use display-size text (>2.25rem) for anything other than the single hero statement per screen.",
+      "Don't put navigation items behind hamburger menus or drawers on mobile.",
+      "Don't animate page transitions or orchestrate staggered loads during active workout logging.",
+      "Don't use opacity reduction for disabled states."
+    ]
+  }
+}
