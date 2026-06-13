@@ -59,6 +59,17 @@ export class ExercisesPageComponent implements OnInit {
 
   protected readonly showAdvancedMuscles = signal(false);
 
+  // Onboarding tooltips state
+  protected readonly showFilterLogicTooltip = signal(false);
+  protected readonly showExerciseTypeTooltip = signal(false);
+  protected readonly showMuscleGroupTooltip = signal(false);
+
+  private readonly TOOLTIP_STORAGE_KEYS = {
+    filterLogic: 'exercises-tooltip-filter-logic-seen',
+    exerciseType: 'exercises-tooltip-exercise-type-seen',
+    muscleGroup: 'exercises-tooltip-muscle-group-seen'
+  };
+
   protected readonly exerciseTypes: { value: ExerciseType; label: string }[] = [
     { value: 'STRENGTH', label: 'Strength' },
     { value: 'CARDIO', label: 'Cardio' },
@@ -102,6 +113,39 @@ export class ExercisesPageComponent implements OnInit {
 
   public ngOnInit(): void {
     this.fetchList(false);
+    this.checkFirstVisit();
+  }
+
+  private checkFirstVisit(): void {
+    // Show onboarding tooltips on first visit
+    if (!localStorage.getItem(this.TOOLTIP_STORAGE_KEYS.muscleGroup)) {
+      setTimeout(() => this.showMuscleGroupTooltip.set(true), 500);
+    }
+  }
+
+  protected dismissTooltip(type: 'filterLogic' | 'exerciseType' | 'muscleGroup'): void {
+    switch (type) {
+      case 'filterLogic':
+        this.showFilterLogicTooltip.set(false);
+        localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.filterLogic, 'true');
+        break;
+      case 'exerciseType':
+        this.showExerciseTypeTooltip.set(false);
+        localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.exerciseType, 'true');
+        // Chain to next tooltip
+        if (!localStorage.getItem(this.TOOLTIP_STORAGE_KEYS.filterLogic)) {
+          setTimeout(() => this.showFilterLogicTooltip.set(true), 300);
+        }
+        break;
+      case 'muscleGroup':
+        this.showMuscleGroupTooltip.set(false);
+        localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.muscleGroup, 'true');
+        // Chain to next tooltip
+        if (!localStorage.getItem(this.TOOLTIP_STORAGE_KEYS.exerciseType)) {
+          setTimeout(() => this.showExerciseTypeTooltip.set(true), 300);
+        }
+        break;
+    }
   }
 
   protected onQueryChange(query: string): void {
