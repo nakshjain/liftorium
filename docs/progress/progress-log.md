@@ -405,3 +405,19 @@ Use this file for short, dated progress entries.
 
 - Existing users with BCrypt strength `12` password hashes will still verify at strength `12` until their password is recreated.
 - Production should benchmark login latency and set `BCRYPT_STRENGTH` to the highest acceptable value for the deployed hardware.
+
+## 2026-06-14 - Same-Origin Production API Routing
+
+### Completed
+
+- Switched the Angular production API base URL from the old hosted backend URL to `/api/v1`.
+- Set the backend CORS origin for the new `liftorium.fit` production domain.
+- Documented the production reverse proxy strategy: `/api/*` routes to Spring Boot and all other routes serve Angular.
+
+### Verification
+
+- Ran `npm run build` in `frontend`.
+
+### Notes
+
+- Keep `api.liftorium.fit` as a fallback only if the deployment platform cannot proxy `/api/*` on `liftorium.fit`.
