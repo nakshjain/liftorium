@@ -9,8 +9,10 @@ import type {
   AuthStatus,
   AuthUser,
   CurrentUserData,
+  ForgotPasswordRequest,
   LoginRequest,
   LogoutData,
+  ResetPasswordRequest,
   SignupInitiateRequest,
   SignupInitiateResponse,
   SignupRequest,
@@ -81,6 +83,23 @@ export class AuthService {
   public signupVerify(input: SignupVerifyRequest): Observable<AuthUser> {
     return this.http
       .post<ApiSuccessResponse<AuthSessionData>>(`${this.apiBaseUrl}/auth/register/verify`, input, {
+        context: this.bypassContext(),
+        withCredentials: true
+      })
+      .pipe(map((response) => this.applySession(response.data)));
+  }
+
+  public forgotPassword(input: ForgotPasswordRequest): Observable<void> {
+    return this.http
+      .post<void>(`${this.apiBaseUrl}/auth/forgot-password`, input, {
+        context: this.bypassContext()
+      })
+      .pipe(map(() => undefined));
+  }
+
+  public resetPassword(input: ResetPasswordRequest): Observable<AuthUser> {
+    return this.http
+      .post<ApiSuccessResponse<AuthSessionData>>(`${this.apiBaseUrl}/auth/forgot-password/reset`, input, {
         context: this.bypassContext(),
         withCredentials: true
       })

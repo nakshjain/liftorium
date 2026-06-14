@@ -1,4 +1,4 @@
-<main class="min-h-dvh text-zinc-50 lg:grid lg:grid-cols-2">
+<main class="flex min-h-dvh flex-col text-zinc-50 lg:grid lg:grid-cols-2">
 
   <!-- Left panel: value prop (desktop only) -->
   <div class="hidden flex-col justify-between bg-zinc-900/40 px-12 py-10 lg:flex">
@@ -10,40 +10,49 @@
       </p>
       <ul class="mt-8 space-y-4">
         <li class="flex items-start gap-3">
-          <span class="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-teal-400/20 ring-1 ring-teal-400/40"></span>
-          <span class="text-sm leading-6 text-zinc-400">Previous set numbers visible while you log</span>
+          <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-400/70" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+          </svg>
+          <span class="text-sm leading-6 text-zinc-400">See your last weight and reps while you log — no mental math</span>
         </li>
         <li class="flex items-start gap-3">
-          <span class="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-teal-400/20 ring-1 ring-teal-400/40"></span>
-          <span class="text-sm leading-6 text-zinc-400">Rest timer starts the moment a set is checked off</span>
+          <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-400/70" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+          </svg>
+          <span class="text-sm leading-6 text-zinc-400">Rest timer fires the instant you check off a set</span>
         </li>
         <li class="flex items-start gap-3">
-          <span class="mt-0.5 h-5 w-5 shrink-0 rounded-full bg-teal-400/20 ring-1 ring-teal-400/40"></span>
-          <span class="text-sm leading-6 text-zinc-400">Thumb-friendly controls built for in-gym use</span>
+          <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-400/70" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+          </svg>
+          <span class="text-sm leading-6 text-zinc-400">Big targets, one hand — built for the gym floor</span>
         </li>
       </ul>
     </div>
 
-    <p class="text-sm text-zinc-600">Built for fast logging between sets.</p>
+    <p class="text-sm text-zinc-500">Liftorium — your training, nothing else.</p>
   </div>
 
   <!-- Right panel: form -->
-  <div class="flex min-h-dvh flex-col justify-between px-4 py-6 sm:px-8 lg:px-12 lg:py-10">
+  <div class="flex flex-1 flex-col justify-between px-4 py-6 sm:px-8 lg:px-12 lg:py-10">
     <header class="flex items-center justify-between lg:justify-end">
       <a class="text-lg font-semibold text-zinc-50 lg:hidden" routerLink="/auth/login">Liftorium</a>
     </header>
 
     <section class="py-10 anim-enter">
       <div class="mb-8">
-        <h1 class="text-3xl font-semibold leading-tight tracking-tight text-zinc-50">{{ title }}</h1>
+        @if (eyebrow) {
+          <p class="mb-2 text-xs font-medium uppercase tracking-widest text-teal-400">{{ eyebrow }}</p>
+        }
+        <h1 class="text-balance text-3xl font-semibold leading-tight tracking-tight text-zinc-50">{{ title }}</h1>
         <p class="mt-3 text-base leading-7 text-zinc-400">{{ description }}</p>
       </div>
 
       <ng-content />
     </section>
 
-    <footer class="pb-2 text-sm text-zinc-600 lg:hidden">
-      Built for fast logging between sets.
+    <footer class="pb-2 text-sm text-zinc-500 lg:hidden">
+      Your training, nothing else.
     </footer>
   </div>
 

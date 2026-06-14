@@ -24,6 +24,7 @@ export class LiveWorkoutStore {
   readonly exerciseQuery = signal('');
   readonly exercises = signal<ExerciseOption[]>([]);
   readonly exercisesLoading = signal(false);
+  readonly exerciseError = signal<string | null>(null);
 
   readonly activeWorkout = this.workout.asReadonly();
   readonly lastFinishedWorkout = this.finishedWorkout.asReadonly();
@@ -66,6 +67,7 @@ export class LiveWorkoutStore {
       distinctUntilChanged(),
       switchMap((q) => {
         this.exercisesLoading.set(true);
+        this.exerciseError.set(null);
         const call = q.length >= 2
           ? this.exerciseService.search({ q, limit: 30 })
           : this.exerciseService.list({ limit: 30 });
@@ -82,8 +84,12 @@ export class LiveWorkoutStore {
           previous: [],
         })));
         this.exercisesLoading.set(false);
+        this.exerciseError.set(null);
       },
-      error: () => this.exercisesLoading.set(false),
+      error: () => {
+        this.exercisesLoading.set(false);
+        this.exerciseError.set('Failed to load exercises.');
+      },
     });
 
     // Initial load
@@ -93,6 +99,10 @@ export class LiveWorkoutStore {
   searchExercises(query: string): void {
     this.exerciseQuery.set(query);
     this.exerciseSearch$.next(query);
+  }
+
+  retryExerciseSearch(): void {
+    this.exerciseSearch$.next(this.exerciseQuery());
   }
 
   tick(): void {
@@ -262,10 +272,6 @@ export class LiveWorkoutStore {
     this.workout.set(null);
     this.restEndsAt.set(null);
     this.clearStorage();
-
-    this.workoutService.save(finished).subscribe({
-      error: (err) => console.error('Failed to save workout to server', err),
-    });
   }
 
   clearFinishedWorkout(): void {
@@ -356,9 +362,19 @@ export class LiveWorkoutStore {
       : workout.accumulatedMs;
     const finished: LiveWorkout = { ...workout, finishedAt, resumedAt: 0, accumulatedMs: finalAccumulated };
     this.clearStorage();
+
+    const setCount = finished.exercises.reduce((count, ex) => count + ex.sets.filter(s => s.completed).length, 0);
+
     this.workoutService.save(finished).subscribe({
       error: (err) => console.error('Failed to auto-complete stale workout', err),
     });
+
+    // Store notification flag for component to display on next mount
+    try {
+      localStorage.setItem('liftorium_stale_workout_notification', JSON.stringify({ setCount, timestamp: Date.now() }));
+    } catch {
+      // storage quota — non-fatal
+    }
   }
 
   private createWorkoutExercise(option: ExerciseOption): WorkoutExercise {

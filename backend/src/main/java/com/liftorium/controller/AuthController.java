@@ -5,10 +5,12 @@ import com.liftorium.dto.ApiResponse;
 import com.liftorium.dto.AuthDtos;
 import com.liftorium.dto.AuthDtos.AuthSession;
 import com.liftorium.dto.AuthDtos.AuthUserDto;
+import com.liftorium.dto.AuthDtos.ForgotPasswordRequest;
 import com.liftorium.dto.AuthDtos.LoginRequest;
 import com.liftorium.dto.AuthDtos.RegisterInitiateRequest;
 import com.liftorium.dto.AuthDtos.RegisterRequest;
 import com.liftorium.dto.AuthDtos.RegisterVerifyRequest;
+import com.liftorium.dto.AuthDtos.ResetPasswordRequest;
 import com.liftorium.exception.AppException;
 import com.liftorium.security.UserPrincipal;
 import com.liftorium.service.AuthService;
@@ -74,6 +76,18 @@ public class AuthController {
   public ApiResponse<Map<String, AuthUserDto>> me(@AuthenticationPrincipal UserPrincipal principal) {
     AuthUserDto user = new AuthUserDto(principal.getId(), principal.getEmail(), principal.getDisplayName());
     return ApiResponse.success(Map.of("user", user));
+  }
+
+  @PostMapping("/forgot-password")
+  public ApiResponse<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    authService.initiateForgotPassword(request);
+    return ApiResponse.success(Map.of("message", "If that email is registered, a reset code is on its way"));
+  }
+
+  @PostMapping("/forgot-password/reset")
+  public ResponseEntity<ApiResponse<Map<String, Object>>> forgotPasswordReset(@Valid @RequestBody ResetPasswordRequest request) {
+    AuthSession session = authService.resetPassword(request);
+    return sendSession(session, HttpStatus.OK);
   }
 
   @PostMapping("/logout")

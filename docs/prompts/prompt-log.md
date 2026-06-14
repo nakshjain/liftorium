@@ -199,3 +199,21 @@ Added canonical Exercise metadata, a separate provider mapping collection, index
 ### Follow-Up
 
 Add scheduled sync orchestration with a distributed lock, provider contract tests, Mongo repository integration tests, and a reviewed canonical taxonomy map for AscendAPI muscle and equipment values.
+
+## 2026-06-14 - Sign-In Performance Tuning
+
+### Prompt
+
+Sign in to the application is very slow. Review `AuthService` and the security setup, then improve the login path.
+
+### Context
+
+The backend login flow performed a BCrypt password verification and then persisted each new refresh token with two MongoDB writes. BCrypt strength was hardcoded in `SecurityConfig`.
+
+### Outcome
+
+Optimized session creation to persist refresh tokens once and made BCrypt strength configurable through `BCRYPT_STRENGTH`, defaulting local development to `10`.
+
+### Follow-Up
+
+Install Maven or add a Maven wrapper so backend tests can run consistently from the repository shell. Recreate existing test user passwords if they were hashed at the previous strength and local sign-in remains slow.

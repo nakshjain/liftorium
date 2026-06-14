@@ -128,10 +128,7 @@
       </section>
 
       <section class="pb-4">
-        <div class="mb-3 flex items-center justify-between gap-3">
-          <h2 class="text-xs font-medium uppercase tracking-wider text-zinc-500">Add exercise</h2>
-          <p class="text-xs text-zinc-600">{{ availableExerciseCount() }} available</p>
-        </div>
+        <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Add exercise</h2>
         <input
           class="mb-3 h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-50 placeholder-zinc-500 outline-none transition focus:border-teal-400/60 focus:ring-1 focus:ring-teal-400/30"
           type="search"
@@ -145,6 +142,17 @@
             @for (i of [1,2,3,4]; track i) {
               <div class="h-12 w-28 shrink-0 animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
             }
+          </div>
+        } @else if (store.exerciseError()) {
+          <div class="rounded-lg border border-rose-400/40 bg-rose-950/20 p-4">
+            <p class="text-sm text-rose-200">{{ store.exerciseError() }}</p>
+            <button
+              class="mt-2 rounded-lg border border-rose-400/60 px-3 py-1.5 text-sm font-medium text-rose-300 transition hover:border-rose-400 hover:text-rose-200"
+              type="button"
+              (click)="store.retryExerciseSearch()"
+            >
+              Retry
+            </button>
           </div>
         } @else {
           <div class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0">
@@ -296,11 +304,35 @@
         <button
           class="h-12 rounded-lg bg-teal-400 px-5 text-sm font-bold text-zinc-950 transition active:scale-[0.99]"
           type="button"
-          (click)="store.finishWorkout()"
+          (click)="finishWorkout()"
         >
           Finish
         </button>
       </div>
     </footer>
   }
+
+  <!-- Reset Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isOpen]="showResetConfirm()"
+    title="Reset workout?"
+    message="All logged sets will be lost."
+    confirmLabel="Reset"
+    cancelLabel="Cancel"
+    [destructive]="true"
+    (confirm)="confirmReset()"
+    (cancel)="cancelReset()"
+  />
+
+  <!-- Finish Confirmation Dialog -->
+  <app-confirmation-dialog
+    [isOpen]="showFinishConfirm()"
+    title="Finish workout?"
+    message="This will end your session and save your progress."
+    [details]="finishConfirmDetails()"
+    confirmLabel="Finish"
+    cancelLabel="Cancel"
+    (confirm)="confirmFinish()"
+    (cancel)="cancelFinish()"
+  />
 </main>
