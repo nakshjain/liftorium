@@ -14,7 +14,7 @@ Base path:
 POST /api/v1/auth/register/initiate
 ```
 
-Sends a 6-digit OTP to the provided email. The OTP expires in 5 minutes. Rate limited to 3 attempts per 10-minute window per email.
+Sends a 6-digit OTP to the provided email through Resend. The OTP expiry is controlled by `app.otp.expiry-minutes` and currently defaults to 10 minutes. Rate limited to 3 attempts per 10-minute window per email.
 
 #### Request Body
 

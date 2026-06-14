@@ -217,3 +217,21 @@ Optimized session creation to persist refresh tokens once and made BCrypt streng
 ### Follow-Up
 
 Install Maven or add a Maven wrapper so backend tests can run consistently from the repository shell. Recreate existing test user passwords if they were hashed at the previous strength and local sign-in remains slow.
+
+## 2026-06-14 - Switch OTP Email To Resend
+
+### Prompt
+
+Instead of SMTP, use Resend to send OTP emails.
+
+### Context
+
+The backend registration and password reset flows already generated OTPs and sent them through Spring Mail SMTP.
+
+### Outcome
+
+Replaced SMTP delivery with Resend Email API delivery, configured via `RESEND_API_KEY` and `RESEND_FROM_EMAIL`, while preserving the existing auth endpoints and error code behavior.
+
+### Follow-Up
+
+Verify the backend build with Maven and test a real OTP send after a Resend domain and API key are configured.

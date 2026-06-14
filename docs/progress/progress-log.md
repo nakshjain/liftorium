@@ -342,10 +342,10 @@ Use this file for short, dated progress entries.
 ### Completed
 
 - Added email OTP verification flow to registration process.
-- Implemented backend services: `OtpService` (6-digit code generation and bcrypt verification) and `EmailService` (SMTP integration).
+- Implemented backend services: `OtpService` (6-digit code generation and bcrypt verification) and `EmailService` (transactional email delivery).
 - Added `PendingRegistration` entity with TTL-based expiration, rate limiting (3 attempts per 10-minute window), and OTP hash storage.
 - Added two-step registration endpoints: `/api/v1/auth/register/initiate` (send OTP) and `/api/v1/auth/register/verify` (verify OTP and create user).
-- Configured Spring Mail with SMTP properties and added Gmail app password support.
+- Configured email delivery properties for the initial provider.
 - Added OTP configuration properties: 5-minute expiry, rate limiting, and attempt tracking.
 - Updated SecurityConfig to permit new OTP endpoints.
 - Implemented frontend two-step signup flow with OTP input screen, 60-second resend cooldown, and proper error handling.
@@ -360,13 +360,32 @@ Use this file for short, dated progress entries.
 
 ### Notes
 
-- SMTP credentials must be configured in environment variables: `SMTP_EMAIL` and `SMTP_PASSWORD`.
-- For Gmail, use an app-specific password if 2FA is enabled, or enable "Less secure app access" for regular passwords.
+- Transactional email credentials must be configured in environment variables.
 - Environment variables should be managed securely - do not encrypt them with JWT secrets; use proper secret management (Vault, cloud secret managers, etc.) for production.
 - MongoDB TTL index on `PendingRegistration.expiresAt` handles automatic cleanup of expired registrations.
 - Rate limiting prevents abuse with 3 attempts per 10-minute window per email.
 - OTP codes are 6 digits, hashed with BCrypt before storage, and expire after 5 minutes.
 - The original direct `/api/v1/auth/register` endpoint remains functional for backward compatibility or testing.
+
+## 2026-06-14 - Resend OTP Email Delivery
+
+### Completed
+
+- Replaced SMTP/Spring Mail OTP delivery with Resend's Email API.
+- Removed the Spring Mail dependency and SMTP configuration.
+- Added `app.email.resend-api-key` and `app.email.from` properties backed by `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+- Updated OTP email copy to use the configured OTP expiry value.
+- Documented Resend configuration in backend, deployment, API, prompt, and ADR docs.
+
+### Verification
+
+- Ran backend tests with IntelliJ bundled Maven and Java runtime.
+- Tests run: 2; failures: 0; errors: 0.
+
+### Notes
+
+- The auth API contract stays unchanged.
+- `RESEND_FROM_EMAIL` must be a verified Resend sender, usually `Liftorium <onboarding@your-domain.com>`.
 
 ## 2026-06-14 - Sign-In Performance Tuning
 
