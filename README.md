@@ -38,6 +38,7 @@ Backend:
 - Spring Security
 - Spring Data MongoDB
 - JWT authentication
+- Resend transactional email for OTP delivery
 - Lombok
 - Jakarta Validation
 
@@ -119,6 +120,16 @@ backend/src/main/resources/application-production.properties
 
 The root file contains the application name and default development profile. Development values live in the development profile file. Production values live in the production profile file and resolve secrets from environment variables.
 
+Required secrets include MongoDB, JWT secrets, and Resend email credentials:
+
+```text
+MONGODB_URI=
+JWT_ACCESS_SECRET=
+JWT_REFRESH_SECRET=
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=Liftorium <onboarding@your-domain.com>
+```
+
 ## Frontend Setup
 
 ```bash
@@ -146,6 +157,8 @@ Base API path:
 Authentication endpoints:
 
 - `POST /api/v1/auth/register`
+- `POST /api/v1/auth/register/initiate`
+- `POST /api/v1/auth/register/verify`
 - `POST /api/v1/auth/login`
 - `POST /api/v1/auth/refresh`
 - `GET /api/v1/auth/me`

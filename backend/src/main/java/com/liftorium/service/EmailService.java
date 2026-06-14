@@ -1,53 +1,102 @@
 package com.liftorium.service;
 
+import com.liftorium.config.AppProperties;
 import com.liftorium.exception.AppException;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientResponseException;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class EmailService {
 
-  private final JavaMailSender mailSender;
+  private static final String RESEND_BASE_URL = "https://api.resend.com";
 
-  @Value("${spring.mail.username}")
-  private String fromEmail;
+  private final AppProperties appProperties;
+  private final RestClient resendClient;
+
+  public EmailService(AppProperties appProperties, RestClient.Builder restClientBuilder) {
+    this.appProperties = appProperties;
+    this.resendClient = restClientBuilder
+        .baseUrl(RESEND_BASE_URL)
+        .defaultHeader("Authorization", "Bearer " + appProperties.email().resendApiKey())
+        .build();
+  }
 
   public void sendOtp(String toEmail, String otp) {
-    log.info("Attempting to send OTP email to: {}", toEmail);
-    try {
-      SimpleMailMessage message = new SimpleMailMessage();
-      message.setFrom(fromEmail);
-      message.setTo(toEmail);
-      message.setSubject("Liftorium — Verify your email");
-      message.setText("Your verification code is: " + otp + "\n\nThis code expires in 5 minutes.");
-      mailSender.send(message);
-      log.info("OTP email sent successfully to: {}", toEmail);
-    } catch (Exception e) {
-      log.error("Failed to send OTP email to: {}. Error: {}", toEmail, e.getMessage(), e);
-      throw new AppException("EMAIL_SEND_FAILED", "Failed to send verification email", HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    String expiryText = appProperties.otp().expiryMinutes() + " minutes";
+    sendEmail(
+        toEmail,
+        "Liftorium - Verify your email",
+        "Your verification code is: " + otp + "\n\nThis code expires in " + expiryText + ".",
+        "<p>Your verification code is:</p><p><strong>" + otp + "</strong></p>"
+            + "<p>This code expires in " + expiryText + ".</p>",
+        "verification",
+        "Failed to send verification email"
+    );
   }
 
   public void sendPasswordResetOtp(String toEmail, String otp) {
-    log.info("Attempting to send password reset OTP email to: {}", toEmail);
+    String expiryText = appProperties.otp().expiryMinutes() + " minutes";
+    sendEmail(
+        toEmail,
+        "Liftorium - Reset your password",
+        "Your password reset code is: " + otp + "\n\nThis code expires in " + expiryText
+            + ".\n\nIf you didn't request this, you can safely ignore this email.",
+        "<p>Your password reset code is:</p><p><strong>" + otp + "</strong></p>"
+            + "<p>This code expires in " + expiryText + ".</p>"
+            + "<p>If you didn't request this, you can safely ignore this email.</p>",
+        "password reset",
+        "Failed to send password reset email"
+    );
+  }
+
+  private void sendEmail(
+      String toEmail,
+      String subject,
+      String text,
+      String html,
+      String emailType,
+      String failureMessage
+  ) {
+    log.info("Attempting to send {} OTP email to: {}", emailType, toEmail);
     try {
-      SimpleMailMessage message = new SimpleMailMessage();
-      message.setFrom(fromEmail);
-      message.setTo(toEmail);
-      message.setSubject("Liftorium — Reset your password");
-      message.setText("Your password reset code is: " + otp + "\n\nThis code expires in 10 minutes.\n\nIf you didn't request this, you can safely ignore this email.");
-      mailSender.send(message);
-      log.info("Password reset OTP email sent successfully to: {}", toEmail);
+      ResendEmailResponse response = resendClient.post()
+          .uri("/emails")
+          .body(new ResendEmailRequest(
+              appProperties.email().from(),
+              List.of(toEmail),
+              subject,
+              html,
+              text
+          ))
+          .retrieve()
+          .body(ResendEmailResponse.class);
+
+      log.info("{} OTP email sent successfully to: {}. Resend message id: {}", emailType, toEmail,
+          response == null ? "unknown" : response.id());
+    } catch (RestClientResponseException e) {
+      log.error("Resend failed to send {} OTP email to: {}. Status: {}, Body: {}", emailType, toEmail,
+          e.getStatusCode(), e.getResponseBodyAsString(), e);
+      throw new AppException("EMAIL_SEND_FAILED", failureMessage, HttpStatus.INTERNAL_SERVER_ERROR);
     } catch (Exception e) {
-      log.error("Failed to send password reset OTP email to: {}. Error: {}", toEmail, e.getMessage(), e);
-      throw new AppException("EMAIL_SEND_FAILED", "Failed to send password reset email", HttpStatus.INTERNAL_SERVER_ERROR);
+      log.error("Failed to send {} OTP email to: {}. Error: {}", emailType, toEmail, e.getMessage(), e);
+      throw new AppException("EMAIL_SEND_FAILED", failureMessage, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  private record ResendEmailRequest(
+      String from,
+      List<String> to,
+      String subject,
+      String html,
+      String text
+  ) {
+  }
+
+  private record ResendEmailResponse(String id) {
   }
 }

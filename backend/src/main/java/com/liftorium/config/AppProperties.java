@@ -12,6 +12,7 @@ public record AppProperties(
     Cors cors,
     Jwt jwt,
     Exercises exercises,
+    Email email,
     Otp otp,
     Security security
 ) {
@@ -33,6 +34,12 @@ public record AppProperties(
 
   public record Exercises(
       boolean syncOnStartup
+  ) {
+  }
+
+  public record Email(
+      @NotBlank String resendApiKey,
+      @NotBlank String from
   ) {
   }
 
