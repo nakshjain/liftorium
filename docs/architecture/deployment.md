@@ -23,7 +23,7 @@ Required environment variables:
 PORT=4000
 SPRING_PROFILES_ACTIVE=production
 MONGODB_URI=mongodb+srv://<user>:<password>@<cluster>/<database>?retryWrites=true&w=majority
-CORS_ORIGIN=https://liftorium.fit
+CORS_ORIGIN=https://<frontend-host>
 JWT_ACCESS_SECRET=
 JWT_REFRESH_SECRET=
 RESEND_API_KEY=
