@@ -26,6 +26,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -249,16 +250,16 @@ public class AuthService {
   private AuthSession createSession(User user) {
     AuthUserDto userDto = toUserDto(user);
     String accessToken = jwtService.signAccessToken(userDto);
+    String refreshTokenId = new ObjectId().toHexString();
+    Instant refreshTokenExpiresAt = Instant.now().plus(jwtService.getRefreshTokenTtl());
+    String refreshToken = jwtService.signRefreshToken(user.getId(), refreshTokenId);
 
-    RefreshToken record = refreshTokenRepository.save(RefreshToken.builder()
+    refreshTokenRepository.save(RefreshToken.builder()
+        .id(refreshTokenId)
         .userId(user.getId())
-        .tokenHash("pending")
-        .expiresAt(Instant.now().plus(jwtService.getRefreshTokenTtl()))
+        .tokenHash(hashRefreshToken(refreshToken))
+        .expiresAt(refreshTokenExpiresAt)
         .build());
-
-    String refreshToken = jwtService.signRefreshToken(user.getId(), record.getId());
-    record.setTokenHash(hashRefreshToken(refreshToken));
-    refreshTokenRepository.save(record);
 
     return new AuthSession(userDto, accessToken, refreshToken);
   }

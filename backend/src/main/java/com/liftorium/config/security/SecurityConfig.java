@@ -1,5 +1,6 @@
 package com.liftorium.config.security;
 
+import com.liftorium.config.AppProperties;
 import com.liftorium.security.JwtAuthenticationFilter;
 import com.liftorium.security.RestAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class SecurityConfig {
   private final JwtAuthenticationFilter jwtAuthenticationFilter;
   private final RestAuthenticationEntryPoint authenticationEntryPoint;
   private final UserDetailsService userDetailsService;
+  private final AppProperties appProperties;
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -48,7 +50,7 @@ public class SecurityConfig {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new BCryptPasswordEncoder(12);
+    return new BCryptPasswordEncoder(appProperties.security().bcryptStrength());
   }
 
   @Bean
