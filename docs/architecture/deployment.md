@@ -37,26 +37,26 @@ REFRESH_TOKEN_COOKIE_NAME=gym_refresh_token
 
 `RESEND_FROM_EMAIL` must use a sender address on a domain verified in Resend. Keep the Resend API key in the same secret-management path as database and JWT secrets.
 
-## Domain and Proxy Strategy
+## Domain and API Strategy
 
-Use `https://liftorium.fit` as the public frontend origin and keep API calls same-origin through `/api`.
+Use `https://liftorium.fit` as the public frontend origin and `https://api.liftorium.fit` as the backend API origin.
 
-Production routing:
-
-```text
-https://liftorium.fit/api/* -> Spring Boot backend
-https://liftorium.fit/*     -> Angular static frontend
-```
-
-The Angular production environment should use a relative API base URL:
+Production DNS/routing:
 
 ```text
-/api/v1
+https://liftorium.fit          -> Angular static frontend
+https://api.liftorium.fit      -> Spring Boot backend
 ```
 
-This keeps browser API calls same-origin, avoids production CORS complexity, and keeps refresh-token cookie behavior tied to `liftorium.fit`.
+The Angular production environment should use:
 
-If the same-origin proxy cannot be supported by the hosting platform, use `https://api.liftorium.fit` as the fallback backend origin and update only the Angular production API base URL plus `CORS_ORIGIN`.
+```text
+https://api.liftorium.fit/api/v1
+```
+
+The backend production CORS origin should be `https://liftorium.fit`. The Angular auth interceptor already sends credentials, so refresh-token cookies continue to work against `api.liftorium.fit`.
+
+If a same-origin `/api` reverse proxy is reintroduced later, change only the Angular production API base URL back to `/api/v1`.
 
 ## Frontend
 
@@ -73,7 +73,7 @@ npm run build
 - [ ] MongoDB connection tested.
 - [ ] JWT secrets generated securely and at least 32 characters.
 - [ ] Resend API key configured and sender domain verified.
-- [ ] `/api/*` reverse proxy routes to the backend before Angular fallback routing.
+- [ ] `api.liftorium.fit` DNS points to the backend host.
 - [ ] CORS origin set to `https://liftorium.fit`.
 - [ ] HTTPS enabled before production cookie `Secure` rollout.
 - [ ] Backend and frontend health checks configured.
