@@ -367,3 +367,22 @@ Use this file for short, dated progress entries.
 - Rate limiting prevents abuse with 3 attempts per 10-minute window per email.
 - OTP codes are 6 digits, hashed with BCrypt before storage, and expire after 5 minutes.
 - The original direct `/api/v1/auth/register` endpoint remains functional for backward compatibility or testing.
+
+## 2026-06-14 - Sign-In Performance Tuning
+
+### Completed
+
+- Removed the redundant second MongoDB write from refresh-token session creation by pre-generating the refresh-token document id.
+- Added `BCRYPT_STRENGTH` / `app.security.bcrypt-strength` so password hashing cost can be tuned per environment.
+- Set the local/default BCrypt strength to `10` for faster development sign-ins while keeping production override support.
+- Updated the backend sample environment and security architecture documentation.
+
+### Verification
+
+- Ran the backend Maven test suite with IntelliJ's bundled Maven and Java 21.
+- Tests run: 2; failures: 0; errors: 0.
+
+### Notes
+
+- Existing users with BCrypt strength `12` password hashes will still verify at strength `12` until their password is recreated.
+- Production should benchmark login latency and set `BCRYPT_STRENGTH` to the highest acceptable value for the deployed hardware.
