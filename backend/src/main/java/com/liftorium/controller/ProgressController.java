@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@RequestMapping("/progress")
+@RequestMapping("api/v1/progress")
 @RequiredArgsConstructor
 public class ProgressController {
 

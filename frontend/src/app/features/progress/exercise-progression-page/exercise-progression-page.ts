@@ -1,0 +1,285 @@
+import {
+  Component,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ProgressService } from '../progress.service';
+import {
+  ExerciseProgressDetail,
+  ExerciseProgressHistoryEntry,
+  PrEvent,
+  PrType,
+} from '../progress.models';
+
+type TooltipState = {
+  visible: boolean;
+  x: number;
+  y: number;
+  date: string;
+  value: string;
+};
+
+@Component({
+  selector: 'app-exercise-progression-page',
+  imports: [RouterLink],
+  templateUrl: './exercise-progression-page.html',
+})
+export class ExerciseProgressionPageComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly progressService = inject(ProgressService);
+
+  protected readonly detail = signal<ExerciseProgressDetail | null>(null);
+  protected readonly history = signal<ExerciseProgressHistoryEntry[]>([]);
+  protected readonly prEvents = signal<PrEvent[]>([]);
+  protected readonly loading = signal(true);
+  protected readonly error = signal<string | null>(null);
+  protected readonly prEventsLoading = signal(false);
+  protected readonly prEventsPage = signal(1);
+  protected readonly prEventsTotalPages = signal(1);
+
+  protected readonly tooltip = signal<TooltipState>({
+    visible: false,
+    x: 0,
+    y: 0,
+    date: '',
+    value: '',
+  });
+
+  // Chart geometry — computed once history loads
+  protected readonly chartPath = computed(() => this.buildChartPath());
+  protected readonly chartPoints = computed(() => this.buildChartPoints());
+  protected readonly chartStartLabel = computed(() => this.buildStartLabel());
+  protected readonly chartEndLabel = computed(() => this.buildEndLabel());
+  protected readonly chartDelta = computed(() => this.buildDelta());
+
+  // Derived stats
+  protected readonly sessionCount = computed(() => this.history().length);
+
+  protected readonly hasEnoughDataForChart = computed(() => this.history().length >= 2);
+  protected readonly hasSingleDataPoint = computed(
+    () => this.history().length === 1
+  );
+
+  private exerciseId = '';
+
+  // SVG viewport constants
+  protected readonly CHART_W = 600;
+  protected readonly CHART_H = 160;
+  protected readonly CHART_PAD_X = 8;
+  protected readonly CHART_PAD_Y = 20;
+
+  ngOnInit(): void {
+    this.exerciseId = this.route.snapshot.paramMap.get('exerciseId') ?? '';
+    if (!this.exerciseId) {
+      this.error.set('Exercise not found.');
+      this.loading.set(false);
+      return;
+    }
+
+    this.loadDetail();
+    this.loadHistory();
+    this.loadPrEvents(true);
+  }
+
+  protected loadMorePrEvents(): void {
+    if (this.prEventsPage() >= this.prEventsTotalPages()) return;
+    this.prEventsPage.update((p) => p + 1);
+    this.loadPrEvents(false);
+  }
+
+  protected onChartPointerMove(event: PointerEvent): void {
+    const points = this.chartPoints();
+    if (!points.length) return;
+
+    const svgEl = event.currentTarget as SVGSVGElement;
+    const rect = svgEl.getBoundingClientRect();
+    const svgX = ((event.clientX - rect.left) / rect.width) * this.CHART_W;
+
+    // Find closest point
+    let closest = points[0];
+    let minDist = Math.abs(points[0].svgX - svgX);
+    for (const pt of points) {
+      const d = Math.abs(pt.svgX - svgX);
+      if (d < minDist) {
+        minDist = d;
+        closest = pt;
+      }
+    }
+
+    // Convert point back to screen coords for the tooltip
+    const screenX = rect.left + (closest.svgX / this.CHART_W) * rect.width;
+    const screenY = rect.top + (closest.svgY / this.CHART_H) * rect.height;
+
+    this.tooltip.set({
+      visible: true,
+      x: screenX,
+      y: screenY,
+      date: this.formatTooltipDate(closest.date),
+      value: `${closest.e1rm.toFixed(1)}kg`,
+    });
+  }
+
+  protected onChartPointerLeave(): void {
+    this.tooltip.update((t) => ({ ...t, visible: false }));
+  }
+
+  protected formatPrType(type: PrType): string {
+    switch (type) {
+      case 'WEIGHT': return 'Weight';
+      case 'REPS': return 'Reps';
+      case 'ESTIMATED_ONE_REP_MAX': return 'e1RM';
+    }
+  }
+
+  protected formatPrValue(event: PrEvent): string {
+    switch (event.prType) {
+      case 'WEIGHT': return `${event.value}kg`;
+      case 'REPS': return `${event.value} reps`;
+      case 'ESTIMATED_ONE_REP_MAX': return `${event.value.toFixed(1)}kg`;
+    }
+  }
+
+  protected formatPrDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    });
+  }
+
+  protected formatLastImproved(iso: string | null): string {
+    if (!iso) return '';
+    const ms = Date.now() - new Date(iso).getTime();
+    const days = Math.floor(ms / 86_400_000);
+    if (days === 0) return 'today';
+    if (days === 1) return 'yesterday';
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+    if (days < 365) return `${Math.floor(days / 30)} months ago`;
+    return `${Math.floor(days / 365)} years ago`;
+  }
+
+  protected hasMorePrEvents = computed(
+    () => this.prEventsPage() < this.prEventsTotalPages()
+  );
+
+  // ── Chart builders ──────────────────────────────────────────────────
+
+  private buildChartPath(): string {
+    const pts = this.buildChartPoints();
+    if (pts.length < 2) return '';
+
+    // Smooth catmull-rom approximation via cubic bezier
+    const d: string[] = [`M ${pts[0].svgX} ${pts[0].svgY}`];
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(i - 1, 0)];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[Math.min(i + 2, pts.length - 1)];
+
+      const cp1x = p1.svgX + (p2.svgX - p0.svgX) / 6;
+      const cp1y = p1.svgY + (p2.svgY - p0.svgY) / 6;
+      const cp2x = p2.svgX - (p3.svgX - p1.svgX) / 6;
+      const cp2y = p2.svgY - (p3.svgY - p1.svgY) / 6;
+
+      d.push(`C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2.svgX} ${p2.svgY}`);
+    }
+
+    return d.join(' ');
+  }
+
+  private buildChartPoints(): { svgX: number; svgY: number; e1rm: number; date: string }[] {
+    const entries = this.history();
+    if (entries.length < 2) return [];
+
+    const values = entries.map((e) => e.estimatedOneRepMax);
+    const minVal = Math.min(...values);
+    const maxVal = Math.max(...values);
+    const range = maxVal - minVal || 1;
+
+    const w = this.CHART_W - this.CHART_PAD_X * 2;
+    const h = this.CHART_H - this.CHART_PAD_Y * 2;
+
+    return entries.map((entry, i) => ({
+      svgX: this.CHART_PAD_X + (i / (entries.length - 1)) * w,
+      svgY: this.CHART_PAD_Y + h - ((entry.estimatedOneRepMax - minVal) / range) * h,
+      e1rm: entry.estimatedOneRepMax,
+      date: entry.achievedAt,
+    }));
+  }
+
+  private buildStartLabel(): string {
+    const entries = this.history();
+    if (!entries.length) return '';
+    return `${entries[0].estimatedOneRepMax.toFixed(1)}kg`;
+  }
+
+  private buildEndLabel(): string {
+    const entries = this.history();
+    if (!entries.length) return '';
+    return `${entries[entries.length - 1].estimatedOneRepMax.toFixed(1)}kg`;
+  }
+
+  private buildDelta(): { kg: string; pct: string; positive: boolean } | null {
+    const entries = this.history();
+    if (entries.length < 2) return null;
+    const first = entries[0].estimatedOneRepMax;
+    const last = entries[entries.length - 1].estimatedOneRepMax;
+    const diff = last - first;
+    const pct = first > 0 ? (diff / first) * 100 : 0;
+    return {
+      kg: `${diff >= 0 ? '+' : ''}${diff.toFixed(1)}kg`,
+      pct: `${diff >= 0 ? '+' : ''}${pct.toFixed(0)}%`,
+      positive: diff >= 0,
+    };
+  }
+
+  private formatTooltipDate(iso: string): string {
+    return new Date(iso).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
+  }
+
+  // ── Data loaders ────────────────────────────────────────────────────
+
+  private loadDetail(): void {
+    this.progressService.getExerciseProgress(this.exerciseId).subscribe({
+      next: (detail) => {
+        this.detail.set(detail);
+        this.loading.set(false);
+      },
+      error: () => {
+        this.error.set('Could not load progress for this exercise.');
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private loadHistory(): void {
+    this.progressService.getExerciseProgressHistory(this.exerciseId).subscribe({
+      next: (result) => this.history.set(result.entries),
+    });
+  }
+
+  private loadPrEvents(reset: boolean): void {
+    this.prEventsLoading.set(true);
+    this.progressService
+      .listPrEvents({ page: this.prEventsPage(), limit: 30, exerciseId: this.exerciseId })
+      .subscribe({
+        next: (result) => {
+          if (reset) {
+            this.prEvents.set(result.items);
+          } else {
+            this.prEvents.update((prev) => [...prev, ...result.items]);
+          }
+          this.prEventsTotalPages.set(result.totalPages);
+          this.prEventsLoading.set(false);
+        },
+        error: () => this.prEventsLoading.set(false),
+      });
+  }
+}
