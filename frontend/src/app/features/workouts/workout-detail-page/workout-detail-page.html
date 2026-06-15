@@ -1,12 +1,9 @@
 <main class="min-h-dvh bg-zinc-950 pb-16 text-zinc-50">
   <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
       <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app/workouts/history">
-        <svg class="mr-1 inline h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-        </svg>
-        History
+        ← History
       </a>
       @if (workout(); as w) {
         <h1 class="mt-1 text-2xl font-semibold tracking-normal text-zinc-50">{{ w.name }}</h1>
@@ -27,7 +24,7 @@
         <p class="text-sm font-medium text-rose-300">{{ error() }}</p>
       </div>
     } @else if (workout(); as w) {
-      <section class="mt-6 space-y-6">
+      <section class="anim-enter-1 mt-6 space-y-6">
         @for (exercise of w.exercises; track exercise.id; let idx = $index) {
           <div>
             <div class="flex items-center justify-between">

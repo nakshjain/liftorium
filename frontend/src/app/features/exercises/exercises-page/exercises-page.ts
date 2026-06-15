@@ -131,18 +131,26 @@ export class ExercisesPageComponent implements OnInit {
         this.showFilterLogicTooltip.set(false);
         localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.filterLogic, 'true');
         break;
+
       case 'exerciseType':
         this.showExerciseTypeTooltip.set(false);
         localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.exerciseType, 'true');
-        // Chain to next tooltip
+        // The filter logic tooltip lives inside @if (hasActiveFilters()), so we can't
+        // show it until the user has an active filter. Apply a muscle filter on their
+        // behalf (the first muscle group) so the tooltip becomes visible, then show it.
         if (!localStorage.getItem(this.TOOLTIP_STORAGE_KEYS.filterLogic)) {
+          if (!this.hasActiveFilters()) {
+            // Pre-select the first muscle group so hasActiveFilters() becomes true,
+            // making the active-filter bar (and its tooltip) render.
+            this.onMuscleFilter(this.muscleGroups[0].muscles[0]);
+          }
           setTimeout(() => this.showFilterLogicTooltip.set(true), 300);
         }
         break;
+
       case 'muscleGroup':
         this.showMuscleGroupTooltip.set(false);
         localStorage.setItem(this.TOOLTIP_STORAGE_KEYS.muscleGroup, 'true');
-        // Chain to next tooltip
         if (!localStorage.getItem(this.TOOLTIP_STORAGE_KEYS.exerciseType)) {
           setTimeout(() => this.showExerciseTypeTooltip.set(true), 300);
         }
