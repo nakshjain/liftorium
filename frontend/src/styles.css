@@ -31,11 +31,43 @@ input {
   font: inherit;
 }
 
+/* ─── Easing tokens ────────────────────────────────────────────────────────
+   From Emil Kowalski's design-engineering philosophy:
+   --ease-out: strong ease-out for UI entrances (starts fast, feels responsive)
+   --ease-in-out: for on-screen morphs
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* ─── Entrance keyframes ───────────────────────────────────────────────────
+   Never animate from scale(0) — nothing in the real world appears from nothing.
+   Start from scale(0.98) + translateY so the element has visible shape at rest.
+   ───────────────────────────────────────────────────────────────────────── */
 @keyframes fadeSlideUp {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes authEnter {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Error block slides in from slightly above — arrives with urgency */
+@keyframes errorSlideIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Left panel text lines reveal upward, one at a time */
+@keyframes panelLineIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── App-wide stagger system ──────────────────────────────────────────── */
 .anim-enter {
   animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
@@ -46,12 +78,76 @@ input {
 .anim-enter-4 { animation: fadeSlideUp 0.4s 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
 .anim-enter-5 { animation: fadeSlideUp 0.4s 0.30s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-/* Stagger via CSS custom property: set --stagger-i on each element (0-based index).
-   Cap at 8 items so later items don't wait too long. */
 .anim-stagger {
   animation: fadeSlideUp 0.38s calc(min(var(--stagger-i, 0), 8) * 0.055s) cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* ─── Auth-specific entrance classes ──────────────────────────────────────
+   Each class is a fixed delay step in the stagger cascade.
+   50ms between items → whole form lands in ~350ms.
+   Strong ease-out (--ease-out) makes each item feel snappy on arrival.
+   ───────────────────────────────────────────────────────────────────────── */
+.auth-item-0 { animation: authEnter 0.5s 0ms    var(--ease-out) both; }
+.auth-item-1 { animation: authEnter 0.5s 50ms   var(--ease-out) both; }
+.auth-item-2 { animation: authEnter 0.5s 100ms  var(--ease-out) both; }
+.auth-item-3 { animation: authEnter 0.5s 160ms  var(--ease-out) both; }
+.auth-item-4 { animation: authEnter 0.5s 220ms  var(--ease-out) both; }
+.auth-item-5 { animation: authEnter 0.5s 290ms  var(--ease-out) both; }
+.auth-item-6 { animation: authEnter 0.5s 350ms  var(--ease-out) both; }
+
+/* Left panel lines stagger more slowly — they're mood-setting, not functional */
+.panel-line-0 { animation: panelLineIn 0.7s 80ms  var(--ease-out) both; }
+.panel-line-1 { animation: panelLineIn 0.7s 180ms var(--ease-out) both; }
+.panel-line-2 { animation: panelLineIn 0.6s 300ms var(--ease-out) both; }
+.panel-line-3 { animation: panelLineIn 0.6s 420ms var(--ease-out) both; }
+
+/* Error block — appears occasionally, slides from above */
+.auth-error {
+  animation: errorSlideIn 0.22s var(--ease-out) both;
+}
+
+/* ─── Button press feedback ────────────────────────────────────────────────
+   scale(0.97) at 100ms ease-out — skill: "buttons must feel responsive to press"
+   Applied via :active pseudo-class so it fires without JS.
+   ───────────────────────────────────────────────────────────────────────── */
+.btn-auth {
+  transition: background-color 150ms ease, transform 100ms var(--ease-out), opacity 150ms ease;
+  will-change: transform;
+}
+
+.btn-auth:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Button label / spinner blur crossfade — masks the snap between states */
+.btn-auth-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: opacity 180ms ease, filter 180ms ease;
+}
+
+.btn-auth-content.is-transitioning {
+  opacity: 0.6;
+  filter: blur(2px);
+}
+
+/* ─── Input focus animation ───────────────────────────────────────────────
+   Focus ring grows in, not jumps. Short duration — used often during a session.
+   ───────────────────────────────────────────────────────────────────────── */
+.auth-input {
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.auth-input:focus {
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+}
+
+/* ─── Reduced motion — opacity only, no transforms ────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   .anim-enter,
   .anim-enter-1,
@@ -59,7 +155,23 @@ input {
   .anim-enter-3,
   .anim-enter-4,
   .anim-enter-5,
-  .anim-stagger {
+  .anim-stagger,
+  .auth-item-0,
+  .auth-item-1,
+  .auth-item-2,
+  .auth-item-3,
+  .auth-item-4,
+  .auth-item-5,
+  .auth-item-6,
+  .panel-line-0,
+  .panel-line-1,
+  .panel-line-2,
+  .panel-line-3,
+  .auth-error {
     animation: none;
+  }
+
+  .btn-auth:active:not(:disabled) {
+    transform: none;
   }
 }
