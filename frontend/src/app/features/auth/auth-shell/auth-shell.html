@@ -1,24 +1,33 @@
 <main class="flex min-h-dvh flex-col text-zinc-50 lg:grid lg:grid-cols-2">
 
-  <!-- ── Left panel: desktop brand column ─────────────────────────── -->
+  <!-- ════════════════════════════════════════════════════
+       LEFT PANEL — desktop brand column
+  ════════════════════════════════════════════════════ -->
   <div class="relative hidden overflow-hidden lg:flex lg:flex-col lg:justify-between bg-zinc-900 px-12 py-10">
-    <!-- Ambient teal wash -->
-    <div class="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-teal-400/10 blur-3xl" aria-hidden="true"></div>
-    <!-- Faint grid texture -->
+    <div class="pointer-events-none absolute -left-16 -top-16 h-80 w-80 rounded-full bg-teal-400/12 blur-3xl" aria-hidden="true"></div>
     <div
-      class="pointer-events-none absolute inset-0 opacity-[0.035]"
-      style="background-image: linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px); background-size: 40px 40px;"
+      class="pointer-events-none absolute inset-0 opacity-[0.03]"
+      style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 40px 40px;"
       aria-hidden="true"
     ></div>
+    <!-- Large decorative barbell — desktop -->
+    <div class="pointer-events-none absolute bottom-24 right-0 translate-x-1/3 opacity-[0.06]" aria-hidden="true">
+      <svg width="320" height="320" viewBox="0 0 320 320" fill="none">
+        <rect x="136" y="20" width="48" height="280" rx="6" fill="white"/>
+        <rect x="60" y="80" width="76" height="160" rx="10" fill="white"/>
+        <rect x="184" y="80" width="76" height="160" rx="10" fill="white"/>
+        <rect x="20" y="106" width="40" height="108" rx="8" fill="white"/>
+        <rect x="260" y="106" width="40" height="108" rx="8" fill="white"/>
+      </svg>
+    </div>
 
     <a class="panel-line-0 relative text-sm font-semibold tracking-tight text-zinc-50" routerLink="/auth/login">Liftorium</a>
 
     <div class="relative">
-      <!-- Each line staggers in independently for a composed, layered reveal -->
-      <p class="panel-line-1 text-[2.75rem] font-bold leading-[1.1] tracking-tight text-zinc-50">
+      <p class="panel-line-1 text-[2.75rem] font-black leading-[1.05] tracking-tight text-zinc-50">
         Every set.<br>Every rep.<br>Every PR.
       </p>
-      <p class="panel-line-2 mt-6 max-w-xs text-sm leading-relaxed text-zinc-400">
+      <p class="panel-line-2 mt-5 max-w-xs text-sm leading-relaxed text-zinc-400">
         Built for the gym floor. Minimal taps, zero friction — log your session the moment you need to.
       </p>
       <div class="panel-line-3 mt-8 h-px w-12 bg-teal-400/50"></div>
@@ -27,31 +36,71 @@
     <p class="panel-line-3 relative text-xs font-medium tracking-widest text-zinc-600 uppercase">Your training, nothing else.</p>
   </div>
 
-  <!-- ── Right panel: form ─────────────────────────────────────────── -->
-  <div class="flex flex-1 flex-col bg-zinc-950 px-5 py-6 sm:px-8 lg:px-12 lg:py-10">
+  <!-- ════════════════════════════════════════════════════
+       RIGHT PANEL — form (full screen on mobile)
+  ════════════════════════════════════════════════════ -->
+  <div class="relative flex min-h-dvh flex-col overflow-hidden px-5 py-6 sm:px-8 lg:min-h-0 lg:bg-zinc-950 lg:px-12 lg:py-10">
 
-    <!-- Mobile wordmark — item 0: first thing to arrive -->
-    <header class="auth-item-0 lg:hidden">
-      <a class="text-base font-semibold tracking-tight text-zinc-50" routerLink="/auth/login">Liftorium</a>
-    </header>
+    <!-- ── Mobile background: stronger teal wash from top-left ──────── -->
+    <div class="pointer-events-none absolute -left-12 -top-12 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl lg:hidden" aria-hidden="true"></div>
+    <!-- Secondary glow — bottom right, creates depth -->
+    <div class="pointer-events-none absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-teal-400/8 blur-3xl lg:hidden" aria-hidden="true"></div>
 
-    <section class="flex flex-1 flex-col justify-center py-8">
+    <!-- ── Hero zone: mobile brand identity ─────────────────────────── -->
+    <div class="relative flex flex-1 flex-col lg:hidden">
 
-      <!-- Accent rule — item 1 -->
-      <div class="auth-item-1 mb-8 lg:hidden" aria-hidden="true">
-        <div class="h-px w-8 bg-teal-400/60"></div>
+      <!-- Wordmark — small, restrained -->
+      <a class="auth-item-0 relative text-sm font-semibold tracking-tight text-zinc-400" routerLink="/auth/login">
+        Liftorium
+      </a>
+
+      <!-- Decorative barbell SVG — gym identity marker, fills the hero zone -->
+      <div class="auth-barbell-float pointer-events-none absolute right-0 top-8 opacity-[0.07]" aria-hidden="true">
+        <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
+          <rect x="88" y="10" width="24" height="180" rx="4" fill="white"/>
+          <rect x="36" y="48" width="52" height="104" rx="7" fill="white"/>
+          <rect x="112" y="48" width="52" height="104" rx="7" fill="white"/>
+          <rect x="10" y="66" width="26" height="68" rx="5" fill="white"/>
+          <rect x="164" y="66" width="26" height="68" rx="5" fill="white"/>
+        </svg>
       </div>
 
-      <!-- Headline — item 1 on desktop (no mobile wordmark above it), item 2 on mobile -->
-      <div class="auth-item-2 mb-8">
-        <h1 class="text-balance text-[2rem] font-bold leading-tight tracking-tight text-zinc-50">{{ title }}</h1>
-        @if (description) {
-          <p class="mt-3 text-sm leading-relaxed text-zinc-400">{{ description }}</p>
-        }
+      <!-- Massive headline — the whole point of this zone -->
+      <p class="auth-item-1 relative mt-auto pt-16 text-[3.25rem] font-black leading-[1.0] tracking-tight text-zinc-50">
+        Every<br>set. Every<br>rep.
+      </p>
+      <p class="auth-item-2 relative mt-2 text-[3.25rem] font-black leading-[1.0] tracking-tight text-teal-400">
+        Every PR.
+      </p>
+
+      <!-- Supporting copy -->
+      <p class="auth-item-3 relative mt-4 text-sm leading-relaxed text-zinc-500">
+        Built for the gym floor. Zero friction.
+      </p>
+
+      <!-- Stat pill — atmospheric social proof, gym context -->
+      <div class="auth-item-4 relative mt-5 inline-flex items-center gap-2 self-start rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 backdrop-blur-sm">
+        <span class="h-1.5 w-1.5 rounded-full bg-teal-400"></span>
+        <span class="text-xs font-medium text-zinc-400">10k+ sessions logged</span>
+      </div>
+    </div>
+
+    <!-- ── Form card — anchored to the bottom third on mobile ────────── -->
+    <section class="relative mt-6 flex flex-col lg:flex-1 lg:mt-0 lg:justify-center lg:py-8">
+
+      <!-- Glassmorphic card surface on mobile -->
+      <div class="rounded-2xl border border-zinc-800/70 bg-zinc-900/60 p-6 shadow-xl shadow-black/40 backdrop-blur-md lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
+
+        <div class="auth-item-5 mb-6 lg:mb-8">
+          <h1 class="text-xl font-bold leading-tight tracking-tight text-zinc-50 lg:text-[2rem]">{{ title }}</h1>
+          @if (description) {
+            <p class="mt-1.5 text-sm leading-relaxed text-zinc-500 lg:mt-3 lg:text-zinc-400">{{ description }}</p>
+          }
+        </div>
+
+        <ng-content />
       </div>
 
-      <!-- Form content — the ng-content slot. Each field inside gets its own class via the login template -->
-      <ng-content />
     </section>
 
   </div>

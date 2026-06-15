@@ -4,8 +4,9 @@
 >
   <form class="space-y-4" [formGroup]="form" (ngSubmit)="submit()">
 
-    <!-- Email — item 3 in the stagger cascade -->
-    <div class="auth-item-3">
+    <!-- Shell items 0-5 used by hero zone + form headline.
+         Form fields continue from item 6 onward. -->
+    <div class="auth-item-6">
       <app-auth-form-field
         autocomplete="email"
         label="Email"
@@ -15,8 +16,7 @@
       />
     </div>
 
-    <!-- Password — item 4 -->
-    <div class="auth-item-4 space-y-2.5">
+    <div class="auth-item-7 space-y-2.5">
       <app-auth-form-field
         autocomplete="current-password"
         label="Password"
@@ -32,7 +32,6 @@
       </div>
     </div>
 
-    <!-- Error block — slides in from above when it appears (auth-error class) -->
     @if (errorMessage()) {
       <div
         class="auth-error rounded-xl border border-rose-500/25 bg-rose-500/[0.08] px-4 py-3"
@@ -49,14 +48,12 @@
       </div>
     }
 
-    <!-- Submit button — item 5: last functional element to arrive -->
-    <div class="auth-item-5 mt-1">
+    <div class="mt-1">
       <button
         class="btn-auth h-12 w-full rounded-xl bg-teal-400 px-4 text-sm font-bold tracking-wide text-zinc-950 hover:bg-teal-300 disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-600"
         type="submit"
         [disabled]="submitDisabled()"
       >
-        <!-- Blur crossfade between label and spinner — masks the snap between states -->
         <span class="btn-auth-content" [class.is-transitioning]="loading()">
           @if (loading()) {
             <svg class="h-4 w-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -72,8 +69,7 @@
     </div>
   </form>
 
-  <!-- Footer link — item 6: quietest, last to arrive -->
-  <p class="auth-item-6 mt-7 text-center text-sm text-zinc-600">
+  <p class="mt-6 text-center text-sm text-zinc-600">
     New to Liftorium?
     <a class="font-semibold text-zinc-300 transition-colors duration-150 hover:text-zinc-50" routerLink="/auth/signup">Create an account</a>
   </p>

@@ -22,7 +22,7 @@ body {
 
 body {
   background:
-    radial-gradient(circle at top left, rgba(20, 184, 166, 0.10), transparent 18rem),
+    radial-gradient(ellipse 80% 50% at 0% 0%, rgba(20, 184, 166, 0.18), transparent 55%),
     #09090b;
 }
 
@@ -67,6 +67,12 @@ input {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Barbell float — subtle continuous drift so the graphic feels alive */
+@keyframes barbellFloat {
+  0%, 100% { transform: translateY(0px) rotate(-8deg); }
+  50%       { transform: translateY(-8px) rotate(-8deg); }
+}
+
 /* ─── App-wide stagger system ──────────────────────────────────────────── */
 .anim-enter {
   animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -94,6 +100,16 @@ input {
 .auth-item-4 { animation: authEnter 0.5s 220ms  var(--ease-out) both; }
 .auth-item-5 { animation: authEnter 0.5s 290ms  var(--ease-out) both; }
 .auth-item-6 { animation: authEnter 0.5s 350ms  var(--ease-out) both; }
+.auth-item-7 { animation: authEnter 0.5s 420ms  var(--ease-out) both; }
+
+/* Barbell graphic — enters with the brand strip, then floats perpetually */
+.auth-barbell {
+  animation: authEnter 0.8s 60ms var(--ease-out) both;
+}
+.auth-barbell-float {
+  animation: authEnter 0.8s 60ms var(--ease-out) both,
+             barbellFloat 5s 1s ease-in-out infinite;
+}
 
 /* Left panel lines stagger more slowly — they're mood-setting, not functional */
 .panel-line-0 { animation: panelLineIn 0.7s 80ms  var(--ease-out) both; }
@@ -163,6 +179,9 @@ input {
   .auth-item-4,
   .auth-item-5,
   .auth-item-6,
+  .auth-item-7,
+  .auth-barbell,
+  .auth-barbell-float,
   .panel-line-0,
   .panel-line-1,
   .panel-line-2,
@@ -173,5 +192,9 @@ input {
 
   .btn-auth:active:not(:disabled) {
     transform: none;
+  }
+
+  .auth-barbell-float {
+    animation: none;
   }
 }
