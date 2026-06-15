@@ -8,6 +8,7 @@ import { DAY_LABELS, PlanDay } from '../../plan/plan.models';
 import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { WorkoutService } from '../workout.service';
+import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
 
 type FinishedWorkoutSummary = {
   exercises: number;
@@ -17,7 +18,7 @@ type FinishedWorkoutSummary = {
 
 @Component({
   selector: 'app-live-workout-page',
-  imports: [RouterLink, FormsModule, ConfirmationDialogComponent],
+  imports: [RouterLink, FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent],
   templateUrl: './live-workout-page.html',
   styleUrl: './live-workout-page.scss'
 })
@@ -114,6 +115,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     const seconds = totalSeconds % 60;
 
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  }
+
+  protected formatVolume(vol: number): string {
+    if (vol >= 1000) return (vol / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return Math.round(vol).toString();
   }
 
   private createFinishedSummary(workout: LiveWorkout): FinishedWorkoutSummary {

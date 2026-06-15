@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { WorkoutService } from '../workout.service';
 import { WorkoutDto, WorkoutStats } from '../workout-history.models';
+import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
 
 /** One cell in the consistency heatmap. */
 export type HeatmapDay = {
@@ -16,7 +17,7 @@ export type HeatmapDay = {
 
 @Component({
   selector: 'app-workout-history-page',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, TrainingHubLinkComponent],
   templateUrl: './workout-history-page.html',
 })
 export class WorkoutHistoryPageComponent implements OnInit {

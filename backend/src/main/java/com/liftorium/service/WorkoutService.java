@@ -17,6 +17,7 @@ import com.liftorium.entity.WorkoutStatus;
 import com.liftorium.exception.AppException;
 import com.liftorium.repository.ExerciseRepository;
 import com.liftorium.repository.WorkoutRepository;
+import com.liftorium.service.ProgressEvaluationService;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
@@ -38,6 +39,7 @@ public class WorkoutService {
 
   private final WorkoutRepository workoutRepository;
   private final ExerciseRepository exerciseRepository;
+  private final ProgressEvaluationService progressEvaluationService;
 
   public WorkoutDto start(String userId, StartWorkoutRequest input) {
     Workout workout = Workout.builder()
@@ -148,7 +150,13 @@ public class WorkoutService {
       workout.setNotes(trim(input.notes()));
     }
 
-    return toDto(workoutRepository.save(workout));
+    Workout saved = workoutRepository.save(workout);
+
+    // Evaluate PRs after the workout is fully persisted.
+    // Runs synchronously so any persistence errors surface immediately.
+    progressEvaluationService.evaluate(saved);
+
+    return toDto(saved);
   }
 
   private Workout findWorkoutForUser(String userId, String workoutId) {

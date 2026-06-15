@@ -1,7 +1,7 @@
 <main class="min-h-dvh bg-zinc-950 pb-16 text-zinc-50">
   <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
       <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app/exercises">
         ← Exercise catalog
       </a>
@@ -110,7 +110,7 @@
       </section>
 
       <!-- Context-aware action toolbar -->
-      <section class="fixed bottom-0 left-0 right-0 z-10 border-t border-zinc-900 bg-zinc-950/95 backdrop-blur">
+      <section class="fixed bottom-0 left-0 right-0 z-10 border-t border-zinc-800 bg-zinc-950/95 backdrop-blur">
         <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
           @if (hasActiveWorkout()) {
             @if (isInWorkout()) {
@@ -127,7 +127,7 @@
                 </button>
                 <a
                   class="flex h-14 shrink-0 items-center justify-center rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98]"
-                  routerLink="/app/workout/live"
+                  routerLink="/app/workout"
                 >
                   Open workout
                 </a>

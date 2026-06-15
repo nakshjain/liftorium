@@ -1,9 +1,9 @@
 <main class="min-h-dvh bg-zinc-950 pb-32 text-zinc-50">
   <div class="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-4 sm:px-6">
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
       <div class="flex items-center justify-between gap-3">
         <div>
-          <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app">Training hub</a>
+          <app-training-hub-link />
           <h1 class="mt-1 text-2xl font-semibold tracking-normal text-zinc-50">Live workout</h1>
         </div>
         @if (store.activeWorkout()) {
@@ -17,12 +17,12 @@
 
     @if (!store.activeWorkout() || store.paused()) {
       <section class="flex flex-1 flex-col justify-center py-8">
-        <div class="rounded-xl border border-zinc-800 bg-zinc-900/40 p-8">
+        <div class="anim-enter-1 rounded-xl border border-zinc-800 bg-zinc-900/40 p-8">
           @if (finishedSummary(); as summary) {
             <p class="text-xs font-medium uppercase tracking-wider text-teal-400">Workout finished</p>
             <h2 class="mt-3 text-4xl font-semibold tracking-tight text-zinc-50">{{ summary.sets }} sets logged.</h2>
             <p class="mt-4 max-w-xl text-base leading-7 text-zinc-400">
-              {{ summary.volume }} kg across {{ summary.exercises }} exercises.
+              {{ formatVolume(summary.volume) }} kg across {{ summary.exercises }} exercises.
             </p>
           } @else {
             <h2 class="text-4xl font-semibold tracking-tight text-zinc-50">Start, tap, lift, repeat.</h2>
@@ -52,7 +52,7 @@
         </div>
 
         <!-- Today's Plan -->
-        <div class="mt-6 rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+        <div class="anim-enter-2 mt-6 rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
           <div class="flex items-center justify-between gap-3">
             <h2 class="text-sm font-medium uppercase tracking-wider text-zinc-500">Today's plan</h2>
             <select
@@ -110,7 +110,7 @@
         </div>
       </section>
     } @else {
-      <section class="grid grid-cols-3 gap-2 py-4">
+      <section class="anim-enter-1 grid grid-cols-3 gap-2 py-4">
         <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
           <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">Sets</p>
           <p class="mt-2 text-2xl font-semibold tabular-nums">{{ store.completedSetCount() }}</p>
@@ -127,7 +127,7 @@
         </div>
       </section>
 
-      <section class="pb-4">
+      <section class="anim-enter-2 pb-4">
         <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Add exercise</h2>
         <input
           class="mb-3 h-10 w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-sm text-zinc-50 placeholder-zinc-500 outline-none transition focus:border-teal-400/60 focus:ring-1 focus:ring-teal-400/30"
@@ -179,9 +179,12 @@
         }
       </section>
 
-      <section class="space-y-4">
-        @for (exercise of store.activeWorkout()?.exercises; track exercise.id) {
-          <article class="rounded-lg border border-zinc-800 bg-zinc-900/70">
+      <section class="anim-enter-3 space-y-4">
+        @for (exercise of store.activeWorkout()?.exercises; track exercise.id; let i = $index) {
+          <article
+            class="anim-stagger rounded-lg border border-zinc-800 bg-zinc-900/70"
+            [style]="'--stagger-i: ' + i"
+          >
             <div class="flex items-start justify-between gap-3 border-b border-zinc-800 p-4">
               <div>
                 <h2 class="text-lg font-semibold text-zinc-50">{{ exercise.name }}</h2>
@@ -310,9 +313,10 @@
           [class.cursor-not-allowed]="!hasCompletedSets()"
           type="button"
           [disabled]="!hasCompletedSets()"
+          [title]="hasCompletedSets() ? '' : 'Complete at least one set to finish'"
           (click)="finishWorkout()"
         >
-          Finish
+          {{ hasCompletedSets() ? 'Finish' : 'Log a set first' }}
         </button>
       </div>
     </footer>
