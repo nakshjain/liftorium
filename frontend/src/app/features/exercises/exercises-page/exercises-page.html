@@ -260,7 +260,7 @@
         <div class="space-y-2">
           @for (exercise of exercises(); track exercise.id) {
             <a
-              class="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+              class="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3.5 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
               [routerLink]="['/app/exercises', exercise.id]"
             >
               <div class="min-w-0 flex-1">
@@ -301,7 +301,7 @@
         @if (hasNext()) {
           <div class="mt-5 flex justify-center">
             <button
-              class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:opacity-50"
+              class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
               type="button"
               [disabled]="loadingMore()"
               (click)="loadMore()"
