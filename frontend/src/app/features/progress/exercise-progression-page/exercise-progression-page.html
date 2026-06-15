@@ -45,7 +45,7 @@
         @if (d.lastImprovedAt) {
           <p class="mt-1 text-sm text-zinc-500">
             Last PR {{ formatLastImproved(d.lastImprovedAt) }}
-            &bull; {{ d.totalPrs }} PR{{ d.totalPrs !== 1 ? 's' : '' }}
+            &bull; {{ d.totalSessions }} session{{ d.totalSessions !== 1 ? 's' : '' }}
           </p>
         }
 
@@ -197,7 +197,7 @@
             }
 
             <p class="mt-2 text-center text-xs text-zinc-600">
-              Best weight per session · {{ sessionCount() }} workouts
+              Best weight per session · {{ d.totalSessions }} workout{{ d.totalSessions !== 1 ? 's' : '' }}
             </p>
           </div>
 

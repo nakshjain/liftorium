@@ -23,6 +23,7 @@ export type ExerciseProgressSummary = {
   repPr: RepPr;
   estimatedOneRepMaxPr: number;
   totalPrs: number;
+  totalSessions: number;
   lastImprovedAt: string | null;
 };
 
@@ -43,6 +44,7 @@ export type ExerciseProgressDetail = {
   firstEstimatedOneRepMax: number | null;
   estimatedOneRepMaxPr: number;
   totalPrs: number;
+  totalSessions: number;
   lastImprovedAt: string | null;
 };
 

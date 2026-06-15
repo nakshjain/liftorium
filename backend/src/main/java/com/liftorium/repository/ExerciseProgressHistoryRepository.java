@@ -16,4 +16,7 @@ public interface ExerciseProgressHistoryRepository extends MongoRepository<Exerc
   /** Guard against duplicate snapshots for the same workout + exercise. */
   boolean existsByUserIdAndExerciseIdAndWorkoutId(
       String userId, String exerciseId, String workoutId);
+
+  /** Total number of workout sessions logged for a user + exercise combination. */
+  long countByUserIdAndExerciseId(String userId, String exerciseId);
 }

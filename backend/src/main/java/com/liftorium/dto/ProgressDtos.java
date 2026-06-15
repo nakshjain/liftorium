@@ -36,6 +36,7 @@ public final class ProgressDtos {
       RepPrDto repPr,
       double estimatedOneRepMaxPr,
       int totalPrs,
+      long totalSessions,
       String lastImprovedAt
   ) {
   }
@@ -66,6 +67,7 @@ public final class ProgressDtos {
       Double firstEstimatedOneRepMax,
       double estimatedOneRepMaxPr,
       int totalPrs,
+      long totalSessions,
       String lastImprovedAt
   ) {
   }

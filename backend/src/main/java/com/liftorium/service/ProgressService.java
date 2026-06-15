@@ -193,6 +193,8 @@ public class ProgressService {
   // ── Private helpers ───────────────────────────────────────────────────
 
   private ExerciseProgressSummaryDto toSummaryDto(ExerciseProgress ep, Map<String, String> nameMap) {
+    long sessions = exerciseProgressHistoryRepository
+        .countByUserIdAndExerciseId(ep.getUserId(), ep.getExerciseId());
     return new ExerciseProgressSummaryDto(
         ep.getExerciseId(),
         nameMap.getOrDefault(ep.getExerciseId(), "Unknown"),
@@ -200,11 +202,14 @@ public class ProgressService {
         new RepPrDto(ep.getRepPrWeight(), ep.getRepPrReps()),
         roundToTwo(ep.getEstimatedOneRepMaxPr()),
         ep.getTotalPrs(),
+        sessions,
         ep.getLastImprovedAt() != null ? ep.getLastImprovedAt().toString() : null
     );
   }
 
   private ExerciseProgressDetailDto toDetailDto(ExerciseProgress ep, String exerciseName) {
+    long sessions = exerciseProgressHistoryRepository
+        .countByUserIdAndExerciseId(ep.getUserId(), ep.getExerciseId());
     return new ExerciseProgressDetailDto(
         ep.getExerciseId(),
         exerciseName,
@@ -214,6 +219,7 @@ public class ProgressService {
         ep.getFirstEstimatedOneRepMax(),
         roundToTwo(ep.getEstimatedOneRepMaxPr()),
         ep.getTotalPrs(),
+        sessions,
         ep.getLastImprovedAt() != null ? ep.getLastImprovedAt().toString() : null
     );
   }

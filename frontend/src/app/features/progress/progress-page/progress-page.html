@@ -138,20 +138,17 @@
                 >
                   <div class="min-w-0 flex-1">
                     <p class="truncate text-sm font-semibold text-zinc-50">{{ ex.exerciseName }}</p>
-                    <!-- Weight PR leads, rep PR second, e1RM tertiary -->
+                    <!-- Weight PR leads, rep PR second — e1RM removed from list row -->
                     <div class="mt-1 flex items-center gap-3 text-xs">
                       <span class="font-semibold text-teal-400">{{ formatWeight(ex.weightPr) }}</span>
                       @if (ex.repPr.weight > 0) {
                         <span class="text-zinc-400">{{ formatRepPr(ex.repPr.weight, ex.repPr.reps) }}</span>
                       }
-                      @if (ex.estimatedOneRepMaxPr > 0) {
-                        <span class="text-zinc-600">e1RM {{ ex.estimatedOneRepMaxPr.toFixed(1) }}kg</span>
-                      }
                     </div>
                   </div>
                   <div class="flex shrink-0 flex-col items-end gap-1">
                     <span class="text-xs text-zinc-600">{{ formatRelativeTime(ex.lastImprovedAt) }}</span>
-                    <span class="text-xs font-medium text-zinc-600">{{ ex.totalPrs }} PR{{ ex.totalPrs !== 1 ? 's' : '' }}</span>
+                    <span class="text-xs text-zinc-600">{{ ex.totalSessions }} session{{ ex.totalSessions !== 1 ? 's' : '' }}</span>
                   </div>
                 </a>
               }
