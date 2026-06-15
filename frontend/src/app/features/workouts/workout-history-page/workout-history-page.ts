@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { WorkoutService } from '../workout.service';
 import { WorkoutDto, WorkoutStats } from '../workout-history.models';
@@ -15,7 +16,7 @@ export type HeatmapDay = {
 
 @Component({
   selector: 'app-workout-history-page',
-  imports: [RouterLink],
+  imports: [RouterLink, FormsModule],
   templateUrl: './workout-history-page.html',
 })
 export class WorkoutHistoryPageComponent implements OnInit {
@@ -32,6 +33,9 @@ export class WorkoutHistoryPageComponent implements OnInit {
 
   /** Controls whether the full PR list is expanded. */
   protected readonly showAllPrs = signal(false);
+
+  /** Live search query for the workout list — client-side, no API. */
+  protected readonly searchQuery = signal('');
 
   // ── Month / navigation ─────────────────────────────────────────────────
   protected readonly monthLabel = computed(() => {
@@ -87,6 +91,17 @@ export class WorkoutHistoryPageComponent implements OnInit {
   protected readonly completedWorkouts = computed(() =>
     this.workouts().filter((w) => w.status === 'completed' && w.exercises.length > 0),
   );
+
+  /** Workout list filtered by searchQuery. Stats and badges always use completedWorkouts. */
+  protected readonly filteredWorkouts = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    if (!q) return this.completedWorkouts();
+    return this.completedWorkouts().filter(
+      (w) =>
+        w.name.toLowerCase().includes(q) ||
+        w.exercises.some((ex) => ex.exerciseName.toLowerCase().includes(q)),
+    );
+  });
 
   // ── Best workout (highest volume) ─────────────────────────────────────
   protected readonly bestWorkout = computed((): WorkoutDto | null => {
@@ -237,6 +252,7 @@ export class WorkoutHistoryPageComponent implements OnInit {
     this.currentMonth.set(this.offsetMonth(this.currentMonth(), -1));
     this.page.set(1);
     this.showAllPrs.set(false);
+    this.searchQuery.set('');
     this.loadData();
   }
 
@@ -246,6 +262,7 @@ export class WorkoutHistoryPageComponent implements OnInit {
       this.currentMonth.set(next);
       this.page.set(1);
       this.showAllPrs.set(false);
+      this.searchQuery.set('');
       this.loadData();
     }
   }
@@ -255,6 +272,7 @@ export class WorkoutHistoryPageComponent implements OnInit {
     this.currentMonth.set(this.getCurrentYearMonth());
     this.page.set(1);
     this.showAllPrs.set(false);
+    this.searchQuery.set('');
     this.loadData();
   }
 

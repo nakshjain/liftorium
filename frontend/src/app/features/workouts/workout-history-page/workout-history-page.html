@@ -346,9 +346,38 @@
     <section class="mt-6" aria-label="Workouts this month">
 
       @if (!loading() && completedWorkouts().length > 0) {
-        <div class="mb-3 flex items-center justify-between">
+        <!-- Sessions header + inline search -->
+        <div class="mb-3 flex items-center gap-2">
           <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Sessions</p>
-          <span class="text-xs text-zinc-600">{{ completedWorkouts().length }} {{ completedWorkouts().length === 1 ? 'workout' : 'workouts' }}</span>
+          <span class="text-xs text-zinc-600">{{ completedWorkouts().length }}</span>
+          <div class="relative ml-auto flex items-center">
+            <!-- Search icon -->
+            <svg class="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+            </svg>
+            <input
+              class="h-9 w-36 rounded-xl border border-zinc-800 bg-zinc-900/60 pl-8 pr-8 text-xs text-zinc-200 placeholder-zinc-600 outline-none transition-colors focus:border-zinc-600 focus:bg-zinc-900 focus:placeholder-zinc-500"
+              type="search"
+              placeholder="Search workouts…"
+              autocomplete="off"
+              aria-label="Search workouts by name or exercise"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            />
+            <!-- Clear button — only when query is non-empty -->
+            @if (searchQuery()) {
+              <button
+                class="absolute right-2 flex h-5 w-5 items-center justify-center rounded-full text-zinc-500 transition-colors hover:text-zinc-300"
+                type="button"
+                aria-label="Clear search"
+                (click)="searchQuery.set('')"
+              >
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            }
+          </div>
         </div>
       }
 
@@ -390,8 +419,19 @@
         </div>
 
       } @else {
-        <div class="space-y-2">
-          @for (workout of completedWorkouts(); track workout.id; let i = $index) {
+        <!-- Filtered empty state -->
+        @if (filteredWorkouts().length === 0) {
+          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-5 py-10 text-center">
+            <p class="text-sm font-medium text-zinc-400">No workouts matching "{{ searchQuery() }}"</p>
+            <button
+              class="mt-3 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-300"
+              type="button"
+              (click)="searchQuery.set('')"
+            >Clear search</button>
+          </div>
+        } @else {
+          <div class="space-y-2">
+            @for (workout of filteredWorkouts(); track workout.id; let i = $index) {
 
             <!-- ── BEST WORKOUT OF THE MONTH ── -->
             @if (isBestWorkout(workout)) {
@@ -520,6 +560,7 @@
             </button>
           </div>
         }
+        } <!-- end @else filteredWorkouts -->
       }
     </section>
 
