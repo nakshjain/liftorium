@@ -302,8 +302,14 @@
           Pause
         </button>
         <button
-          class="h-12 rounded-lg bg-teal-400 px-5 text-sm font-bold text-zinc-950 transition active:scale-[0.99]"
+          class="h-12 rounded-lg px-5 text-sm font-bold transition active:scale-[0.99]"
+          [class.bg-teal-400]="hasCompletedSets()"
+          [class.text-zinc-950]="hasCompletedSets()"
+          [class.bg-zinc-800]="!hasCompletedSets()"
+          [class.text-zinc-500]="!hasCompletedSets()"
+          [class.cursor-not-allowed]="!hasCompletedSets()"
           type="button"
+          [disabled]="!hasCompletedSets()"
           (click)="finishWorkout()"
         >
           Finish

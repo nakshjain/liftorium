@@ -85,7 +85,7 @@ export class WorkoutHistoryPageComponent implements OnInit {
 
   // ── Completed workouts only (no active sessions in history) ───────────
   protected readonly completedWorkouts = computed(() =>
-    this.workouts().filter((w) => w.status === 'completed'),
+    this.workouts().filter((w) => w.status === 'completed' && w.exercises.length > 0),
   );
 
   // ── Best workout (highest volume) ─────────────────────────────────────
