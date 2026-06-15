@@ -11,7 +11,7 @@
       @if (workout(); as w) {
         <h1 class="mt-1 text-2xl font-semibold tracking-normal text-zinc-50">{{ w.name }}</h1>
         <p class="mt-0.5 text-sm text-zinc-500">
-          {{ formatDate(w.startedAt) }} &bull; {{ formatDuration(w.durationSeconds) }} &bull; {{ totalVolume() | number:'1.0-0' }} kg
+          {{ formatDate(w.startedAt) }}@if (w.durationSeconds) { &bull; {{ formatDuration(w.durationSeconds) }}} &bull; {{ totalVolume() | number:'1.0-0' }} kg
 
         </p>
       }
