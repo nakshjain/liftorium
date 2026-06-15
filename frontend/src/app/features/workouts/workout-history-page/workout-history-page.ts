@@ -227,15 +227,6 @@ export class WorkoutHistoryPageComponent implements OnInit {
     return best !== null && best.id === workout.id;
   }
 
-  /**
-   * Returns an array of booleans for streak pip display.
-   * Shows up to 7 pips (one week). True = filled, false = empty.
-   */
-  protected streakPips(streak: number): boolean[] {
-    const count = Math.min(streak, 7);
-    return Array.from({ length: count }, () => true);
-  }
-
   // ── Skeleton ──────────────────────────────────────────────────────────
   protected readonly skeletonHeights = [88, 76, 88, 76, 68];
 
