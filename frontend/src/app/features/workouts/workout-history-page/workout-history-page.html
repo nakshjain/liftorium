@@ -82,7 +82,7 @@
                       [class.ring-teal-400]="day.isToday && day.hasWorkout"
                       [class.ring-zinc-500]="day.isToday && !day.hasWorkout"
                       [class.opacity-20]="day.isFuture"
-                      [attr.aria-label]="day.label + (day.hasWorkout ? ' — trained' : '')"
+                      [attr.aria-label]="day.isFuture ? day.label : day.label + (day.hasWorkout ? ' — trained' : '')"
                       [title]="day.label"
                     ></div>
                   } @else {
@@ -227,7 +227,7 @@
         <button
           class="text-xs font-medium text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300 hover:underline"
           type="button"
-          (click)="retryList()"
+          (click)="retry()"
         >Retry</button>
       </div>
     } @else {
@@ -252,10 +252,10 @@
       <section class="anim-enter-2 mt-6" aria-label="Progression insights">
         <p class="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">This month's highlights</p>
 
-        <div class="flex gap-3 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
+        <div class="flex gap-3 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none] snap-x snap-mandatory">
 
           @if (biggestPr(); as pr) {
-            <div class="flex w-44 shrink-0 flex-col gap-2 rounded-2xl border border-amber-400/25 bg-gradient-to-b from-amber-400/[0.08] to-zinc-900/60 p-4">
+            <div class="flex w-44 shrink-0 snap-start flex-col gap-2 rounded-2xl border border-amber-400/25 bg-gradient-to-b from-amber-400/[0.08] to-zinc-900/60 p-4">
               <span class="text-xl leading-none" aria-hidden="true">🏆</span>
               <div>
                 <p class="text-[10px] font-semibold uppercase tracking-wider text-amber-500">Biggest PR</p>
@@ -267,7 +267,7 @@
           }
 
           @if (topVolumeExercise(); as top) {
-            <div class="flex w-44 shrink-0 flex-col gap-2 rounded-2xl border border-teal-400/20 bg-gradient-to-b from-teal-400/[0.06] to-zinc-900/60 p-4">
+            <div class="flex w-44 shrink-0 snap-start flex-col gap-2 rounded-2xl border border-teal-400/20 bg-gradient-to-b from-teal-400/[0.06] to-zinc-900/60 p-4">
               <span class="text-xl leading-none" aria-hidden="true">📈</span>
               <div>
                 <p class="text-[10px] font-semibold uppercase tracking-wider text-teal-500">Most Volume</p>

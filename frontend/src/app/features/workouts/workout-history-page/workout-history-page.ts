@@ -264,16 +264,25 @@ export class WorkoutHistoryPageComponent implements OnInit {
     this.loadData();
   }
 
+  /** Alias used in the stats error retry button — reloads both stats and list. */
+  protected retry(): void {
+    this.loadData();
+  }
+
   protected loadMore(): void {
     if (this.page() >= this.totalPages()) return;
-    this.page.update((p) => p + 1);
+    // Capture the next page number before the request so the signal
+    // is only incremented on success, preventing page-skip on retry.
+    const nextPage = this.page() + 1;
     this.workoutService
-      .getHistory({ page: this.page(), limit: 20, month: this.currentMonth() })
+      .getHistory({ page: nextPage, limit: 20, month: this.currentMonth() })
       .subscribe({
         next: (result) => {
+          this.page.set(nextPage);
           this.workouts.update((prev) => [...prev, ...result.items]);
           this.totalPages.set(result.totalPages);
         },
+        // On failure page stays unchanged — next tap retries the same page.
       });
   }
 
