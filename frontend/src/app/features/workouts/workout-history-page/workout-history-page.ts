@@ -14,6 +14,8 @@ export class WorkoutHistoryPageComponent implements OnInit {
   protected readonly workouts = signal<WorkoutDto[]>([]);
   protected readonly stats = signal<WorkoutStats | null>(null);
   protected readonly loading = signal(false);
+  protected readonly listError = signal(false);
+  protected readonly statsError = signal(false);
   protected readonly currentMonth = signal(this.getCurrentYearMonth());
   protected readonly page = signal(1);
   protected readonly totalPages = signal(1);
@@ -30,15 +32,33 @@ export class WorkoutHistoryPageComponent implements OnInit {
     return Math.round(((s.totalVolume - s.previousMonthVolume) / s.previousMonthVolume) * 100);
   });
 
-  protected readonly volumeBarWidth = computed(() => {
-    const pct = this.volumeChangePercent();
-    if (pct === null) return 0;
-    return Math.min(100, Math.abs(pct) + 50);
-  });
-
   protected readonly isCurrentMonth = computed(() =>
     this.currentMonth() >= this.getCurrentYearMonth()
   );
+
+  /** Varied skeleton heights to mimic the shape of real workout rows. */
+  protected readonly skeletonHeights = [72, 64, 72, 64, 56];
+
+  /** Set of exerciseIds that earned a PR this month — used to badge workout rows. */
+  protected readonly prExerciseIds = computed(() => {
+    const s = this.stats();
+    if (!s) return new Set<string>();
+    return new Set(s.personalRecords.map((pr) => pr.exerciseId));
+  });
+
+  /** Whether a workout contains at least one exercise that earned a PR this month. */
+  protected workoutHasPr(workout: WorkoutDto): boolean {
+    const ids = this.prExerciseIds();
+    return workout.exercises.some((ex) => ids.has(ex.exerciseId));
+  }
+
+  /** "Squat, Bench Press, +3" instead of "5 exercises". */
+  protected exercisePreview(workout: WorkoutDto): string {
+    const names = workout.exercises.map((ex) => ex.exerciseName);
+    if (names.length === 0) return 'No exercises';
+    if (names.length <= 2) return names.join(', ');
+    return `${names[0]}, ${names[1]}, +${names.length - 2}`;
+  }
 
   ngOnInit(): void {
     this.loadData();
@@ -59,15 +79,28 @@ export class WorkoutHistoryPageComponent implements OnInit {
     }
   }
 
+  protected jumpToCurrentMonth(): void {
+    if (this.isCurrentMonth()) return;
+    this.currentMonth.set(this.getCurrentYearMonth());
+    this.page.set(1);
+    this.loadData();
+  }
+
+  protected retryList(): void {
+    this.loadData();
+  }
+
   protected loadMore(): void {
     if (this.page() >= this.totalPages()) return;
     this.page.update((p) => p + 1);
-    this.workoutService.getHistory({ page: this.page(), limit: 20, month: this.currentMonth() }).subscribe({
-      next: (result) => {
-        this.workouts.update((prev) => [...prev, ...result.items]);
-        this.totalPages.set(result.totalPages);
-      },
-    });
+    this.workoutService
+      .getHistory({ page: this.page(), limit: 20, month: this.currentMonth() })
+      .subscribe({
+        next: (result) => {
+          this.workouts.update((prev) => [...prev, ...result.items]);
+          this.totalPages.set(result.totalPages);
+        },
+      });
   }
 
   protected formatDuration(seconds: number | null): string {
@@ -80,17 +113,21 @@ export class WorkoutHistoryPageComponent implements OnInit {
 
   protected formatDate(iso: string): string {
     const date = new Date(iso);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+    const now = new Date();
+    const showYear = date.getFullYear() !== now.getFullYear();
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      weekday: 'short',
+      ...(showYear ? { year: 'numeric' } : {}),
+    });
   }
 
   protected workoutVolume(workout: WorkoutDto): number {
     return workout.exercises.reduce(
-      (total, ex) => total + ex.sets.reduce((t, s) => t + s.reps * s.weight, 0), 0
+      (total, ex) => total + ex.sets.reduce((t, s) => t + s.reps * s.weight, 0),
+      0,
     );
-  }
-
-  protected exerciseNames(workout: WorkoutDto): string {
-    return workout.exercises.length + ' exercise' + (workout.exercises.length !== 1 ? 's' : '');
   }
 
   protected formatVolume(vol: number): string {
@@ -100,10 +137,16 @@ export class WorkoutHistoryPageComponent implements OnInit {
 
   private loadData(): void {
     this.loading.set(true);
+    this.listError.set(false);
+    this.statsError.set(false);
+    // Clear stale data immediately so the previous month's stats don't
+    // sit visible while the new month's request is in flight.
+    this.stats.set(null);
     const month = this.currentMonth();
 
     this.workoutService.getStats(month).subscribe({
       next: (stats) => this.stats.set(stats),
+      error: () => this.statsError.set(true),
     });
 
     this.workoutService.getHistory({ page: 1, limit: 20, month }).subscribe({
@@ -112,7 +155,10 @@ export class WorkoutHistoryPageComponent implements OnInit {
         this.totalPages.set(result.totalPages);
         this.loading.set(false);
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.listError.set(true);
+        this.loading.set(false);
+      },
     });
   }
 
