@@ -37,8 +37,10 @@ export type PaginatedExerciseProgress = {
 export type ExerciseProgressDetail = {
   exerciseId: string;
   exerciseName: string;
+  firstWeightPr: number | null;
   weightPr: number;
   repPr: RepPr;
+  firstEstimatedOneRepMax: number | null;
   estimatedOneRepMaxPr: number;
   totalPrs: number;
   lastImprovedAt: string | null;
@@ -51,7 +53,10 @@ export type PrEvent = {
   exerciseId: string;
   exerciseName: string;
   prType: PrType;
+  /** @deprecated Use newValue. Kept for backward compatibility. */
   value: number;
+  previousValue: number | null;
+  newValue: number | null;
   workoutId: string;
   achievedAt: string;
 };
@@ -67,11 +72,11 @@ export type PaginatedPrEvents = {
 export type ExerciseProgressHistoryEntry = {
   id: string;
   workoutId: string;
-  maxWeight: number;
+  bestWeight: number;
   bestSetWeight: number;
   bestSetReps: number;
   estimatedOneRepMax: number;
-  achievedAt: string;
+  performedAt: string;
 };
 
 export type ExerciseProgressHistory = {

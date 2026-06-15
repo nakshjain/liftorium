@@ -48,20 +48,19 @@ export class ExerciseProgressionPageComponent implements OnInit {
     value: '',
   });
 
-  // Chart geometry — computed once history loads
+  // Chart geometry — computed once history loads (uses bestWeight, not e1RM)
   protected readonly chartPath = computed(() => this.buildChartPath());
   protected readonly chartPoints = computed(() => this.buildChartPoints());
   protected readonly chartStartLabel = computed(() => this.buildStartLabel());
   protected readonly chartEndLabel = computed(() => this.buildEndLabel());
-  protected readonly chartDelta = computed(() => this.buildDelta());
+
+  // Progression summary — uses firstWeightPr / weightPr from detail
+  protected readonly progressionSummary = computed(() => this.buildProgressionSummary());
 
   // Derived stats
   protected readonly sessionCount = computed(() => this.history().length);
-
   protected readonly hasEnoughDataForChart = computed(() => this.history().length >= 2);
-  protected readonly hasSingleDataPoint = computed(
-    () => this.history().length === 1
-  );
+  protected readonly hasSingleDataPoint = computed(() => this.history().length === 1);
 
   private exerciseId = '';
 
@@ -109,7 +108,6 @@ export class ExerciseProgressionPageComponent implements OnInit {
       }
     }
 
-    // Convert point back to screen coords for the tooltip
     const screenX = rect.left + (closest.svgX / this.CHART_W) * rect.width;
     const screenY = rect.top + (closest.svgY / this.CHART_H) * rect.height;
 
@@ -118,7 +116,7 @@ export class ExerciseProgressionPageComponent implements OnInit {
       x: screenX,
       y: screenY,
       date: this.formatTooltipDate(closest.date),
-      value: `${closest.e1rm.toFixed(1)}kg`,
+      value: `${closest.weight}kg`,
     });
   }
 
@@ -134,11 +132,28 @@ export class ExerciseProgressionPageComponent implements OnInit {
     }
   }
 
-  protected formatPrValue(event: PrEvent): string {
+  /**
+   * Format a PR event as a progression transition.
+   * e.g. "35kg → 47.5kg" or "20kg × 10 → 20kg × 12"
+   */
+  protected formatPrTransition(event: PrEvent): string {
+    const prev = event.previousValue;
+    const next = event.newValue ?? event.value;
+
     switch (event.prType) {
-      case 'WEIGHT': return `${event.value}kg`;
-      case 'REPS': return `${event.value} reps`;
-      case 'ESTIMATED_ONE_REP_MAX': return `${event.value.toFixed(1)}kg`;
+      case 'WEIGHT':
+        return prev != null ? `${prev}kg → ${next}kg` : `${next}kg`;
+      case 'REPS': {
+        // Rep PR: show weight context when available
+        const prevReps = prev != null ? `${prev} reps` : null;
+        const nextReps = `${next} reps`;
+        return prevReps ? `${prevReps} → ${nextReps}` : nextReps;
+      }
+      case 'ESTIMATED_ONE_REP_MAX': {
+        const prevE = prev != null ? `${(prev as number).toFixed(1)}kg` : null;
+        const nextE = `${(next as number).toFixed(1)}kg`;
+        return prevE ? `${prevE} → ${nextE}` : nextE;
+      }
     }
   }
 
@@ -146,7 +161,6 @@ export class ExerciseProgressionPageComponent implements OnInit {
     return new Date(iso).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric',
     });
   }
 
@@ -166,7 +180,7 @@ export class ExerciseProgressionPageComponent implements OnInit {
     () => this.prEventsPage() < this.prEventsTotalPages()
   );
 
-  // ── Chart builders ──────────────────────────────────────────────────
+  // ── Chart builders — all driven by bestWeight ─────────────────────────
 
   private buildChartPath(): string {
     const pts = this.buildChartPoints();
@@ -191,11 +205,11 @@ export class ExerciseProgressionPageComponent implements OnInit {
     return d.join(' ');
   }
 
-  private buildChartPoints(): { svgX: number; svgY: number; e1rm: number; date: string }[] {
+  private buildChartPoints(): { svgX: number; svgY: number; weight: number; date: string }[] {
     const entries = this.history();
     if (entries.length < 2) return [];
 
-    const values = entries.map((e) => e.estimatedOneRepMax);
+    const values = entries.map((e) => e.bestWeight);
     const minVal = Math.min(...values);
     const maxVal = Math.max(...values);
     const range = maxVal - minVal || 1;
@@ -205,34 +219,53 @@ export class ExerciseProgressionPageComponent implements OnInit {
 
     return entries.map((entry, i) => ({
       svgX: this.CHART_PAD_X + (i / (entries.length - 1)) * w,
-      svgY: this.CHART_PAD_Y + h - ((entry.estimatedOneRepMax - minVal) / range) * h,
-      e1rm: entry.estimatedOneRepMax,
-      date: entry.achievedAt,
+      svgY: this.CHART_PAD_Y + h - ((entry.bestWeight - minVal) / range) * h,
+      weight: entry.bestWeight,
+      date: entry.performedAt,
     }));
   }
 
   private buildStartLabel(): string {
     const entries = this.history();
     if (!entries.length) return '';
-    return `${entries[0].estimatedOneRepMax.toFixed(1)}kg`;
+    return `${entries[0].bestWeight}kg`;
   }
 
   private buildEndLabel(): string {
     const entries = this.history();
     if (!entries.length) return '';
-    return `${entries[entries.length - 1].estimatedOneRepMax.toFixed(1)}kg`;
+    return `${entries[entries.length - 1].bestWeight}kg`;
   }
 
-  private buildDelta(): { kg: string; pct: string; positive: boolean } | null {
+  /**
+   * Builds the progression summary using backend firstWeightPr / weightPr.
+   * Falls back to history entries when firstWeightPr is not yet set.
+   */
+  private buildProgressionSummary(): {
+    started: string;
+    now: string;
+    deltaKg: string;
+    deltaPct: string;
+    positive: boolean;
+  } | null {
+    const d = this.detail();
+    if (!d || d.weightPr <= 0) return null;
+
+    // Use backend first/current values when available, else fall back to history
     const entries = this.history();
-    if (entries.length < 2) return null;
-    const first = entries[0].estimatedOneRepMax;
-    const last = entries[entries.length - 1].estimatedOneRepMax;
-    const diff = last - first;
-    const pct = first > 0 ? (diff / first) * 100 : 0;
+    const firstWeight = d.firstWeightPr
+      ?? (entries.length > 0 ? entries[0].bestWeight : null);
+
+    if (firstWeight == null) return null;
+
+    const diff = d.weightPr - firstWeight;
+    const pct = firstWeight > 0 ? (diff / firstWeight) * 100 : 0;
+
     return {
-      kg: `${diff >= 0 ? '+' : ''}${diff.toFixed(1)}kg`,
-      pct: `${diff >= 0 ? '+' : ''}${pct.toFixed(0)}%`,
+      started: `${firstWeight}kg`,
+      now: `${d.weightPr}kg`,
+      deltaKg: `${diff >= 0 ? '+' : ''}${diff % 1 === 0 ? diff : diff.toFixed(1)}kg`,
+      deltaPct: `${diff >= 0 ? '+' : ''}${pct.toFixed(0)}%`,
       positive: diff >= 0,
     };
   }

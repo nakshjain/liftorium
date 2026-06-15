@@ -10,7 +10,6 @@ import { FormsModule } from '@angular/forms';
 import { ProgressService } from '../progress.service';
 import {
   ExerciseProgressSummary,
-  PaginatedPrEvents,
   PrEvent,
   PrType,
   ProgressOverview,
@@ -116,24 +115,7 @@ export class ProgressPageComponent implements OnInit {
     return new Date(iso).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric',
     });
-  }
-
-  protected prTypeLabel(type: PrType): string {
-    switch (type) {
-      case 'WEIGHT': return 'Weight';
-      case 'REPS': return 'Reps';
-      case 'ESTIMATED_ONE_REP_MAX': return 'e1RM';
-    }
-  }
-
-  protected formatValue(event: PrEvent): string {
-    switch (event.prType) {
-      case 'WEIGHT': return `${event.value}kg`;
-      case 'REPS': return `${event.value} reps`;
-      case 'ESTIMATED_ONE_REP_MAX': return `${event.value.toFixed(1)}kg e1RM`;
-    }
   }
 
   protected formatWeight(kg: number): string {
@@ -142,6 +124,35 @@ export class ProgressPageComponent implements OnInit {
 
   protected formatRepPr(weight: number, reps: number): string {
     return weight > 0 ? `${weight}kg × ${reps}` : '—';
+  }
+
+  /** Format a PR event as a "prev → new" transition string. */
+  protected formatPrTransition(event: PrEvent): string {
+    const prev = event.previousValue;
+    const next = event.newValue ?? event.value;
+
+    switch (event.prType) {
+      case 'WEIGHT':
+        return prev != null
+          ? `${prev}kg → ${next}kg`
+          : `${next}kg`;
+      case 'REPS':
+        return prev != null
+          ? `${prev} reps → ${next} reps`
+          : `${next} reps`;
+      case 'ESTIMATED_ONE_REP_MAX':
+        return prev != null
+          ? `${(prev as number).toFixed(1)}kg → ${(next as number).toFixed(1)}kg`
+          : `${(next as number).toFixed(1)}kg`;
+    }
+  }
+
+  protected prTypeLabel(type: PrType): string {
+    switch (type) {
+      case 'WEIGHT': return 'Weight PR';
+      case 'REPS': return 'Rep PR';
+      case 'ESTIMATED_ONE_REP_MAX': return 'e1RM PR';
+    }
   }
 
   private loadOverview(): void {
