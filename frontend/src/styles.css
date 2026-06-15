@@ -139,6 +139,7 @@ input {
   animation: cardSlideUp 0.5s 320ms var(--ease-out) both;
 }
 
+
 /* Error block — appears occasionally, slides from above */
 .auth-error {
   animation: errorSlideIn 0.22s var(--ease-out) both;
