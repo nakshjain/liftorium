@@ -26,6 +26,7 @@ export class WorkoutHistoryPageComponent implements OnInit {
   protected readonly workouts = signal<WorkoutDto[]>([]);
   protected readonly stats = signal<WorkoutStats | null>(null);
   protected readonly insights = signal<HistoryInsights | null>(null);
+  protected readonly insightsLoading = signal(true);
   protected readonly loading = signal(false);
   protected readonly listError = signal(false);
   protected readonly statsError = signal(false);
@@ -297,9 +298,16 @@ export class WorkoutHistoryPageComponent implements OnInit {
 
   private loadInsights(): void {
     this.insightsError.set(false);
+    this.insightsLoading.set(true);
     this.workoutService.getInsights().subscribe({
-      next: (data) => this.insights.set(data),
-      error: () => this.insightsError.set(true),
+      next: (data) => {
+        this.insights.set(data);
+        this.insightsLoading.set(false);
+      },
+      error: () => {
+        this.insightsError.set(true);
+        this.insightsLoading.set(false);
+      },
     });
   }
 

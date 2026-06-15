@@ -183,7 +183,14 @@
           </div>
 
           <!-- Most Trained Exercise — activity insight, not a PR -->
-          @if (insights(); as ins) {
+          @if (insightsLoading()) {
+            <div class="min-h-[64px] animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40"></div>
+          } @else if (insightsError()) {
+            <div class="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3">
+              <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Most Trained</p>
+              <p class="mt-1.5 text-2xl font-extrabold tabular-nums leading-none text-zinc-600">—</p>
+            </div>
+          } @else if (insights(); as ins) {
             @if (ins.mostTrainedExercise; as ex) {
               <a
                 class="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 transition-colors hover:border-zinc-700 active:scale-[0.98]"
@@ -199,8 +206,6 @@
                 <p class="mt-1.5 text-2xl font-extrabold tabular-nums leading-none text-zinc-600">—</p>
               </div>
             }
-          } @else {
-            <div class="min-h-[64px] animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40"></div>
           }
         </div>
       </section>
