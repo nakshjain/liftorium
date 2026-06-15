@@ -130,15 +130,20 @@
               <span class="text-xs text-zinc-600">Now: <span class="font-semibold text-zinc-100">{{ chartEndLabel() }}</span></span>
             </div>
 
-            <!-- SVG weight progression chart -->
-            <svg
-              class="w-full"
-              [attr.viewBox]="'0 0 ' + CHART_W + ' ' + CHART_H"
-              preserveAspectRatio="none"
-              aria-label="Weight progression chart"
-              role="img"
-              (pointermove)="onChartPointerMove($event)"
-            >
+            <!-- SVG weight progression chart
+                 The wrapper fixes the rendered height so the 600×160 viewBox always
+                 maps at a consistent aspect ratio. preserveAspectRatio="xMidYMid meet"
+                 prevents horizontal stretching on wide screens and keeps the tooltip
+                 coordinate mapping accurate. -->
+            <div class="h-40 w-full">
+              <svg
+                class="h-full w-full"
+                [attr.viewBox]="'0 0 ' + CHART_W + ' ' + CHART_H"
+                preserveAspectRatio="xMidYMid meet"
+                aria-label="Weight progression chart"
+                role="img"
+                (pointermove)="onChartPointerMove($event)"
+              >
               <!-- Baseline -->
               <line
                 [attr.x1]="CHART_PAD_X"
@@ -183,6 +188,7 @@
                 />
               }
             </svg>
+            </div>
 
             <!-- Hover tooltip -->
             @if (tooltip().visible) {

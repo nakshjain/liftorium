@@ -94,10 +94,16 @@ export class ExerciseProgressionPageComponent implements OnInit {
     if (!points.length) return;
 
     const svgEl = event.currentTarget as SVGSVGElement;
-    const rect = svgEl.getBoundingClientRect();
-    const svgX = ((event.clientX - rect.left) / rect.width) * this.CHART_W;
 
-    // Find closest point
+    // Convert pointer position to SVG user-space using the SVG transform matrix.
+    // getScreenCTM() accounts for the viewBox-to-viewport mapping including any
+    // preserveAspectRatio letterboxing, so this is accurate at any container size.
+    const ctm = svgEl.getScreenCTM();
+    if (!ctm) return;
+
+    const svgX = (event.clientX - ctm.e) / ctm.a;
+
+    // Find closest point by SVG-space X distance
     let closest = points[0];
     let minDist = Math.abs(points[0].svgX - svgX);
     for (const pt of points) {
@@ -108,8 +114,10 @@ export class ExerciseProgressionPageComponent implements OnInit {
       }
     }
 
-    const screenX = rect.left + (closest.svgX / this.CHART_W) * rect.width;
-    const screenY = rect.top + (closest.svgY / this.CHART_H) * rect.height;
+    // Map the closest SVG point back to screen coordinates via the same CTM.
+    // ctm.a = scaleX, ctm.d = scaleY, ctm.e = translateX, ctm.f = translateY
+    const screenX = closest.svgX * ctm.a + ctm.e;
+    const screenY = closest.svgY * ctm.d + ctm.f;
 
     this.tooltip.set({
       visible: true,
