@@ -1,59 +1,139 @@
 <main class="flex min-h-dvh flex-col text-zinc-50 lg:grid lg:grid-cols-2">
 
-  <!-- Left panel: value prop (desktop only) -->
-  <div class="hidden flex-col justify-between bg-zinc-900/40 px-12 py-10 lg:flex">
-    <a class="text-lg font-semibold text-zinc-50" routerLink="/auth/login">Liftorium</a>
+  <!-- ════════════════════════════════════════════════════
+       LEFT PANEL — desktop brand poster
+       Layout: top wordmark → center tagline → bottom footer
+       Each zone staggers in independently via panel-line-N.
+  ════════════════════════════════════════════════════ -->
+  <div class="relative hidden overflow-hidden lg:flex lg:flex-col bg-zinc-900 px-12 py-10">
 
-    <div class="anim-enter">
-      <p class="text-4xl font-semibold leading-[1.15] tracking-tight text-zinc-50">
-        Log every set.<br>Beat every session.
-      </p>
-      <ul class="mt-8 space-y-4">
-        <li class="flex items-start gap-3">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-400/70" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-          </svg>
-          <span class="text-sm leading-6 text-zinc-400">See your last weight and reps while you log — no mental math</span>
-        </li>
-        <li class="flex items-start gap-3">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-400/70" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-          </svg>
-          <span class="text-sm leading-6 text-zinc-400">Rest timer fires the instant you check off a set</span>
-        </li>
-        <li class="flex items-start gap-3">
-          <svg class="mt-0.5 h-5 w-5 shrink-0 text-teal-400/70" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-          </svg>
-          <span class="text-sm leading-6 text-zinc-400">Big targets, one hand — built for the gym floor</span>
-        </li>
-      </ul>
+    <!-- Ambient teal glow — top-left origin -->
+    <div class="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-teal-400/15 blur-3xl" aria-hidden="true"></div>
+    <!-- Secondary glow — bottom right for depth -->
+    <div class="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-teal-400/8 blur-3xl" aria-hidden="true"></div>
+
+    <!-- Grid texture overlay -->
+    <div
+      class="pointer-events-none absolute inset-0 opacity-[0.03]"
+      style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 40px 40px;"
+      aria-hidden="true"
+    ></div>
+
+    <!-- Barbell — large, centered behind the wordmark, pure texture -->
+    <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.055]" aria-hidden="true">
+      <svg width="380" height="380" viewBox="0 0 380 380" fill="none">
+        <!-- bar -->
+        <rect x="163" y="20" width="54" height="340" rx="8" fill="white"/>
+        <!-- inner plates -->
+        <rect x="70" y="88" width="93" height="204" rx="12" fill="white"/>
+        <rect x="217" y="88" width="93" height="204" rx="12" fill="white"/>
+        <!-- outer plates -->
+        <rect x="20" y="120" width="50" height="140" rx="9" fill="white"/>
+        <rect x="310" y="120" width="50" height="140" rx="9" fill="white"/>
+      </svg>
     </div>
 
-    <p class="text-sm text-zinc-500">Liftorium — your training, nothing else.</p>
+    <!-- ── TOP: Large wordmark — the brand poster header ────────────── -->
+    <div class="panel-line-0 relative">
+      <a
+        class="block text-5xl font-black uppercase tracking-tight text-zinc-50 transition-colors hover:text-teal-300"
+        routerLink="/auth/login"
+      >Liftorium</a>
+      <!-- Teal underline accent — draws in left-to-right after wordmark lands -->
+      <div class="panel-accent-line mt-3 h-[3px] w-14 rounded-full bg-teal-400"></div>
+    </div>
+
+    <!-- ── CENTER: Brand tagline — vertically fills the middle ──────── -->
+    <div class="relative my-auto py-16">
+      <p class="panel-line-1 text-[2.75rem] font-black leading-[1.05] tracking-tight text-zinc-50">
+        Every set.<br>Every rep.<br>Every PR.
+      </p>
+      <p class="panel-line-2 mt-5 max-w-[26ch] text-sm leading-relaxed text-zinc-400">
+        Built for the gym floor. Minimal taps, zero friction — log your session the moment you need to.
+      </p>
+      <!-- Stat pill -->
+      <div class="panel-line-3 mt-7 inline-flex items-center gap-2 rounded-full border border-zinc-700/60 bg-zinc-800/50 px-3 py-1.5">
+        <span class="h-1.5 w-1.5 rounded-full bg-teal-400" aria-hidden="true"></span>
+        <span class="text-xs font-medium text-zinc-400">10k+ sessions logged</span>
+      </div>
+    </div>
+
+    <!-- ── BOTTOM: Tagline footer ────────────────────────────────────── -->
+    <p class="panel-line-3 relative text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
+      Your training, nothing else.
+    </p>
   </div>
 
-  <!-- Right panel: form -->
-  <div class="flex flex-1 flex-col justify-between px-4 py-6 sm:px-8 lg:px-12 lg:py-10">
-    <header class="flex items-center justify-between lg:justify-end">
-      <a class="text-lg font-semibold text-zinc-50 lg:hidden" routerLink="/auth/login">Liftorium</a>
+
+  <!-- ════════════════════════════════════════════════════
+       RIGHT PANEL — form (also full-screen on mobile)
+  ════════════════════════════════════════════════════ -->
+  <div class="relative flex min-h-dvh flex-col overflow-hidden px-5 py-6 sm:px-8 lg:min-h-0 lg:bg-zinc-950 lg:px-12 lg:py-10">
+
+    <!-- Mobile glows (hidden on desktop — desktop has its own panel) -->
+    <div class="pointer-events-none absolute -left-12 -top-12 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl lg:hidden" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute -bottom-16 -right-16 h-56 w-56 rounded-full bg-teal-400/8 blur-3xl lg:hidden" aria-hidden="true"></div>
+
+    <!-- ── Desktop form-panel wordmark (Option C) ─────────────────────
+         Identifies the right panel independently. Small, restrained —
+         the left panel carries the brand weight, this is just orientation.
+    ─────────────────────────────────────────────────────────────────── -->
+    <header class="hidden lg:flex lg:items-center lg:justify-between">
+      <a class="text-sm font-semibold tracking-tight text-zinc-500 transition-colors hover:text-zinc-300" routerLink="/auth/login">
+        Liftorium
+      </a>
     </header>
 
-    <section class="py-10 anim-enter">
-      <div class="mb-8">
-        @if (eyebrow) {
-          <p class="mb-2 text-xs font-medium uppercase tracking-widest text-teal-400">{{ eyebrow }}</p>
-        }
-        <h1 class="text-balance text-3xl font-semibold leading-tight tracking-tight text-zinc-50">{{ title }}</h1>
-        <p class="mt-3 text-base leading-7 text-zinc-400">{{ description }}</p>
+    <!-- ── Mobile-only hero zone ─────────────────────────────────────── -->
+    <div class="relative flex flex-1 flex-col lg:hidden">
+
+      <!-- Mobile wordmark -->
+      <a class="auth-item-0 relative text-sm font-semibold tracking-tight text-zinc-400" routerLink="/auth/login">
+        Liftorium
+      </a>
+
+      <!-- Mobile barbell -->
+      <div class="auth-barbell-float pointer-events-none absolute right-0 top-8 opacity-[0.07]" aria-hidden="true">
+        <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
+          <rect x="88" y="10" width="24" height="180" rx="4" fill="white"/>
+          <rect x="36" y="48" width="52" height="104" rx="7" fill="white"/>
+          <rect x="112" y="48" width="52" height="104" rx="7" fill="white"/>
+          <rect x="10" y="66" width="26" height="68" rx="5" fill="white"/>
+          <rect x="164" y="66" width="26" height="68" rx="5" fill="white"/>
+        </svg>
       </div>
 
-      <ng-content />
+      <!-- Mobile headline -->
+      <p class="auth-item-1 relative mt-auto pt-16 text-[3.25rem] font-black leading-[1.0] tracking-tight text-zinc-50">
+        Every<br>set. Every<br>rep.
+      </p>
+      <p class="auth-item-2 relative mt-2 text-[3.25rem] font-black leading-[1.0] tracking-tight text-teal-400">
+        Every PR.
+      </p>
+      <p class="auth-item-3 relative mt-4 text-sm leading-relaxed text-zinc-500">
+        Built for the gym floor. Zero friction.
+      </p>
+      <div class="auth-item-4 relative mt-5 inline-flex items-center gap-2 self-start rounded-full border border-zinc-800 bg-zinc-900/60 px-3 py-1.5 backdrop-blur-sm">
+        <span class="h-1.5 w-1.5 rounded-full bg-teal-400" aria-hidden="true"></span>
+        <span class="text-xs font-medium text-zinc-400">10k+ sessions logged</span>
+      </div>
+    </div>
+
+    <!-- ── Form card ─────────────────────────────────────────────────── -->
+    <section class="relative mt-6 flex flex-col lg:flex-1 lg:mt-0 lg:justify-center lg:py-8">
+      <div class="rounded-2xl border border-zinc-800/70 bg-zinc-900/60 p-6 shadow-xl shadow-black/40 backdrop-blur-md lg:rounded-none lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none lg:backdrop-blur-none">
+
+        <div class="auth-item-5 mb-6 lg:mb-8">
+          <h1 class="text-xl font-bold leading-tight tracking-tight text-zinc-50 lg:text-[2rem]">{{ title }}</h1>
+          @if (description) {
+            <p class="mt-1.5 text-sm leading-relaxed text-zinc-500 lg:mt-3 lg:text-zinc-400">{{ description }}</p>
+          }
+        </div>
+
+        <ng-content />
+      </div>
     </section>
 
-    <footer class="pb-2 text-sm text-zinc-500 lg:hidden">
-      Your training, nothing else.
-    </footer>
   </div>
 
 </main>

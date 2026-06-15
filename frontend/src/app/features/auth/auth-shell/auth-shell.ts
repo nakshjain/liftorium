@@ -8,7 +8,8 @@ import { RouterLink } from '@angular/router';
   styleUrl: './auth-shell.scss'
 })
 export class AuthShellComponent {
-  @Input({ required: true }) public eyebrow = '';
+  /** @deprecated Eyebrows removed from auth screens per design revision. Input kept for backwards compatibility. */
+  @Input() public eyebrow = '';
   @Input({ required: true }) public title = '';
-  @Input({ required: true }) public description = '';
+  @Input() public description = '';
 }
