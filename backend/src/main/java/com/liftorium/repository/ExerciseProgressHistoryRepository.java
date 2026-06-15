@@ -10,10 +10,10 @@ public interface ExerciseProgressHistoryRepository extends MongoRepository<Exerc
    * Returns the full progression history for a user's exercise, ordered
    * chronologically ascending — the natural order for a progression chart.
    */
-  List<ExerciseProgressHistory> findByUserIdAndExerciseIdOrderByAchievedAtAsc(
+  List<ExerciseProgressHistory> findByUserIdAndExerciseIdOrderByPerformedAtAsc(
       String userId, String exerciseId);
 
-  /** Guard against duplicate snapshots for the same workout+exercise. */
+  /** Guard against duplicate snapshots for the same workout + exercise. */
   boolean existsByUserIdAndExerciseIdAndWorkoutId(
       String userId, String exerciseId, String workoutId);
 }

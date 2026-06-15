@@ -52,8 +52,22 @@ public class PrEvent {
    * For WEIGHT: the weight in kg.
    * For REPS: the rep count (weight context stored in exerciseProgress).
    * For ESTIMATED_ONE_REP_MAX: the calculated e1RM value.
+   *
+   * @deprecated Prefer {@link #newValue}. Kept for backward compatibility.
    */
   private double value;
+
+  /**
+   * The previous record value before this PR was set.
+   * Null when this is the first PR ever achieved for this type.
+   */
+  private Double previousValue;
+
+  /**
+   * The new record value achieved by this PR event.
+   * Mirrors {@link #value} but explicitly named for clarity.
+   */
+  private Double newValue;
 
   /** The workout in which this PR was achieved. */
   @Indexed

@@ -60,8 +60,10 @@ public final class ProgressDtos {
   public record ExerciseProgressDetailDto(
       String exerciseId,
       String exerciseName,
+      Double firstWeightPr,
       double weightPr,
       RepPrDto repPr,
+      Double firstEstimatedOneRepMax,
       double estimatedOneRepMaxPr,
       int totalPrs,
       String lastImprovedAt
@@ -76,6 +78,8 @@ public final class ProgressDtos {
       String exerciseName,
       PrType prType,
       double value,
+      Double previousValue,
+      Double newValue,
       String workoutId,
       String achievedAt
   ) {
@@ -94,16 +98,17 @@ public final class ProgressDtos {
 
   /**
    * One data point in a progression chart — represents the best performance
-   * achieved in a single workout session where at least one PR was set.
+   * achieved in a single workout session. Created for every completed workout
+   * that included this exercise, regardless of whether a PR was set.
    */
   public record ExerciseProgressHistoryEntryDto(
       String id,
       String workoutId,
-      double maxWeight,
+      double bestWeight,
       double bestSetWeight,
       int bestSetReps,
       double estimatedOneRepMax,
-      String achievedAt
+      String performedAt
   ) {
   }
 

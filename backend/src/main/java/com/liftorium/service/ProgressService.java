@@ -181,7 +181,7 @@ public class ProgressService {
 
     List<ExerciseProgressHistory> entries =
         exerciseProgressHistoryRepository
-            .findByUserIdAndExerciseIdOrderByAchievedAtAsc(userId, exerciseId);
+            .findByUserIdAndExerciseIdOrderByPerformedAtAsc(userId, exerciseId);
 
     List<ExerciseProgressHistoryEntryDto> dtos = entries.stream()
         .map(this::toHistoryEntryDto)
@@ -208,8 +208,10 @@ public class ProgressService {
     return new ExerciseProgressDetailDto(
         ep.getExerciseId(),
         exerciseName,
+        ep.getFirstWeightPr(),
         ep.getWeightPr(),
         new RepPrDto(ep.getRepPrWeight(), ep.getRepPrReps()),
+        ep.getFirstEstimatedOneRepMax(),
         roundToTwo(ep.getEstimatedOneRepMaxPr()),
         ep.getTotalPrs(),
         ep.getLastImprovedAt() != null ? ep.getLastImprovedAt().toString() : null
@@ -223,6 +225,8 @@ public class ProgressService {
         nameMap.getOrDefault(pr.getExerciseId(), "Unknown"),
         pr.getPrType(),
         pr.getValue(),
+        pr.getPreviousValue(),
+        pr.getNewValue(),
         pr.getWorkoutId(),
         pr.getAchievedAt().toString()
     );
@@ -232,11 +236,11 @@ public class ProgressService {
     return new ExerciseProgressHistoryEntryDto(
         h.getId(),
         h.getWorkoutId(),
-        h.getMaxWeight(),
+        h.getBestWeight(),
         h.getBestSetWeight(),
         h.getBestSetReps(),
         h.getEstimatedOneRepMax(),
-        h.getAchievedAt().toString()
+        h.getPerformedAt().toString()
     );
   }
 

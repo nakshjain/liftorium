@@ -421,3 +421,19 @@ Use this file for short, dated progress entries.
 ### Notes
 
 - The earlier same-origin `/api` proxy approach was dropped because it did not work on the current deployment path.
+
+## 2026-06-15 - Progress Backend Refinements
+
+### Completed
+
+- **ExerciseProgressHistory redesigned** — now stores one snapshot per exercise per completed workout, unconditionally. Removed PR-gate. Renamed `maxWeight` → `bestWeight`, `achievedAt` → `performedAt`. Repository updated to match.
+- **PrEvent extended** — added `previousValue` (nullable) and `newValue` fields. Creation logic now captures the previous record before mutating `ExerciseProgress`, enabling frontend to render "35kg → 47.5kg" transitions.
+- **ExerciseProgress extended** — added `firstWeightPr` and `firstEstimatedOneRepMax` fields. Both are set exactly once (first PR) and never overwritten, supporting "Started: 20kg → Now: 47.5kg" summaries.
+- **DTOs updated** — `ExerciseProgressDetailDto` now exposes `firstWeightPr` and `firstEstimatedOneRepMax`. `PrEventDto` now exposes `previousValue` and `newValue`. `ExerciseProgressHistoryEntryDto` renamed fields to match entity.
+- **API documented** — created `docs/api/progress.md` with full endpoint reference including new fields.
+
+### Notes
+
+- No API routes changed — refinement only.
+- Existing `exercise_progress_history` documents in MongoDB will have `bestWeight`/`performedAt` as null on old records (created before this change). The unique index on `(userId, exerciseId, workoutId)` is preserved so re-evaluation is safe.
+- `firstWeightPr` and `firstEstimatedOneRepMax` are `null` on existing `exercise_progress` documents until the next PR is recorded — this is safe; frontend should handle `null` as "data not yet available".

@@ -53,6 +53,13 @@ public class ExerciseProgress {
   @Builder.Default
   private double weightPr = 0.0;
 
+  /**
+   * The very first weight PR ever achieved for this exercise.
+   * Set once when weightPr first exceeds 0 — never overwritten.
+   * Enables "Started: 20kg → Now: 47.5kg" summaries without history aggregation.
+   */
+  private Double firstWeightPr;
+
   // ── Rep PR ────────────────────────────────────────────────────────────
   /** The weight at which the rep PR was achieved. */
   @Builder.Default
@@ -66,6 +73,13 @@ public class ExerciseProgress {
   /** Highest estimated 1RM ever calculated for this exercise (Epley formula). */
   @Builder.Default
   private double estimatedOneRepMaxPr = 0.0;
+
+  /**
+   * The very first estimated 1RM PR ever achieved for this exercise.
+   * Set once when estimatedOneRepMaxPr first exceeds 0 — never overwritten.
+   * Enables "Started: 38 → Now: 60.2" summaries without history aggregation.
+   */
+  private Double firstEstimatedOneRepMax;
 
   // ── Counters ──────────────────────────────────────────────────────────
   /** Total number of PR events recorded for this exercise. */

@@ -12,14 +12,20 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
- * A progression snapshot taken whenever any PR is achieved for an exercise.
- * One document per (userId, exerciseId, workoutId) — one snapshot per session
- * that produced at least one PR.
+ * One progression data point per exercise per completed workout.
  *
- * <p>Captures the best values across ALL sets in the workout for this exercise,
- * not just the specific set that triggered the PR. This gives a complete picture
- * of the athlete's state at that point in time and is the source of truth for
- * progression charts and trend analytics.
+ * <p>Created unconditionally for every exercise in a completed workout —
+ * regardless of whether a PR was achieved. This gives a true picture of the
+ * athlete's progression over time (e.g. 35 → 45 → 47.5), rather than a
+ * noisy stream of every intermediate weight touched within a session.
+ *
+ * <p>For each exercise, stores:
+ * <ul>
+ *   <li>{@link #bestWeight} — highest weight lifted across all sets this session</li>
+ *   <li>{@link #bestSetWeight} / {@link #bestSetReps} — the set that yielded the
+ *       highest estimated 1RM</li>
+ *   <li>{@link #estimatedOneRepMax} — Epley e1RM derived from the best set</li>
+ * </ul>
  *
  * <p>Append-only — never mutated after creation.
  */
@@ -30,8 +36,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "exercise_progress_history")
 @CompoundIndexes({
     @CompoundIndex(
-        name = "user_exercise_achieved_idx",
-        def = "{'userId': 1, 'exerciseId': 1, 'achievedAt': 1}"
+        name = "user_exercise_performed_idx",
+        def = "{'userId': 1, 'exerciseId': 1, 'performedAt': 1}"
     ),
     @CompoundIndex(
         name = "user_exercise_workout_uq",
@@ -50,34 +56,32 @@ public class ExerciseProgressHistory {
   @Indexed
   private String exerciseId;
 
-  /** The workout in which these PRs were achieved. */
+  /** The workout this snapshot belongs to. */
   @Indexed
   private String workoutId;
 
   /**
    * Highest weight lifted for this exercise across all sets in the workout.
-   * Matches the WEIGHT PR value if a weight PR was set this session.
    */
-  private double maxWeight;
+  private double bestWeight;
 
   /**
-   * Weight of the set that produced the best estimated 1RM this session.
-   * This is the "best set" in terms of overall performance (not just raw weight).
+   * Weight of the set that produced the highest estimated 1RM this session.
    */
   private double bestSetWeight;
 
   /**
-   * Reps of the set that produced the best estimated 1RM this session.
+   * Reps of the set that produced the highest estimated 1RM this session.
    */
   private int bestSetReps;
 
   /**
-   * Estimated 1RM calculated from bestSetWeight/bestSetReps using Epley formula.
+   * Estimated 1RM calculated from bestSetWeight/bestSetReps via Epley formula.
    * Rounded to 2 decimal places.
    */
   private double estimatedOneRepMax;
 
-  /** When the PR was achieved — set completedAt if available, else workout finishedAt. */
+  /** When the workout was performed (workout finishedAt). */
   @Indexed
-  private Instant achievedAt;
+  private Instant performedAt;
 }
