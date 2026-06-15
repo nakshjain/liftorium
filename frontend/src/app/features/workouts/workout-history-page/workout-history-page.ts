@@ -179,16 +179,11 @@ export class WorkoutHistoryPageComponent implements OnInit {
 
   protected readonly weekCount = computed(() => this.heatmapWeeks().length);
 
-  protected readonly totalDaysInMonth = computed(() => {
-    const [year, month] = this.currentMonth().split('-').map(Number);
-    return new Date(year, month, 0).getDate();
-  });
-
   /** Days elapsed so far (or total days for past months). */
   protected readonly elapsedDays = computed(() => {
     const [year, month] = this.currentMonth().split('-').map(Number);
-    const total = this.totalDaysInMonth();
-    if (!this.isCurrentMonth()) return total;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (!this.isCurrentMonth()) return daysInMonth;
     return new Date().getDate();
   });
 
@@ -227,6 +222,9 @@ export class WorkoutHistoryPageComponent implements OnInit {
     return best !== null && best.id === workout.id;
   }
 
+  /** Whether a load-more request is in flight. */
+  protected readonly loadingMore = signal(false);
+
   // ── Skeleton ──────────────────────────────────────────────────────────
   protected readonly skeletonHeights = [88, 76, 88, 76, 68];
 
@@ -260,20 +258,14 @@ export class WorkoutHistoryPageComponent implements OnInit {
     this.loadData();
   }
 
-  protected retryList(): void {
-    this.loadData();
-  }
-
-  /** Alias used in the stats error retry button — reloads both stats and list. */
   protected retry(): void {
     this.loadData();
   }
 
   protected loadMore(): void {
-    if (this.page() >= this.totalPages()) return;
-    // Capture the next page number before the request so the signal
-    // is only incremented on success, preventing page-skip on retry.
+    if (this.page() >= this.totalPages() || this.loadingMore()) return;
     const nextPage = this.page() + 1;
+    this.loadingMore.set(true);
     this.workoutService
       .getHistory({ page: nextPage, limit: 20, month: this.currentMonth() })
       .subscribe({
@@ -281,8 +273,9 @@ export class WorkoutHistoryPageComponent implements OnInit {
           this.page.set(nextPage);
           this.workouts.update((prev) => [...prev, ...result.items]);
           this.totalPages.set(result.totalPages);
+          this.loadingMore.set(false);
         },
-        // On failure page stays unchanged — next tap retries the same page.
+        error: () => this.loadingMore.set(false),
       });
   }
 

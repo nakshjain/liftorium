@@ -279,9 +279,6 @@
           }
 
           @if (stats(); as s) {
-            @if (s.streak >= 3) {
-              <!-- streak intentionally omitted here — already shown in the consistency strip -->
-            }
           }
 
         </div>
@@ -371,7 +368,7 @@
           <p class="mt-1.5 text-xs text-zinc-500">Check your connection and try again.</p>
           <button
             class="mt-5 h-9 rounded-xl border border-zinc-700 px-5 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100 active:scale-[0.98]"
-            type="button" (click)="retryList()"
+            type="button" (click)="retry()"
           >Retry</button>
         </div>
 
@@ -501,9 +498,26 @@
         @if (page() < totalPages()) {
           <div class="mt-6 flex justify-center">
             <button
-              class="h-10 rounded-xl px-6 text-sm font-medium text-zinc-500 transition-colors hover:text-teal-400 active:scale-[0.98]"
-              type="button" (click)="loadMore()"
-            >Load more</button>
+              class="h-10 rounded-xl px-6 text-sm font-medium transition-colors active:scale-[0.98] disabled:pointer-events-none"
+              [class.text-zinc-500]="!loadingMore()"
+              [class.hover:text-teal-400]="!loadingMore()"
+              [class.text-zinc-600]="loadingMore()"
+              type="button"
+              [disabled]="loadingMore()"
+              (click)="loadMore()"
+            >
+              @if (loadingMore()) {
+                <span class="flex items-center gap-2">
+                  <svg class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                  </svg>
+                  Loading…
+                </span>
+              } @else {
+                Load more
+              }
+            </button>
           </div>
         }
       }
