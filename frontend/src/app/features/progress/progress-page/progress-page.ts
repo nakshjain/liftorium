@@ -36,6 +36,7 @@ export class ProgressPageComponent implements OnInit {
   protected readonly exercisesTotalPages = signal(1);
   protected readonly exercisesTotal = signal(0);
   protected readonly searchQuery = signal('');
+  protected readonly searchPending = signal(false);
   private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
   // PR feed state
@@ -75,6 +76,7 @@ export class ProgressPageComponent implements OnInit {
 
   protected onSearchInput(value: string): void {
     this.searchQuery.set(value);
+    this.searchPending.set(true);
     if (this.searchTimer) clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => {
       this.exercisesPage.set(1);
@@ -179,6 +181,7 @@ export class ProgressPageComponent implements OnInit {
           this.exercisesTotalPages.set(result.totalPages);
           this.exercisesTotal.set(result.total);
           this.exercisesLoading.set(false);
+          this.searchPending.set(false);
         },
         error: () => this.exercisesLoading.set(false),
       });

@@ -65,7 +65,6 @@ export class ExerciseProgressionPageComponent implements OnInit {
   protected readonly progressionSummary = computed(() => this.buildProgressionSummary());
 
   // Derived stats
-  protected readonly sessionCount = computed(() => this.history().length);
   protected readonly hasEnoughDataForChart = computed(() => this.history().length >= 2);
   protected readonly hasSingleDataPoint = computed(() => this.history().length === 1);
 

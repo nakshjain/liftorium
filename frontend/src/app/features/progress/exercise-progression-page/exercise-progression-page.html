@@ -2,7 +2,7 @@
   <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
     <!-- Sticky header -->
-    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
       <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app/progress">
         ← Progress
       </a>
@@ -106,7 +106,7 @@
                 >
                   {{ summary.deltaKg }} <span class="text-base font-semibold opacity-80">({{ summary.deltaPct }})</span>
                 </p>
-                <p class="mt-0.5 text-sm text-zinc-400">total weight gained</p>
+                <p class="mt-0.5 text-sm text-zinc-400">{{ summary.positive ? 'total weight gained' : 'total change' }}</p>
               </div>
               <!-- Journey markers -->
               <div class="text-right">
@@ -216,7 +216,7 @@
             }
 
             <p class="mt-2 text-center text-xs text-zinc-600">
-              Best weight per session · {{ d.totalSessions }} workout{{ d.totalSessions !== 1 ? 's' : '' }}
+              Best weight per session
             </p>
           </div>
 
@@ -271,8 +271,10 @@
                     [style]="'--stagger-i: ' + i"
                   >
                     <!-- Per-item connector rule — hidden on the last entry so the
-                         line doesn't bleed into the whitespace below the timeline. -->
-                    <div class="absolute bottom-0 left-[19px] top-9 w-px bg-zinc-800 last:hidden" aria-hidden="true"></div>
+                         line doesn't bleed into the whitespace below the timeline.
+                         Uses $last from @for rather than CSS :last-child to reliably
+                         handle Load more appends and Angular comment nodes. -->
+                    <div class="absolute bottom-0 left-[19px] top-9 w-px bg-zinc-800" [class.hidden]="$last" aria-hidden="true"></div>
 
                     <!-- Timeline dot — styled by type -->
                     <div
