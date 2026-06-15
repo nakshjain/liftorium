@@ -4,7 +4,7 @@
     <!-- ════════════════════════════════
          HEADER
     ════════════════════════════════ -->
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
       <app-training-hub-link />
       <div class="mt-2 flex items-center justify-between">
         <h1 class="text-xl font-semibold tracking-tight text-zinc-50">History</h1>
@@ -185,11 +185,14 @@
           <!-- Most Trained Exercise — activity insight, not a PR -->
           @if (insights(); as ins) {
             @if (ins.mostTrainedExercise; as ex) {
-              <div class="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3">
+              <a
+                class="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3 transition-colors hover:border-zinc-700 active:scale-[0.98]"
+                [routerLink]="['/app/progress/exercises', ex.exerciseId]"
+              >
                 <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Most Trained</p>
                 <p class="mt-1.5 truncate text-sm font-bold leading-tight text-zinc-200" [title]="ex.exerciseName">{{ ex.exerciseName }}</p>
-                <p class="mt-0.5 text-xs text-zinc-500">{{ ex.sessionCount }} session{{ ex.sessionCount !== 1 ? 's' : '' }}</p>
-              </div>
+                <p class="mt-0.5 text-xs leading-tight text-zinc-500">{{ ex.sessionCount }} session{{ ex.sessionCount !== 1 ? 's' : '' }} · <span class="text-zinc-600">all time</span></p>
+              </a>
             } @else {
               <div class="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3">
                 <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Most Trained</p>
@@ -197,7 +200,7 @@
               </div>
             }
           } @else {
-            <div class="h-full animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40"></div>
+            <div class="min-h-[64px] animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40"></div>
           }
         </div>
       </section>
@@ -233,7 +236,7 @@
       @if (!loading() && completedWorkouts().length > 0) {
         <div class="mb-3 flex items-center gap-2">
           <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Sessions</p>
-          <span class="text-xs text-zinc-600">{{ completedWorkouts().length }}</span>
+          <span class="text-xs text-zinc-600">{{ filteredWorkouts().length }}</span>
           <div class="relative ml-auto flex items-center">
             <svg class="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
@@ -322,9 +325,9 @@
                 [routerLink]="['/app/workouts', workout.id]"
               >
                 <span class="absolute right-3 top-3 rounded-full bg-teal-400/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-teal-400 ring-1 ring-teal-400/25">
-                  Most volume
+                  Top session
                 </span>
-                <div class="flex items-start gap-3 pr-24">
+                <div class="flex items-start gap-3 pr-20">
                   <p class="text-[0.9375rem] font-bold leading-snug text-zinc-50">{{ workout.name }}</p>
                 </div>
                 <p class="mt-0.5 text-xs text-zinc-500">{{ formatDate(workout.startedAt) }}</p>
