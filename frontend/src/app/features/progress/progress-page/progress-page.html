@@ -2,7 +2,7 @@
   <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
     <!-- Header -->
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-0 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-0 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
       <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app">
         Training hub
       </a>
@@ -43,7 +43,7 @@
 
     <!-- Overview strip -->
     @if (overview(); as ov) {
-      <section class="mt-4 grid grid-cols-3 gap-2 sm:gap-3" aria-label="Progress overview">
+      <section class="anim-enter-1 mt-4 grid grid-cols-3 gap-2 sm:gap-3" aria-label="Progress overview">
 
         <!-- Exercises improving -->
         <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
@@ -85,7 +85,7 @@
       }
 
     } @else {
-      <section class="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+      <section class="anim-enter-1 mt-4 grid grid-cols-3 gap-2 sm:gap-3">
         @for (i of [1, 2, 3]; track i) {
           <div class="h-[60px] animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
         }
@@ -94,7 +94,7 @@
 
     <!-- ── Exercises tab ── -->
     @if (activeTab() === 'exercises') {
-      <section class="mt-4">
+      <section class="anim-enter-2 mt-4">
         <!-- Search -->
         <div class="relative">
           <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
@@ -130,9 +130,10 @@
             </div>
           } @else {
             <div class="space-y-2">
-              @for (ex of exercises(); track ex.exerciseId) {
+              @for (ex of exercises(); track ex.exerciseId; let i = $index) {
                 <a
-                  class="flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3.5 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+                  class="anim-stagger flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3.5 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+                  [style]="'--stagger-i: ' + i"
                   [routerLink]="['/app/progress/exercises', ex.exerciseId]"
                   [attr.aria-label]="ex.exerciseName + ', weight PR ' + formatWeight(ex.weightPr)"
                 >
@@ -173,7 +174,7 @@
 
     <!-- ── PR Feed tab ── -->
     @if (activeTab() === 'prs') {
-      <section class="mt-4">
+      <section class="anim-enter-2 mt-4">
         <!-- Type filter chips -->
         <div class="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by PR type">
           @for (opt of prTypeOptions; track opt.label) {
@@ -207,8 +208,11 @@
             </div>
           } @else {
             <div class="space-y-2">
-              @for (event of prEvents(); track event.id) {
-                <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3.5">
+              @for (event of prEvents(); track event.id; let i = $index) {
+                <div
+                  class="anim-stagger rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3.5"
+                  [style]="'--stagger-i: ' + i"
+                >
                   <!-- Exercise name -->
                   <p class="text-sm font-semibold text-zinc-50">{{ event.exerciseName }}</p>
                   <!-- Transition is the hero, date is tertiary -->

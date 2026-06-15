@@ -2,7 +2,7 @@
   <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
     <!-- Sticky header -->
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
       <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app/progress">
         ← Progress
       </a>
@@ -39,7 +39,7 @@
     @else if (detail(); as d) {
 
       <!-- ── Act 1: Where you are now ── -->
-      <section class="mt-5">
+      <section class="anim-enter-1 mt-5">
         <h1 class="text-2xl font-semibold tracking-tight text-zinc-50">{{ d.exerciseName }}</h1>
 
         @if (d.lastImprovedAt) {
@@ -83,7 +83,7 @@
       </section>
 
       <!-- ── Act 2: The progression story ── -->
-      <section class="mt-10">
+      <section class="anim-enter-2 mt-10">
 
         <h2 class="text-base font-semibold text-zinc-50">Progression</h2>
 
@@ -227,7 +227,7 @@
       </section>
 
       <!-- ── Act 3: Every PR ── -->
-      <section class="mt-12">
+      <section class="anim-enter-3 mt-12">
         <h2 class="text-base font-semibold text-zinc-50">Every PR</h2>
 
         <div class="mt-4">
@@ -249,8 +249,11 @@
               <div class="absolute bottom-3 left-[19px] top-3 w-px bg-zinc-800" aria-hidden="true"></div>
 
               <ol class="space-y-0">
-                @for (event of prEvents(); track event.id) {
-                  <li class="relative flex gap-4 pb-5">
+                @for (event of prEvents(); track event.id; let i = $index) {
+                  <li
+                    class="anim-stagger relative flex gap-4 pb-5"
+                    [style]="'--stagger-i: ' + i"
+                  >
 
                     <!-- Timeline dot — styled by type -->
                     <div
@@ -315,7 +318,7 @@
 
   <!-- ── Footer actions ── -->
   @if (detail(); as d) {
-    <footer class="fixed bottom-0 left-0 right-0 z-10 border-t border-zinc-900 bg-zinc-950/95 backdrop-blur">
+    <footer class="anim-enter-4 fixed bottom-0 left-0 right-0 z-10 border-t border-zinc-900 bg-zinc-950/95 backdrop-blur">
       <div class="mx-auto flex w-full max-w-3xl gap-3 px-4 py-4 sm:px-6">
         <a
           class="flex h-14 flex-1 items-center justify-center rounded-lg border border-zinc-700 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98]"
