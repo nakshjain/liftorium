@@ -1,19 +1,21 @@
-<main class="min-h-dvh px-4 py-8 text-zinc-50 sm:px-6">
-  <div class="mx-auto w-full max-w-3xl">
+<main class="min-h-dvh bg-zinc-950 pb-24 text-zinc-50">
+  <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
-    <header class="flex items-center justify-between gap-4">
-      <span class="text-lg font-semibold tracking-tight text-zinc-50">Liftorium</span>
-      <button
-        class="rounded-lg border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200 disabled:cursor-not-allowed disabled:text-zinc-600"
-        type="button"
-        [disabled]="loggingOut()"
-        (click)="logout()"
-      >
-        {{ logoutButtonLabel() }}
-      </button>
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+      <div class="flex items-center justify-between gap-4">
+        <a class="text-lg font-semibold tracking-tight text-zinc-50 transition hover:text-teal-300" routerLink="/app">Liftorium</a>
+        <button
+          class="rounded-lg border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200 disabled:cursor-not-allowed disabled:text-zinc-600"
+          type="button"
+          [disabled]="loggingOut()"
+          (click)="logout()"
+        >
+          {{ logoutButtonLabel() }}
+        </button>
+      </div>
     </header>
 
-    <section class="mt-8 flex items-center gap-4 anim-enter">
+    <section class="mt-6 flex items-center gap-4 anim-enter-1">
       <div class="h-10 w-10 shrink-0 rounded-full bg-teal-400/15 ring-1 ring-teal-400/30 flex items-center justify-center">
         <span class="text-sm font-semibold text-teal-300">{{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
       </div>
@@ -23,11 +25,11 @@
       </div>
     </section>
 
-    <section class="mt-10 flex flex-col gap-3">
+    <section class="mt-8 flex flex-col gap-3">
 
       <!-- Primary action -->
       <a
-        class="group relative flex items-center justify-between gap-4 rounded-xl border border-teal-400/25 bg-teal-400/8 p-6 transition hover:border-teal-400/50 hover:bg-teal-400/12 active:scale-[0.99] anim-enter-1"
+        class="group relative flex items-center justify-between gap-4 rounded-xl border border-teal-400/25 bg-teal-400/8 p-6 transition hover:border-teal-400/50 hover:bg-teal-400/12 active:scale-[0.99] anim-enter-2"
         routerLink="/app/workout"
       >
         <div>
@@ -43,7 +45,7 @@
       </a>
 
       <!-- Secondary actions -->
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 anim-enter-2">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-3 anim-enter-3">
         <a
           class="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition hover:border-zinc-600 hover:bg-zinc-900 active:scale-[0.99]"
           routerLink="/app/workouts/history"

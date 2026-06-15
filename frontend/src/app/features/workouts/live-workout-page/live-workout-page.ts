@@ -116,6 +116,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   }
 
+  protected formatVolume(vol: number): string {
+    if (vol >= 1000) return (vol / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return Math.round(vol).toString();
+  }
+
   private createFinishedSummary(workout: LiveWorkout): FinishedWorkoutSummary {
     return {
       exercises: workout.exercises.length,
