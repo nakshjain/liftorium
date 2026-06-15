@@ -25,23 +25,26 @@ import org.springframework.stereotype.Service;
  * <p>Called exactly once per workout, triggered by {@link WorkoutService#finish}.
  * Never invoked during live set entry.
  *
- * <h3>PR types</h3>
+ * <h3>Two-phase evaluation</h3>
+ * <p><b>Phase 1 — Session reduction:</b> all sets for an exercise are collapsed
+ * into a single {@link SessionRecord} representing the best the athlete achieved
+ * in that session:
  * <ul>
- *   <li>WEIGHT — highest weight ever lifted for an exercise</li>
- *   <li>REPS   — highest rep count achieved at any weight</li>
- *   <li>ESTIMATED_ONE_REP_MAX — Epley: weight × (1 + reps / 30)</li>
+ *   <li>Session max weight — highest weight lifted in any set</li>
+ *   <li>Session best rep set — highest reps; ties broken by higher weight</li>
+ *   <li>Session best e1RM — Epley formula across all sets, highest wins</li>
  * </ul>
  *
- * <h3>Progression history</h3>
- * <p>One {@link ExerciseProgressHistory} snapshot is created for every exercise
- * in every completed workout, regardless of whether a PR fired. Each snapshot
- * captures the best metrics (highest weight, best e1RM set) across all sets in
- * that session. This produces a clean chart like 35 → 45 → 47.5 rather than a
- * noisy stream of every intermediate warm-up weight touched.
+ * <p><b>Phase 2 — Historical comparison:</b> the session record is compared once
+ * against the stored {@link ExerciseProgress}. At most one PR event is emitted
+ * per type (WEIGHT / REPS / ESTIMATED_ONE_REP_MAX) per exercise per workout.
+ * This prevents warm-up sets from generating spurious PR events and ensures the
+ * progression chart shows 35 → 45 instead of 20 → 25 → 30 → 35 → 40 → 45.
  *
- * <h3>PR events</h3>
- * <p>Each {@link PrEvent} now carries both {@code previousValue} and {@code newValue},
- * enabling the frontend to render transitions like "35kg → 47.5kg" directly.
+ * <h3>Progression history</h3>
+ * <p>One {@link ExerciseProgressHistory} snapshot is always created for every
+ * exercise in every completed workout, regardless of whether a PR fired. This is
+ * the source of truth for weight progression charts.
  */
 @Slf4j
 @Service
@@ -51,6 +54,8 @@ public class ProgressEvaluationService {
   private final ExerciseProgressRepository exerciseProgressRepository;
   private final PrEventRepository prEventRepository;
   private final ExerciseProgressHistoryRepository historyRepository;
+
+  // ── Public entry point ────────────────────────────────────────────────
 
   public void evaluate(Workout workout) {
     if (workout.getExercises() == null || workout.getExercises().isEmpty()) {
@@ -86,6 +91,12 @@ public class ProgressEvaluationService {
         continue;
       }
 
+      // Phase 1 — reduce all sets to a single session record
+      SessionRecord session = buildSessionRecord(sets);
+      if (!session.hasValidSets()) {
+        continue;
+      }
+
       ExerciseProgress progress = existingProgress.computeIfAbsent(
           exerciseId,
           id -> ExerciseProgress.builder()
@@ -94,14 +105,13 @@ public class ProgressEvaluationService {
               .build()
       );
 
-      evaluateExercise(progress, sets, workoutId, workoutFinishedAt, newEvents);
+      // Phase 2 — compare session record against history, emit ≤1 event per PR type
+      evaluateSession(progress, session, workoutId, workoutFinishedAt, newEvents);
       toSave.add(progress);
 
-      // Always create one snapshot per exercise per workout — not gated on PRs.
-      // This is the source of truth for progression charts.
-      if (!historyRepository.existsByUserIdAndExerciseIdAndWorkoutId(
-          userId, exerciseId, workoutId)) {
-        newSnapshots.add(buildSnapshot(userId, exerciseId, workoutId, sets, workoutFinishedAt));
+      // One history snapshot per exercise per workout — unconditional, not PR-gated
+      if (!historyRepository.existsByUserIdAndExerciseIdAndWorkoutId(userId, exerciseId, workoutId)) {
+        newSnapshots.add(toSnapshot(userId, exerciseId, workoutId, session, workoutFinishedAt));
       }
     }
 
@@ -119,130 +129,148 @@ public class ProgressEvaluationService {
         workoutId, toSave.size(), newEvents.size(), newSnapshots.size());
   }
 
-  // ── Private helpers ───────────────────────────────────────────────────
+  // ── Phase 1: Session reduction ────────────────────────────────────────
 
   /**
-   * Evaluates all sets for one exercise.
-   * Mutates {@code progress}, appends PrEvents to {@code newEvents}.
+   * Reduces all sets in one exercise to a single session-level record.
+   * Iterates once; O(n) over the set list.
    */
-  private void evaluateExercise(
-      ExerciseProgress progress,
-      List<WorkoutSet> sets,
-      String workoutId,
-      Instant workoutFinishedAt,
-      List<PrEvent> newEvents
-  ) {
+  private SessionRecord buildSessionRecord(List<WorkoutSet> sets) {
+    double sessionMaxWeight = 0;
+    double sessionBestRepWeight = 0;
+    int sessionBestRepReps = 0;
+    double sessionBestE1rm = 0;
+    double sessionBestE1rmWeight = 0;
+    int sessionBestE1rmReps = 0;
+
     for (WorkoutSet set : sets) {
       if (set.getReps() <= 0 || set.getWeight() < 0) {
         continue;
       }
 
-      Instant achievedAt = set.getCompletedAt() != null
-          ? set.getCompletedAt()
-          : workoutFinishedAt;
       double weight = set.getWeight();
       int reps = set.getReps();
-
-      // ── WEIGHT PR ─────────────────────────────────────────────────
-      if (weight > progress.getWeightPr()) {
-        Double previous = progress.getWeightPr() > 0 ? progress.getWeightPr() : null;
-        // Set firstWeightPr once — never overwrite
-        if (progress.getFirstWeightPr() == null) {
-          progress.setFirstWeightPr(previous != null ? previous : weight);
-        }
-        progress.setWeightPr(weight);
-        progress.setLastImprovedAt(achievedAt);
-        progress.setTotalPrs(progress.getTotalPrs() + 1);
-        newEvents.add(prEvent(progress, PrType.WEIGHT, weight, previous, workoutId, achievedAt));
-      }
-
-      // ── REP PR ────────────────────────────────────────────────────
-      int previousReps = progress.getRepPrReps();
-      if (weight == progress.getRepPrWeight() && reps > progress.getRepPrReps()) {
-        progress.setRepPrReps(reps);
-        progress.setLastImprovedAt(achievedAt);
-        progress.setTotalPrs(progress.getTotalPrs() + 1);
-        newEvents.add(prEvent(progress, PrType.REPS, reps,
-            previousReps > 0 ? (double) previousReps : null, workoutId, achievedAt));
-      } else if (progress.getRepPrReps() == 0 || reps > progress.getRepPrReps()) {
-        Double prev = progress.getRepPrReps() > 0 ? (double) progress.getRepPrReps() : null;
-        progress.setRepPrWeight(weight);
-        progress.setRepPrReps(reps);
-        progress.setLastImprovedAt(achievedAt);
-        progress.setTotalPrs(progress.getTotalPrs() + 1);
-        newEvents.add(prEvent(progress, PrType.REPS, reps, prev, workoutId, achievedAt));
-      }
-
-      // ── ESTIMATED 1RM (Epley) ─────────────────────────────────────
       double e1rm = calculateEpley(weight, reps);
-      if (e1rm > progress.getEstimatedOneRepMaxPr()) {
-        Double previous1rm = progress.getEstimatedOneRepMaxPr() > 0
-            ? roundToTwo(progress.getEstimatedOneRepMaxPr())
-            : null;
-        // Set firstEstimatedOneRepMax once — never overwrite
-        if (progress.getFirstEstimatedOneRepMax() == null) {
-          progress.setFirstEstimatedOneRepMax(
-              previous1rm != null ? previous1rm : roundToTwo(e1rm));
-        }
-        progress.setEstimatedOneRepMaxPr(e1rm);
-        progress.setLastImprovedAt(achievedAt);
-        progress.setTotalPrs(progress.getTotalPrs() + 1);
-        newEvents.add(prEvent(progress, PrType.ESTIMATED_ONE_REP_MAX,
-            roundToTwo(e1rm), previous1rm, workoutId, achievedAt));
+
+      // Session max weight
+      if (weight > sessionMaxWeight) {
+        sessionMaxWeight = weight;
       }
+
+      // Session best rep set: more reps wins; ties go to higher weight
+      if (reps > sessionBestRepReps
+          || (reps == sessionBestRepReps && weight > sessionBestRepWeight)) {
+        sessionBestRepReps = reps;
+        sessionBestRepWeight = weight;
+      }
+
+      // Session best e1RM
+      if (e1rm > sessionBestE1rm) {
+        sessionBestE1rm = e1rm;
+        sessionBestE1rmWeight = weight;
+        sessionBestE1rmReps = reps;
+      }
+    }
+
+    return new SessionRecord(
+        sessionMaxWeight,
+        sessionBestRepWeight,
+        sessionBestRepReps,
+        sessionBestE1rm,
+        sessionBestE1rmWeight,
+        sessionBestE1rmReps
+    );
+  }
+
+  // ── Phase 2: Historical comparison ───────────────────────────────────
+
+  /**
+   * Compares the session-level record against the athlete's all-time progress.
+   * Fires at most one PR event per type. Mutates {@code progress} in place.
+   */
+  private void evaluateSession(
+      ExerciseProgress progress,
+      SessionRecord session,
+      String workoutId,
+      Instant achievedAt,
+      List<PrEvent> newEvents
+  ) {
+    // ── WEIGHT PR ─────────────────────────────────────────────────────
+    if (session.maxWeight() > progress.getWeightPr()) {
+      Double previous = progress.getWeightPr() > 0 ? progress.getWeightPr() : null;
+
+      if (progress.getFirstWeightPr() == null) {
+        // First ever weight PR — record the starting value
+        progress.setFirstWeightPr(previous != null ? previous : session.maxWeight());
+      }
+
+      progress.setWeightPr(session.maxWeight());
+      progress.setLastImprovedAt(achievedAt);
+      progress.setTotalPrs(progress.getTotalPrs() + 1);
+      newEvents.add(prEvent(progress, PrType.WEIGHT,
+          session.maxWeight(), previous, workoutId, achievedAt));
+    }
+
+    // ── REP PR ────────────────────────────────────────────────────────
+    // Higher reps wins; if equal reps, higher weight wins.
+    boolean repPr = session.bestRepReps() > progress.getRepPrReps()
+        || (session.bestRepReps() == progress.getRepPrReps()
+            && session.bestRepReps() > 0
+            && session.bestRepWeight() > progress.getRepPrWeight());
+
+    if (repPr) {
+      Double prevReps = progress.getRepPrReps() > 0 ? (double) progress.getRepPrReps() : null;
+
+      progress.setRepPrWeight(session.bestRepWeight());
+      progress.setRepPrReps(session.bestRepReps());
+      progress.setLastImprovedAt(achievedAt);
+      progress.setTotalPrs(progress.getTotalPrs() + 1);
+      newEvents.add(prEvent(progress, PrType.REPS,
+          session.bestRepReps(), prevReps, workoutId, achievedAt));
+    }
+
+    // ── ESTIMATED 1RM PR ──────────────────────────────────────────────
+    if (session.bestE1rm() > progress.getEstimatedOneRepMaxPr()) {
+      Double previous1rm = progress.getEstimatedOneRepMaxPr() > 0
+          ? roundToTwo(progress.getEstimatedOneRepMaxPr())
+          : null;
+
+      if (progress.getFirstEstimatedOneRepMax() == null) {
+        progress.setFirstEstimatedOneRepMax(
+            previous1rm != null ? previous1rm : roundToTwo(session.bestE1rm()));
+      }
+
+      progress.setEstimatedOneRepMaxPr(session.bestE1rm());
+      progress.setLastImprovedAt(achievedAt);
+      progress.setTotalPrs(progress.getTotalPrs() + 1);
+      newEvents.add(prEvent(progress, PrType.ESTIMATED_ONE_REP_MAX,
+          roundToTwo(session.bestE1rm()), previous1rm, workoutId, achievedAt));
     }
   }
 
-  /**
-   * Builds a history snapshot from the best metrics across all sets
-   * in this exercise for this workout.
-   *
-   * <p>Best weight = highest weight lifted in any set.
-   * Best set = the set with the highest estimated 1RM (objective performance measure).
-   */
-  private ExerciseProgressHistory buildSnapshot(
+  // ── Snapshot builder ─────────────────────────────────────────────────
+
+  /** Converts a session record to an append-only history document. */
+  private ExerciseProgressHistory toSnapshot(
       String userId,
       String exerciseId,
       String workoutId,
-      List<WorkoutSet> sets,
-      Instant workoutFinishedAt
+      SessionRecord session,
+      Instant performedAt
   ) {
-    double bestWeight = 0;
-    double bestE1rm = 0;
-    double bestSetWeight = 0;
-    int bestSetReps = 0;
-
-    for (WorkoutSet set : sets) {
-      if (set.getReps() <= 0 || set.getWeight() < 0) {
-        continue;
-      }
-
-      double weight = set.getWeight();
-      int reps = set.getReps();
-      double e1rm = calculateEpley(weight, reps);
-
-      if (weight > bestWeight) {
-        bestWeight = weight;
-      }
-
-      if (e1rm > bestE1rm) {
-        bestE1rm = e1rm;
-        bestSetWeight = weight;
-        bestSetReps = reps;
-      }
-    }
-
     return ExerciseProgressHistory.builder()
         .userId(userId)
         .exerciseId(exerciseId)
         .workoutId(workoutId)
-        .bestWeight(bestWeight)
-        .bestSetWeight(bestSetWeight)
-        .bestSetReps(bestSetReps)
-        .estimatedOneRepMax(roundToTwo(bestE1rm))
-        .performedAt(workoutFinishedAt)
+        .bestWeight(session.maxWeight())
+        .bestSetWeight(session.bestE1rmWeight())
+        .bestSetReps(session.bestE1rmReps())
+        .estimatedOneRepMax(roundToTwo(session.bestE1rm()))
+        .performedAt(performedAt)
         .build();
   }
+
+  // ── PrEvent factory ──────────────────────────────────────────────────
 
   private PrEvent prEvent(
       ExerciseProgress progress,
@@ -264,11 +292,33 @@ public class ProgressEvaluationService {
         .build();
   }
 
+  // ── Helpers ──────────────────────────────────────────────────────────
+
   private double calculateEpley(double weight, int reps) {
     return weight * (1.0 + reps / 30.0);
   }
 
   private double roundToTwo(double value) {
     return Math.round(value * 100.0) / 100.0;
+  }
+
+  // ── Value object ─────────────────────────────────────────────────────
+
+  /**
+   * Immutable session-level record for a single exercise in one workout.
+   * Built by Phase 1; consumed by Phase 2 and the snapshot builder.
+   */
+  private record SessionRecord(
+      double maxWeight,
+      double bestRepWeight,
+      int bestRepReps,
+      double bestE1rm,
+      double bestE1rmWeight,
+      int bestE1rmReps
+  ) {
+    /** True if at least one valid set was recorded this session. */
+    boolean hasValidSets() {
+      return maxWeight > 0 || bestRepReps > 0;
+    }
   }
 }
