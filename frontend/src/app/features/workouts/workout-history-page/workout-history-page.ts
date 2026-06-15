@@ -2,7 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { WorkoutService } from '../workout.service';
-import { WorkoutDto, WorkoutStats } from '../workout-history.models';
+import { HistoryInsights, WorkoutDto, WorkoutStats } from '../workout-history.models';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
 
 /** One cell in the consistency heatmap. */
@@ -25,15 +25,14 @@ export class WorkoutHistoryPageComponent implements OnInit {
 
   protected readonly workouts = signal<WorkoutDto[]>([]);
   protected readonly stats = signal<WorkoutStats | null>(null);
+  protected readonly insights = signal<HistoryInsights | null>(null);
   protected readonly loading = signal(false);
   protected readonly listError = signal(false);
   protected readonly statsError = signal(false);
+  protected readonly insightsError = signal(false);
   protected readonly currentMonth = signal(this.getCurrentYearMonth());
   protected readonly page = signal(1);
   protected readonly totalPages = signal(1);
-
-  /** Controls whether the full PR list is expanded. */
-  protected readonly showAllPrs = signal(false);
 
   /** Live search query for the workout list — client-side, no API. */
   protected readonly searchQuery = signal('');
@@ -60,40 +59,12 @@ export class WorkoutHistoryPageComponent implements OnInit {
     );
   });
 
-  protected readonly prExerciseIds = computed(() => {
-    const s = this.stats();
-    if (!s) return new Set<string>();
-    return new Set(s.personalRecords.map((pr) => pr.exerciseId));
-  });
-
-  /** Biggest PR by weight this month. */
-  protected readonly biggestPr = computed(() => {
-    const s = this.stats();
-    if (!s || s.personalRecords.length === 0) return null;
-    return s.personalRecords.reduce((best, pr) =>
-      pr.weight > best.weight ? pr : best,
-    );
-  });
-
-  /** PR list: collapsed = first 3, expanded = all. */
-  protected readonly visiblePrs = computed(() => {
-    const s = this.stats();
-    if (!s) return [];
-    return this.showAllPrs() ? s.personalRecords : s.personalRecords.slice(0, 3);
-  });
-
-  protected readonly hiddenPrCount = computed(() => {
-    const s = this.stats();
-    if (!s) return 0;
-    return Math.max(0, s.personalRecords.length - 3);
-  });
-
   // ── Completed workouts only (no active sessions in history) ───────────
   protected readonly completedWorkouts = computed(() =>
     this.workouts().filter((w) => w.status === 'completed' && w.exercises.length > 0),
   );
 
-  /** Workout list filtered by searchQuery. Stats and badges always use completedWorkouts. */
+  /** Workout list filtered by searchQuery. */
   protected readonly filteredWorkouts = computed(() => {
     const q = this.searchQuery().trim().toLowerCase();
     if (!q) return this.completedWorkouts();
@@ -107,28 +78,10 @@ export class WorkoutHistoryPageComponent implements OnInit {
   // ── Best workout (highest volume) ─────────────────────────────────────
   protected readonly bestWorkout = computed((): WorkoutDto | null => {
     const ws = this.completedWorkouts();
-    if (ws.length < 2) return null; // only meaningful with 2+ workouts
+    if (ws.length < 2) return null;
     return ws.reduce((best, w) =>
       this.workoutVolume(w) > this.workoutVolume(best) ? w : best,
     );
-  });
-
-  // ── Highest-volume exercise across all workouts this month ─────────────
-  protected readonly topVolumeExercise = computed((): { name: string; volume: number } | null => {
-    const volumes = new Map<string, number>();
-    for (const w of this.completedWorkouts()) {
-      for (const ex of w.exercises) {
-        const vol = ex.sets.reduce((t, s) => t + s.reps * s.weight, 0);
-        volumes.set(ex.exerciseName, (volumes.get(ex.exerciseName) ?? 0) + vol);
-      }
-    }
-    if (volumes.size === 0) return null;
-    let topName = '';
-    let topVol = 0;
-    for (const [name, vol] of volumes) {
-      if (vol > topVol) { topVol = vol; topName = name; }
-    }
-    return { name: topName, volume: topVol };
   });
 
   // ── Heatmap ────────────────────────────────────────────────────────────
@@ -204,16 +157,6 @@ export class WorkoutHistoryPageComponent implements OnInit {
   });
 
   // ── Per-workout helpers ───────────────────────────────────────────────
-  protected workoutHasPr(workout: WorkoutDto): boolean {
-    const ids = this.prExerciseIds();
-    return workout.exercises.some((ex) => ids.has(ex.exerciseId));
-  }
-
-  protected workoutPrCount(workout: WorkoutDto): number {
-    const ids = this.prExerciseIds();
-    return workout.exercises.filter((ex) => ids.has(ex.exerciseId)).length;
-  }
-
   protected exercisePreview(workout: WorkoutDto): string {
     const names = workout.exercises.map((ex) => ex.exerciseName);
     if (names.length === 0) return 'No exercises';
@@ -247,12 +190,13 @@ export class WorkoutHistoryPageComponent implements OnInit {
   // ── Lifecycle ─────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadData();
+    // Insights are all-time — load once on init, not on month change.
+    this.loadInsights();
   }
 
   protected prevMonth(): void {
     this.currentMonth.set(this.offsetMonth(this.currentMonth(), -1));
     this.page.set(1);
-    this.showAllPrs.set(false);
     this.searchQuery.set('');
     this.loadData();
   }
@@ -262,7 +206,6 @@ export class WorkoutHistoryPageComponent implements OnInit {
     if (next <= this.getCurrentYearMonth()) {
       this.currentMonth.set(next);
       this.page.set(1);
-      this.showAllPrs.set(false);
       this.searchQuery.set('');
       this.loadData();
     }
@@ -272,7 +215,6 @@ export class WorkoutHistoryPageComponent implements OnInit {
     if (this.isCurrentMonth()) return;
     this.currentMonth.set(this.getCurrentYearMonth());
     this.page.set(1);
-    this.showAllPrs.set(false);
     this.searchQuery.set('');
     this.loadData();
   }
@@ -351,6 +293,14 @@ export class WorkoutHistoryPageComponent implements OnInit {
           this.loading.set(false);
         },
       });
+  }
+
+  private loadInsights(): void {
+    this.insightsError.set(false);
+    this.workoutService.getInsights().subscribe({
+      next: (data) => this.insights.set(data),
+      error: () => this.insightsError.set(true),
+    });
   }
 
   private getCurrentYearMonth(): string {

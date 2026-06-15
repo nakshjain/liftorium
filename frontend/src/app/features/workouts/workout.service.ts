@@ -4,7 +4,7 @@ import { Observable, concatMap, from, map, reduce } from 'rxjs';
 import { API_BASE_URL } from '../../core/api/api.config';
 import { ApiSuccessResponse } from '../../core/api/api-response';
 import { LiveWorkout } from './live-workout.models';
-import { PaginatedWorkouts, WorkoutDto as HistoryWorkoutDto, WorkoutStats } from './workout-history.models';
+import { HistoryInsights, PaginatedWorkouts, WorkoutDto as HistoryWorkoutDto, WorkoutStats } from './workout-history.models';
 
 interface WorkoutDto {
   id: string;
@@ -33,6 +33,12 @@ export class WorkoutService {
 
     return this.http
       .get<ApiSuccessResponse<WorkoutStats>>(`${this.baseUrl}/workouts/stats`, { params: httpParams })
+      .pipe(map((res) => res.data));
+  }
+
+  getInsights(): Observable<HistoryInsights> {
+    return this.http
+      .get<ApiSuccessResponse<HistoryInsights>>(`${this.baseUrl}/history/insights`)
       .pipe(map((res) => res.data));
   }
 

@@ -93,17 +93,7 @@ public final class WorkoutDtos {
       double totalVolume,
       int totalSets,
       int streak,
-      double previousMonthVolume,
-      List<PersonalRecordDto> personalRecords
-  ) {
-  }
-
-  public record PersonalRecordDto(
-      String exerciseId,
-      String exerciseName,
-      double weight,
-      int reps,
-      String achievedAt
+      double previousMonthVolume
   ) {
   }
 }
