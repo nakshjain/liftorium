@@ -50,6 +50,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly restTimerLabel = computed(() =>
     this.store.restTimerActive() ? this.formatTime(this.store.restRemainingSeconds()) : 'Ready'
   );
+  protected readonly hasCompletedSets = computed(() => {
+    const workout = this.store.activeWorkout();
+    if (!workout) return false;
+    return workout.exercises.some((ex) => ex.sets.some((s) => s.completed));
+  });
   protected readonly finishedSummary = computed(() => {
     const workout = this.store.lastFinishedWorkout();
 
@@ -151,6 +156,15 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected confirmFinish(): void {
     this.showFinishConfirm.set(false);
     if (!this.pendingFinishWorkout) return;
+
+    const completedSets = this.pendingFinishWorkout.exercises
+      .reduce((n, ex) => n + ex.sets.filter((s) => s.completed).length, 0);
+
+    if (completedSets === 0) {
+      this.toastService.info('No sets logged — workout was not saved.');
+      this.pendingFinishWorkout = null;
+      return;
+    }
 
     const finishedWorkout = this.pendingFinishWorkout;
     this.store.finishWorkout();
