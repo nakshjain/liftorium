@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Validated
 @RestController
-@RequestMapping("/api/v1/workouts")
+@RequestMapping("/workouts")
 @RequiredArgsConstructor
 public class WorkoutController {
 

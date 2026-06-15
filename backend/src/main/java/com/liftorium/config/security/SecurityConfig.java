@@ -40,8 +40,8 @@ public class SecurityConfig {
         .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
         .authorizeHttpRequests(auth -> auth
             .requestMatchers("/health").permitAll()
-            .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/register/initiate", "/api/v1/auth/register/verify", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/forgot-password", "/api/v1/auth/forgot-password/reset").permitAll()
-            .requestMatchers(HttpMethod.GET, "/api/v1/exercises", "/api/v1/exercises/*").permitAll()
+            .requestMatchers(HttpMethod.POST, "/auth/register", "/auth/register/initiate", "/auth/register/verify", "/auth/login", "/auth/refresh", "/auth/forgot-password", "/auth/forgot-password/reset").permitAll()
+            .requestMatchers(HttpMethod.GET, "/exercises", "/exercises/*").permitAll()
             .anyRequest().authenticated()
         )
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
