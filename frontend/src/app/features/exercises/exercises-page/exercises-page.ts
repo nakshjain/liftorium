@@ -5,6 +5,7 @@ import { debounceTime, distinctUntilChanged, Subject, switchMap, of } from 'rxjs
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../exercise.service';
 import { Exercise, ExercisePage, ExerciseType } from '../exercise.models';
+import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
 
 type FilterState = {
   query: string;
@@ -15,7 +16,7 @@ type FilterState = {
 
 @Component({
   selector: 'app-exercises-page',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, TrainingHubLinkComponent],
   templateUrl: './exercises-page.html',
   styleUrl: './exercises-page.scss'
 })

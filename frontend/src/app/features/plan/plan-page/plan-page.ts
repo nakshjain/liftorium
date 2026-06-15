@@ -7,10 +7,11 @@ import { ExerciseService } from '../../exercises/exercise.service';
 import { Exercise } from '../../exercises/exercise.models';
 import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
+import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
 
 @Component({
   selector: 'app-plan-page',
-  imports: [RouterLink, FormsModule, ConfirmationDialogComponent],
+  imports: [RouterLink, FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent],
   templateUrl: './plan-page.html',
 })
 export class PlanPageComponent {

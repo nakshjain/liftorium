@@ -1,14 +1,9 @@
-import {
-  Component,
-  OnInit,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProgressService } from '../progress.service';
 import { formatRelativeTime } from '../../../shared/utils/format-relative-time';
+import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
 import {
   ExerciseProgressSummary,
   PrEvent,
@@ -20,7 +15,7 @@ type Tab = 'exercises' | 'prs';
 
 @Component({
   selector: 'app-progress-page',
-  imports: [RouterLink, FormsModule],
+  imports: [RouterLink, FormsModule, TrainingHubLinkComponent],
   templateUrl: './progress-page.html',
 })
 export class ProgressPageComponent implements OnInit {
