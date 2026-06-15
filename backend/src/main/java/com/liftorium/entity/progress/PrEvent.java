@@ -48,26 +48,37 @@ public class PrEvent {
   private PrType prType;
 
   /**
-   * The achieved value.
-   * For WEIGHT: the weight in kg.
-   * For REPS: the rep count (weight context stored in exerciseProgress).
-   * For ESTIMATED_ONE_REP_MAX: the calculated e1RM value.
-   *
-   * @deprecated Prefer {@link #newValue}. Kept for backward compatibility.
-   */
-  private double value;
-
-  /**
    * The previous record value before this PR was set.
-   * Null when this is the first PR ever achieved for this type.
+   * <ul>
+   *   <li>WEIGHT: previous weight in kg, or null if first ever</li>
+   *   <li>REPS: previous rep count, or null if first ever</li>
+   *   <li>ESTIMATED_ONE_REP_MAX: previous e1RM, or null if first ever</li>
+   * </ul>
    */
   private Double previousValue;
 
   /**
-   * The new record value achieved by this PR event.
-   * Mirrors {@link #value} but explicitly named for clarity.
+   * The new record value set by this PR event.
+   * <ul>
+   *   <li>WEIGHT: new weight in kg</li>
+   *   <li>REPS: new rep count</li>
+   *   <li>ESTIMATED_ONE_REP_MAX: new e1RM value</li>
+   * </ul>
    */
   private Double newValue;
+
+  /**
+   * For REPS PR events: the weight at which the previous rep PR was achieved.
+   * Null for non-REPS events and when there was no prior rep PR.
+   * Enables rendering "20kg × 10 → 25kg × 12" transitions.
+   */
+  private Double prevRepWeight;
+
+  /**
+   * For REPS PR events: the weight at which the new rep PR was achieved.
+   * Null for non-REPS events.
+   */
+  private Double newRepWeight;
 
   /** The workout in which this PR was achieved. */
   @Indexed

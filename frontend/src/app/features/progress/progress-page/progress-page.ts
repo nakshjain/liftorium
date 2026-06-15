@@ -129,21 +129,28 @@ export class ProgressPageComponent implements OnInit {
   /** Format a PR event as a "prev → new" transition string. */
   protected formatPrTransition(event: PrEvent): string {
     const prev = event.previousValue;
-    const next = event.newValue ?? event.value;
+    const next = event.newValue;
 
     switch (event.prType) {
       case 'WEIGHT':
-        return prev != null
+        return prev != null && next != null
           ? `${prev}kg → ${next}kg`
-          : `${next}kg`;
-      case 'REPS':
-        return prev != null
-          ? `${prev} reps → ${next} reps`
-          : `${next} reps`;
-      case 'ESTIMATED_ONE_REP_MAX':
-        return prev != null
-          ? `${(prev as number).toFixed(1)}kg → ${(next as number).toFixed(1)}kg`
-          : `${(next as number).toFixed(1)}kg`;
+          : `${next ?? '—'}kg`;
+
+      case 'REPS': {
+        // Render with weight context: "20kg × 10 → 25kg × 12"
+        const prevStr = prev != null
+          ? `${event.prevRepWeight != null ? event.prevRepWeight + 'kg × ' : ''}${prev}`
+          : null;
+        const nextStr = `${event.newRepWeight != null ? event.newRepWeight + 'kg × ' : ''}${next ?? '—'}`;
+        return prevStr ? `${prevStr} → ${nextStr}` : nextStr;
+      }
+
+      case 'ESTIMATED_ONE_REP_MAX': {
+        const prevE = prev != null ? `${(prev).toFixed(1)}kg` : null;
+        const nextE = `${(next ?? 0).toFixed(1)}kg`;
+        return prevE ? `${prevE} → ${nextE}` : nextE;
+      }
     }
   }
 

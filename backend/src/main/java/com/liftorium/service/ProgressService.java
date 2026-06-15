@@ -224,9 +224,10 @@ public class ProgressService {
         pr.getExerciseId(),
         nameMap.getOrDefault(pr.getExerciseId(), "Unknown"),
         pr.getPrType(),
-        pr.getValue(),
         pr.getPreviousValue(),
         pr.getNewValue(),
+        pr.getPrevRepWeight(),
+        pr.getNewRepWeight(),
         pr.getWorkoutId(),
         pr.getAchievedAt().toString()
     );

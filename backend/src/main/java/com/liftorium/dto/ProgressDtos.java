@@ -72,14 +72,31 @@ public final class ProgressDtos {
 
   // ── PR timeline ───────────────────────────────────────────────────────
 
+  /**
+   * A single PR event in the timeline.
+   *
+   * <p>For all PR types:
+   * <ul>
+   *   <li>{@code previousValue} — the record before this event (null = first ever PR)</li>
+   *   <li>{@code newValue} — the new record set by this event</li>
+   * </ul>
+   *
+   * <p>For REPS PRs only, weight context is also available:
+   * <ul>
+   *   <li>{@code prevRepWeight} — weight at which the previous rep PR was achieved</li>
+   *   <li>{@code newRepWeight} — weight at which the new rep PR was achieved</li>
+   * </ul>
+   * These two fields allow the frontend to render "20kg × 10 → 25kg × 12".
+   */
   public record PrEventDto(
       String id,
       String exerciseId,
       String exerciseName,
       PrType prType,
-      double value,
       Double previousValue,
       Double newValue,
+      Double prevRepWeight,
+      Double newRepWeight,
       String workoutId,
       String achievedAt
   ) {

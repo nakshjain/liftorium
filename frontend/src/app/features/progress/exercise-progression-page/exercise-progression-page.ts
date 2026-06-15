@@ -134,24 +134,32 @@ export class ExerciseProgressionPageComponent implements OnInit {
 
   /**
    * Format a PR event as a progression transition.
-   * e.g. "35kg → 47.5kg" or "20kg × 10 → 20kg × 12"
+   * Weight: "35kg → 47.5kg"
+   * Reps:   "20kg × 10 → 25kg × 12"
+   * e1RM:   "54.3kg → 60.2kg"
    */
   protected formatPrTransition(event: PrEvent): string {
     const prev = event.previousValue;
-    const next = event.newValue ?? event.value;
+    const next = event.newValue;
 
     switch (event.prType) {
       case 'WEIGHT':
-        return prev != null ? `${prev}kg → ${next}kg` : `${next}kg`;
+        return prev != null && next != null
+          ? `${prev}kg → ${next}kg`
+          : `${next ?? '—'}kg`;
+
       case 'REPS': {
-        // Rep PR: show weight context when available
-        const prevReps = prev != null ? `${prev} reps` : null;
-        const nextReps = `${next} reps`;
-        return prevReps ? `${prevReps} → ${nextReps}` : nextReps;
+        // Include weight context so the rep PR is unambiguous
+        const prevStr = prev != null
+          ? `${event.prevRepWeight != null ? event.prevRepWeight + 'kg × ' : ''}${prev}`
+          : null;
+        const nextStr = `${event.newRepWeight != null ? event.newRepWeight + 'kg × ' : ''}${next ?? '—'}`;
+        return prevStr ? `${prevStr} → ${nextStr}` : nextStr;
       }
+
       case 'ESTIMATED_ONE_REP_MAX': {
-        const prevE = prev != null ? `${(prev as number).toFixed(1)}kg` : null;
-        const nextE = `${(next as number).toFixed(1)}kg`;
+        const prevE = prev != null ? `${(prev).toFixed(1)}kg` : null;
+        const nextE = `${(next ?? 0).toFixed(1)}kg`;
         return prevE ? `${prevE} → ${nextE}` : nextE;
       }
     }

@@ -53,10 +53,20 @@ export type PrEvent = {
   exerciseId: string;
   exerciseName: string;
   prType: PrType;
-  /** @deprecated Use newValue. Kept for backward compatibility. */
-  value: number;
+  /** Previous record value before this PR. Null = first ever PR of this type. */
   previousValue: number | null;
+  /** New record value set by this PR event. */
   newValue: number | null;
+  /**
+   * For REPS PRs: weight at which the previous rep PR was achieved.
+   * Null for non-REPS events and when there was no prior rep PR.
+   */
+  prevRepWeight: number | null;
+  /**
+   * For REPS PRs: weight at which the new rep PR was achieved.
+   * Null for non-REPS events.
+   */
+  newRepWeight: number | null;
   workoutId: string;
   achievedAt: string;
 };

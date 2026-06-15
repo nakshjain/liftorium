@@ -208,7 +208,7 @@ public class ProgressEvaluationService {
       progress.setLastImprovedAt(achievedAt);
       progress.setTotalPrs(progress.getTotalPrs() + 1);
       newEvents.add(prEvent(progress, PrType.WEIGHT,
-          session.maxWeight(), previous, workoutId, achievedAt));
+          previous, session.maxWeight(), null, null, workoutId, achievedAt));
     }
 
     // ── REP PR ────────────────────────────────────────────────────────
@@ -220,13 +220,16 @@ public class ProgressEvaluationService {
 
     if (repPr) {
       Double prevReps = progress.getRepPrReps() > 0 ? (double) progress.getRepPrReps() : null;
+      Double prevRepWeight = progress.getRepPrWeight() > 0 ? progress.getRepPrWeight() : null;
 
       progress.setRepPrWeight(session.bestRepWeight());
       progress.setRepPrReps(session.bestRepReps());
       progress.setLastImprovedAt(achievedAt);
       progress.setTotalPrs(progress.getTotalPrs() + 1);
       newEvents.add(prEvent(progress, PrType.REPS,
-          session.bestRepReps(), prevReps, workoutId, achievedAt));
+          prevReps, (double) session.bestRepReps(),
+          prevRepWeight, session.bestRepWeight(),
+          workoutId, achievedAt));
     }
 
     // ── ESTIMATED 1RM PR ──────────────────────────────────────────────
@@ -244,7 +247,7 @@ public class ProgressEvaluationService {
       progress.setLastImprovedAt(achievedAt);
       progress.setTotalPrs(progress.getTotalPrs() + 1);
       newEvents.add(prEvent(progress, PrType.ESTIMATED_ONE_REP_MAX,
-          roundToTwo(session.bestE1rm()), previous1rm, workoutId, achievedAt));
+          previous1rm, roundToTwo(session.bestE1rm()), null, null, workoutId, achievedAt));
     }
   }
 
@@ -275,8 +278,10 @@ public class ProgressEvaluationService {
   private PrEvent prEvent(
       ExerciseProgress progress,
       PrType type,
-      double value,
       Double previousValue,
+      Double newValue,
+      Double prevRepWeight,
+      Double newRepWeight,
       String workoutId,
       Instant achievedAt
   ) {
@@ -284,9 +289,10 @@ public class ProgressEvaluationService {
         .userId(progress.getUserId())
         .exerciseId(progress.getExerciseId())
         .prType(type)
-        .value(value)
         .previousValue(previousValue)
-        .newValue(value)
+        .newValue(newValue)
+        .prevRepWeight(prevRepWeight)
+        .newRepWeight(newRepWeight)
         .workoutId(workoutId)
         .achievedAt(achievedAt)
         .build();
