@@ -111,11 +111,22 @@ input {
              barbellFloat 5s 1s ease-in-out infinite;
 }
 
-/* Left panel lines stagger more slowly — they're mood-setting, not functional */
-.panel-line-0 { animation: panelLineIn 0.7s 80ms  var(--ease-out) both; }
-.panel-line-1 { animation: panelLineIn 0.7s 180ms var(--ease-out) both; }
-.panel-line-2 { animation: panelLineIn 0.6s 300ms var(--ease-out) both; }
-.panel-line-3 { animation: panelLineIn 0.6s 420ms var(--ease-out) both; }
+/* Teal accent underline beneath the desktop wordmark — draws in L→R after the wordmark lands */
+@keyframes accentDraw {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0% 0 0); }
+}
+
+.panel-accent-line {
+  animation: accentDraw 0.5s 520ms var(--ease-out) both;
+}
+
+/* Left panel lines stagger more slowly — they're mood-setting, not functional.
+   panel-line-0 (wordmark) gets the longest duration — it's the first brand impression. */
+.panel-line-0 { animation: panelLineIn 0.8s 40ms  var(--ease-out) both; }
+.panel-line-1 { animation: panelLineIn 0.75s 200ms var(--ease-out) both; }
+.panel-line-2 { animation: panelLineIn 0.65s 340ms var(--ease-out) both; }
+.panel-line-3 { animation: panelLineIn 0.6s  480ms var(--ease-out) both; }
 
 /* Error block — appears occasionally, slides from above */
 .auth-error {
@@ -186,6 +197,7 @@ input {
   .panel-line-1,
   .panel-line-2,
   .panel-line-3,
+  .panel-accent-line,
   .auth-error {
     animation: none;
   }
