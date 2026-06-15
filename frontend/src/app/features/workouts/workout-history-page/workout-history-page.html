@@ -1,258 +1,514 @@
-<main class="min-h-dvh bg-zinc-950 pb-20 text-zinc-50">
+<main class="min-h-dvh bg-zinc-950 pb-24 text-zinc-50">
   <div class="mx-auto w-full max-w-2xl px-4 pt-4 sm:px-6">
 
-    <!-- ── Sticky header ── -->
+    <!-- ════════════════════════════════
+         HEADER
+    ════════════════════════════════ -->
     <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur-md sm:-mx-6 sm:px-6">
       <a
         class="inline-flex items-center gap-1 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-300"
         routerLink="/app"
       >
         <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
         </svg>
         Training hub
       </a>
-
       <div class="mt-2 flex items-center justify-between">
         <h1 class="text-xl font-semibold tracking-tight text-zinc-50">History</h1>
-
         <div class="flex items-center gap-0.5">
           <button
-            class="flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-800/80 hover:text-zinc-200 active:bg-zinc-800"
-            type="button"
-            aria-label="Previous month"
-            (click)="prevMonth()"
+            class="flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 active:bg-zinc-700"
+            type="button" aria-label="Previous month" (click)="prevMonth()"
           >
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
             </svg>
           </button>
-
           <button
-            class="min-w-[124px] rounded-md px-2 py-1 text-center text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800/80 hover:text-zinc-50"
+            class="min-w-[120px] rounded-md px-2 py-1 text-center text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800 hover:text-zinc-50"
             type="button"
             [attr.aria-label]="isCurrentMonth() ? 'Current month' : 'Jump to current month'"
-            [class.cursor-default]="isCurrentMonth()"
             [class.pointer-events-none]="isCurrentMonth()"
             (click)="jumpToCurrentMonth()"
           >{{ monthLabel() }}</button>
-
           <button
-            class="flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-800/80 hover:text-zinc-200 active:bg-zinc-800 disabled:pointer-events-none disabled:opacity-25"
-            type="button"
-            aria-label="Next month"
-            [disabled]="isCurrentMonth()"
-            (click)="nextMonth()"
+            class="flex h-8 w-8 items-center justify-center rounded-md text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 active:bg-zinc-700 disabled:pointer-events-none disabled:opacity-25"
+            type="button" aria-label="Next month" [disabled]="isCurrentMonth()" (click)="nextMonth()"
           >
             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
             </svg>
           </button>
         </div>
       </div>
     </header>
 
-    <!-- ── Stats strip ── -->
-    @if (stats(); as s) {
-      <section class="anim-enter pt-5">
 
-        <!-- Streak badge -->
-        @if (s.streak > 0) {
-          <div class="mb-4 inline-flex items-center gap-1.5 rounded-full bg-amber-400/10 px-3 py-1 text-xs font-semibold tracking-wide text-amber-400 ring-1 ring-amber-400/20">
-            <span aria-hidden="true">🔥</span>
-            {{ s.streak }}-day streak
+    <!-- ════════════════════════════════
+         CONSISTENCY  (compact)
+    ════════════════════════════════ -->
+    <section class="anim-enter mt-5" aria-label="Workout consistency">
+      <div class="rounded-2xl border border-zinc-800/60 bg-zinc-900/40 px-4 py-3">
+        @if (!loading()) {
+          <div class="flex items-center gap-4">
+
+            <!-- Heatmap: fixed 10px cells, full calendar structure -->
+            <div
+              class="grid shrink-0"
+              role="grid"
+              aria-label="Monthly workout heatmap"
+              [style.grid-template-columns]="'0.75rem repeat(' + weekCount() + ', 10px)'"
+              [style.gap]="'3px 3px'"
+            >
+              @for (dow of [0,1,2,3,4,5,6]; track dow) {
+                <!-- Day label -->
+                <div
+                  class="flex h-[10px] items-center justify-end pr-0.5 text-[7px] font-medium leading-none text-zinc-700"
+                  aria-hidden="true"
+                >{{ ['S','M','T','W','T','F','S'][dow] }}</div>
+
+                <!-- Cells for this row -->
+                @for (week of heatmapWeeks(); track $index) {
+                  @let day = week[dow];
+                  @if (day) {
+                    <div
+                      role="gridcell"
+                      class="h-[10px] w-[10px] rounded-[2px]"
+                      [class.bg-teal-400]="day.hasWorkout && !day.isFuture"
+                      [class.bg-zinc-800]="!day.hasWorkout && !day.isToday && !day.isFuture"
+                      [class.bg-zinc-700]="day.isToday && !day.hasWorkout"
+                      [class.ring-1]="day.isToday"
+                      [class.ring-teal-400]="day.isToday && day.hasWorkout"
+                      [class.ring-zinc-500]="day.isToday && !day.hasWorkout"
+                      [class.opacity-20]="day.isFuture"
+                      [attr.aria-label]="day.label + (day.hasWorkout ? ' — trained' : '')"
+                      [title]="day.label"
+                    ></div>
+                  } @else {
+                    <!-- Calendar placeholder — faint so month structure reads clearly -->
+                    <div
+                      class="h-[10px] w-[10px] rounded-[2px] bg-zinc-900"
+                      role="gridcell"
+                      aria-hidden="true"
+                    ></div>
+                  }
+                }
+              }
+            </div>
+
+            <!-- Vertical divider -->
+            <div class="h-16 w-px shrink-0 bg-zinc-800"></div>
+
+            <!-- Metrics: stacked, compact -->
+            <div class="min-w-0 flex-1">
+              <!-- Days trained + ratio -->
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-xl font-extrabold tabular-nums leading-none text-zinc-50">{{ workedDayCount() }}</span>
+                <span class="text-xs text-zinc-500">/ {{ elapsedDays() }} days</span>
+              </div>
+
+              <!-- Ratio bar -->
+              @if (workedDayCount() > 0) {
+                <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-zinc-800">
+                  <div
+                    class="h-full rounded-full bg-teal-400 transition-all duration-700 ease-out"
+                    [style.width.%]="(workedDayCount() / elapsedDays()) * 100"
+                  ></div>
+                </div>
+              }
+
+              <!-- Streak or rate -->
+              <div class="mt-2">
+                @if (stats(); as s) {
+                  @if (s.streak > 0) {
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-sm leading-none" aria-hidden="true">🔥</span>
+                      <span class="text-sm font-bold text-amber-400">{{ s.streak }}-day streak</span>
+                    </div>
+                  } @else if (workedDayCount() > 0) {
+                    <p class="text-xs text-zinc-500">
+                      <span class="font-semibold text-zinc-300">{{ ((workedDayCount() / elapsedDays()) * 100).toFixed(0) }}%</span>
+                      consistency
+                    </p>
+                  }
+                }
+              </div>
+            </div>
+
+          </div>
+        } @else {
+          <!-- Skeleton -->
+          <div class="flex items-center gap-4">
+            <div class="shrink-0">
+              <div class="grid" [style.grid-template-columns]="'0.75rem repeat(6, 10px)'" [style.gap]="'3px 3px'" aria-hidden="true">
+                @for (row of [0,1,2,3,4,5,6]; track row) {
+                  <div class="h-[10px]"></div>
+                  @for (col of [1,2,3,4,5,6]; track col) {
+                    <div class="h-[10px] w-[10px] animate-pulse rounded-[2px] bg-zinc-800/60"></div>
+                  }
+                }
+              </div>
+            </div>
+            <div class="h-16 w-px bg-zinc-800"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-5 w-24 animate-pulse rounded bg-zinc-800"></div>
+              <div class="h-1 w-full animate-pulse rounded-full bg-zinc-800"></div>
+              <div class="h-4 w-20 animate-pulse rounded bg-zinc-800"></div>
+            </div>
           </div>
         }
+      </div>
+    </section>
 
-        <!-- Primary + secondary metrics -->
-        <div class="flex items-end gap-5">
-          <!-- Sessions — dominant -->
-          <div>
-            <p class="text-4xl font-extrabold tabular-nums leading-none tracking-tight text-zinc-50">{{ s.sessions }}</p>
-            <p class="mt-1 text-xs font-medium text-zinc-500">sessions</p>
+
+    <!-- ════════════════════════════════
+         STATS GRID
+    ════════════════════════════════ -->
+    @if (stats(); as s) {
+      <section class="anim-enter-1 mt-6" aria-label="Monthly statistics">
+
+        <!-- Top row: Sessions + Volume (primary) -->
+        <div class="grid grid-cols-2 gap-3">
+          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-4">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Sessions</p>
+            <p class="mt-2 text-4xl font-black tabular-nums leading-none tracking-tight text-zinc-50">{{ s.sessions }}</p>
+            <p class="mt-2 text-xs text-zinc-600">workouts this month</p>
           </div>
 
-          <!-- Divider -->
-          <div class="mb-1 h-8 w-px shrink-0 bg-zinc-800"></div>
-
-          <!-- Secondary row -->
-          <div class="mb-0.5 flex items-end gap-5">
-            <div>
-              <p class="text-lg font-bold tabular-nums leading-none text-zinc-200">
-                {{ formatVolume(s.totalVolume) }}<span class="ml-0.5 text-xs font-normal text-zinc-500">kg</span>
+          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-4">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Volume</p>
+            <p class="mt-2 text-4xl font-black tabular-nums leading-none tracking-tight text-zinc-50">
+              {{ formatVolume(s.totalVolume) }}<span class="text-lg font-semibold text-zinc-500"> kg</span>
+            </p>
+            @if (volumeChangePercent() !== null) {
+              <p class="mt-2 text-xs font-semibold"
+                [class.text-teal-400]="volumeChangePercent()! >= 0"
+                [class.text-rose-400]="volumeChangePercent()! < 0">
+                {{ volumeChangePercent()! >= 0 ? '▲' : '▼' }}&thinsp;{{ volumeChangePercent()! >= 0 ? '+' : '' }}{{ volumeChangePercent() }}% vs last month
               </p>
-              <p class="mt-1 text-xs text-zinc-500">volume</p>
-            </div>
-            <div>
-              <p class="text-lg font-bold tabular-nums leading-none text-zinc-200">{{ s.totalSets }}</p>
-              <p class="mt-1 text-xs text-zinc-500">sets</p>
-            </div>
-            @if (s.personalRecords.length > 0) {
-              <div>
-                <p class="text-lg font-bold tabular-nums leading-none text-amber-400">{{ s.personalRecords.length }}</p>
-                <p class="mt-1 text-xs text-zinc-500">PRs</p>
-              </div>
+            } @else {
+              <p class="mt-2 text-xs text-zinc-600">no prior data</p>
             }
           </div>
         </div>
 
-        <!-- Volume delta -->
-        @if (volumeChangePercent() !== null) {
-          <p class="mt-3 text-xs font-medium"
-            [class.text-teal-400]="volumeChangePercent()! >= 0"
-            [class.text-rose-400]="volumeChangePercent()! < 0">
-            {{ volumeChangePercent()! >= 0 ? '▲' : '▼' }}&nbsp;{{ volumeChangePercent()! >= 0 ? '+' : '' }}{{ volumeChangePercent() }}% vs last month
-          </p>
-        }
-
-        <!-- PR chips -->
-        @if (s.personalRecords.length > 0) {
-          <div class="mt-4 flex flex-wrap gap-1.5">
-            @for (pr of s.personalRecords; track pr.exerciseId; let i = $index) {
-              <span
-                class="anim-stagger inline-flex items-center gap-1.5 rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-300 ring-1 ring-amber-400/20"
-                [style.--stagger-i]="i"
-              >
-                <span aria-hidden="true">🏆</span>{{ pr.exerciseName }} {{ pr.weight }}kg×{{ pr.reps }}
-              </span>
-            }
+        <!-- Bottom row: Sets + PRs (secondary) -->
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div class="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-4 py-3">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Total Sets</p>
+            <p class="mt-1.5 text-2xl font-extrabold tabular-nums leading-none text-zinc-200">{{ s.totalSets }}</p>
           </div>
-        }
 
-        <!-- Separator -->
-        <div class="mt-5 border-t border-zinc-800/60"></div>
+          <div
+            class="rounded-2xl border px-4 py-3 transition-colors"
+            [class.border-amber-400/30]="s.personalRecords.length > 0"
+            [class.bg-amber-400/[0.05]]="s.personalRecords.length > 0"
+            [class.border-zinc-800]="s.personalRecords.length === 0"
+            [class.bg-zinc-900/40]="s.personalRecords.length === 0"
+          >
+            <p class="text-[10px] font-semibold uppercase tracking-widest"
+              [class.text-amber-500]="s.personalRecords.length > 0"
+              [class.text-zinc-500]="s.personalRecords.length === 0">
+              New PRs
+            </p>
+            <p class="mt-1.5 text-2xl font-extrabold tabular-nums leading-none"
+              [class.text-amber-400]="s.personalRecords.length > 0"
+              [class.text-zinc-500]="s.personalRecords.length === 0">
+              {{ s.personalRecords.length }}
+            </p>
+          </div>
+        </div>
       </section>
 
     } @else if (statsError()) {
       <p class="mt-5 text-xs text-zinc-600">Stats unavailable.</p>
     } @else {
-      <!-- Stats loading skeleton -->
-      <div class="mt-5 flex items-end gap-5">
-        <div class="h-10 w-14 animate-pulse rounded-md bg-zinc-800/70"></div>
-        <div class="mb-1 h-8 w-px bg-zinc-800"></div>
-        <div class="mb-0.5 flex items-end gap-5">
-          <div class="h-6 w-12 animate-pulse rounded bg-zinc-800/70"></div>
-          <div class="h-6 w-10 animate-pulse rounded bg-zinc-800/70"></div>
+      <!-- Stats skeleton -->
+      <div class="mt-6 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="h-28 animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40"></div>
+          <div class="h-28 animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40"></div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div class="h-16 animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40"></div>
+          <div class="h-16 animate-pulse rounded-2xl border border-zinc-800 bg-zinc-900/40"></div>
         </div>
       </div>
-      <div class="mt-5 border-t border-zinc-800/60"></div>
     }
 
-    <!-- ── Workout list ── -->
-    <section class="mt-4">
+
+    <!-- ════════════════════════════════
+         PROGRESSION INSIGHTS
+    ════════════════════════════════ -->
+    @if (!loading() && (biggestPr() || topVolumeExercise())) {
+      <section class="anim-enter-2 mt-6" aria-label="Progression insights">
+        <p class="mb-3 text-[10px] font-semibold uppercase tracking-widest text-zinc-500">This month's highlights</p>
+
+        <div class="flex gap-3 overflow-x-auto pb-1 [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
+
+          @if (biggestPr(); as pr) {
+            <div class="flex w-44 shrink-0 flex-col gap-2 rounded-2xl border border-amber-400/25 bg-gradient-to-b from-amber-400/[0.08] to-zinc-900/60 p-4">
+              <span class="text-xl leading-none" aria-hidden="true">🏆</span>
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-amber-500">Biggest PR</p>
+                <p class="mt-1 text-sm font-bold leading-tight text-zinc-50">{{ pr.exerciseName }}</p>
+                <p class="mt-1 text-xl font-black tabular-nums leading-none text-amber-400">{{ pr.weight }}<span class="text-sm font-semibold text-amber-500/70"> kg</span></p>
+                <p class="mt-0.5 text-xs text-zinc-500">× {{ pr.reps }} {{ pr.reps === 1 ? 'rep' : 'reps' }}</p>
+              </div>
+            </div>
+          }
+
+          @if (topVolumeExercise(); as top) {
+            <div class="flex w-44 shrink-0 flex-col gap-2 rounded-2xl border border-teal-400/20 bg-gradient-to-b from-teal-400/[0.06] to-zinc-900/60 p-4">
+              <span class="text-xl leading-none" aria-hidden="true">📈</span>
+              <div>
+                <p class="text-[10px] font-semibold uppercase tracking-wider text-teal-500">Most Volume</p>
+                <p class="mt-1 text-sm font-bold leading-tight text-zinc-50">{{ top.name }}</p>
+                <p class="mt-1 text-xl font-black tabular-nums leading-none text-teal-400">{{ formatVolume(top.volume) }}<span class="text-sm font-semibold text-teal-500/70"> kg</span></p>
+                <p class="mt-0.5 text-xs text-zinc-500">total lifted</p>
+              </div>
+            </div>
+          }
+
+          @if (stats(); as s) {
+            @if (s.streak >= 3) {
+              <div class="flex w-44 shrink-0 flex-col gap-2 rounded-2xl border border-zinc-700/50 bg-zinc-900/40 p-4">
+                <span class="text-xl leading-none" aria-hidden="true">🔥</span>
+                <div>
+                  <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-500">Streak</p>
+                  <p class="mt-1 text-sm font-bold leading-tight text-zinc-50">Current Streak</p>
+                  <p class="mt-1 text-xl font-black tabular-nums leading-none text-zinc-100">{{ s.streak }}<span class="text-sm font-semibold text-zinc-500"> days</span></p>
+                  <p class="mt-0.5 text-xs text-zinc-500">keep going</p>
+                </div>
+              </div>
+            }
+          }
+
+        </div>
+      </section>
+    }
+
+
+    <!-- ════════════════════════════════
+         NEW PRs THIS MONTH
+    ════════════════════════════════ -->
+    @if (stats(); as s) {
+      @if (s.personalRecords.length > 0) {
+        <section class="anim-enter-3 mt-6" aria-label="Personal records this month">
+          <div class="mb-3 flex items-center justify-between">
+            <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">New PRs</p>
+            <span class="rounded-full bg-amber-400/15 px-2 py-0.5 text-[10px] font-bold text-amber-400">
+              {{ s.personalRecords.length }}
+            </span>
+          </div>
+
+          <div class="space-y-2">
+            @for (pr of visiblePrs(); track pr.exerciseId; let i = $index) {
+              <div
+                class="anim-stagger flex items-center gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-3"
+                [style.--stagger-i]="i"
+              >
+                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-400/12 text-base ring-1 ring-amber-400/25">
+                  🏆
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-sm font-semibold text-zinc-100">{{ pr.exerciseName }}</p>
+                  <p class="mt-0.5 text-xs text-zinc-500">{{ pr.weight }}kg × {{ pr.reps }} {{ pr.reps === 1 ? 'rep' : 'reps' }}</p>
+                </div>
+                @if (biggestPr()?.exerciseId === pr.exerciseId) {
+                  <span class="shrink-0 rounded-full bg-amber-400/12 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-400">
+                    Best
+                  </span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Expand / collapse -->
+          @if (hiddenPrCount() > 0 || showAllPrs()) {
+            <button
+              class="mt-2 w-full rounded-2xl border border-zinc-800 py-2.5 text-xs font-medium text-zinc-500 transition-colors hover:border-zinc-700 hover:text-zinc-300 active:scale-[0.99]"
+              type="button"
+              (click)="showAllPrs.set(!showAllPrs())"
+            >
+              @if (showAllPrs()) {
+                Show less
+              } @else {
+                View all {{ s.personalRecords.length }} PRs
+              }
+            </button>
+          }
+        </section>
+      }
+    }
+
+
+    <!-- ════════════════════════════════
+         WORKOUT LIST
+    ════════════════════════════════ -->
+    <section class="mt-6" aria-label="Workouts this month">
+
+      @if (!loading() && completedWorkouts().length > 0) {
+        <div class="mb-3 flex items-center justify-between">
+          <p class="text-[10px] font-semibold uppercase tracking-widest text-zinc-500">Sessions</p>
+          <span class="text-xs text-zinc-600">{{ completedWorkouts().length }} {{ completedWorkouts().length === 1 ? 'workout' : 'workouts' }}</span>
+        </div>
+      }
 
       @if (loading()) {
-        <!-- Skeleton rows — varied height to mimic real content -->
         <div class="space-y-2">
           @for (h of skeletonHeights; track h; let i = $index) {
             <div
-              class="anim-stagger animate-pulse rounded-xl border border-zinc-800/80 bg-zinc-900/40"
-              [style.height.px]="h"
-              [style.--stagger-i]="i"
+              class="anim-stagger animate-pulse rounded-2xl border border-zinc-800/70 bg-zinc-900/40"
+              [style.height.px]="h" [style.--stagger-i]="i"
             ></div>
           }
         </div>
 
       } @else if (listError()) {
-        <div class="rounded-xl border border-zinc-800 bg-zinc-900/40 px-6 py-12 text-center">
+        <div class="rounded-2xl border border-zinc-800 bg-zinc-900/40 px-6 py-12 text-center">
           <p class="text-sm font-semibold text-zinc-200">Couldn't load workouts</p>
           <p class="mt-1.5 text-xs text-zinc-500">Check your connection and try again.</p>
           <button
-            class="mt-5 h-9 rounded-lg border border-zinc-700 px-5 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100 active:scale-[0.98]"
-            type="button"
-            (click)="retryList()"
-          >
-            Retry
-          </button>
+            class="mt-5 h-9 rounded-xl border border-zinc-700 px-5 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100 active:scale-[0.98]"
+            type="button" (click)="retryList()"
+          >Retry</button>
         </div>
 
-      } @else if (workouts().length === 0) {
-        <div class="py-16 text-center anim-enter">
+      } @else if (completedWorkouts().length === 0) {
+        <div class="anim-enter py-14 text-center">
           @if (isCurrentMonth()) {
-            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-2xl ring-1 ring-zinc-800">
+            <div class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-2xl ring-1 ring-zinc-800">
               🏋️
             </div>
-            <p class="mt-4 text-sm font-semibold text-zinc-200">No sessions yet this month</p>
-            <p class="mt-1 text-xs text-zinc-500">Ready to train?</p>
+            <p class="text-sm font-semibold text-zinc-200">No sessions yet</p>
+            <p class="mt-1 text-xs text-zinc-500">Complete a workout to see it here.</p>
             <a
-              class="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-teal-400 px-5 text-sm font-semibold text-zinc-950 transition-colors hover:bg-teal-300 active:scale-[0.98]"
+              class="mt-5 inline-flex h-10 items-center rounded-xl bg-teal-400 px-5 text-sm font-semibold text-zinc-950 transition-colors hover:bg-teal-300 active:scale-[0.98]"
               routerLink="/app/workout"
-            >
-              Start a workout
-            </a>
+            >Start a workout</a>
           } @else {
             <p class="text-sm font-medium text-zinc-500">No sessions in {{ monthLabel() }}</p>
           }
         </div>
 
       } @else {
-        <!-- Workout rows -->
         <div class="space-y-2">
-          @for (workout of workouts(); track workout.id; let i = $index) {
-            <a
-              class="anim-stagger group relative flex items-center gap-4 overflow-hidden rounded-xl border bg-zinc-900/50 px-4 py-4 transition-colors hover:bg-zinc-900 active:scale-[0.995]"
-              [style.--stagger-i]="i"
-              [class.border-zinc-800]="!workoutHasPr(workout)"
-              [class.hover:border-zinc-700]="!workoutHasPr(workout)"
-              [class.border-amber-400/25]="workoutHasPr(workout)"
-              [class.bg-amber-400/[0.02]]="workoutHasPr(workout)"
-              [class.hover:border-amber-400/50]="workoutHasPr(workout)"
-              [routerLink]="['/app/workouts', workout.id]"
-            >
-              <!-- PR left-edge accent — full height -->
-              @if (workoutHasPr(workout)) {
-                <span
-                  class="pointer-events-none absolute inset-y-0 left-0 w-[3px] rounded-r-full bg-gradient-to-b from-amber-400/80 via-amber-400/60 to-amber-400/20"
-                  aria-hidden="true"
-                ></span>
-              }
+          @for (workout of completedWorkouts(); track workout.id; let i = $index) {
 
-              <!-- Content -->
-              <div class="min-w-0 flex-1">
-                <!-- Name + PR badge -->
-                <div class="flex items-center gap-2">
-                  <p class="truncate text-[0.9375rem] font-semibold leading-snug text-zinc-50">{{ workout.name }}</p>
+            <!-- ── BEST WORKOUT OF THE MONTH ── -->
+            @if (isBestWorkout(workout)) {
+              <a
+                class="anim-stagger group relative flex flex-col overflow-hidden rounded-2xl border border-teal-400/30 bg-gradient-to-br from-teal-400/[0.07] via-zinc-900/60 to-zinc-900/60 px-4 py-4 transition-colors hover:border-teal-400/50 hover:from-teal-400/[0.10] active:scale-[0.995]"
+                [style.--stagger-i]="i"
+                [routerLink]="['/app/workouts', workout.id]"
+              >
+                <!-- Top-right badge -->
+                <span class="absolute right-3 top-3 rounded-full bg-teal-400/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-teal-400 ring-1 ring-teal-400/25">
+                  Best this month
+                </span>
+
+                <!-- Name + date -->
+                <div class="flex items-start gap-3 pr-24">
+                  <p class="text-[0.9375rem] font-bold leading-snug text-zinc-50">{{ workout.name }}</p>
+                </div>
+                <p class="mt-0.5 text-xs text-zinc-500">{{ formatDate(workout.startedAt) }}</p>
+
+                <!-- Exercise preview -->
+                <p class="mt-2 truncate text-xs text-zinc-400">{{ exercisePreview(workout) }}</p>
+
+                <!-- Metrics row -->
+                <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  @if (workout.durationSeconds) {
+                    <span class="text-xs text-zinc-400">{{ formatDuration(workout.durationSeconds) }}</span>
+                  }
+                  @if (workoutVolume(workout) > 0) {
+                    <span class="text-xs font-semibold text-teal-400">{{ formatVolume(workoutVolume(workout)) }} kg</span>
+                  }
+                  <span class="text-xs text-zinc-500">{{ workoutSetCount(workout) }} sets</span>
+                  <span class="text-xs text-zinc-500">{{ workout.exercises.length }} exercises</span>
                   @if (workoutHasPr(workout)) {
-                    <span class="shrink-0 text-sm leading-none" aria-label="Personal record">🏆</span>
+                    <span class="ml-auto inline-flex items-center gap-1 rounded-full bg-amber-400/12 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-400 ring-1 ring-amber-400/20">
+                      🏆 {{ workoutPrCount(workout) }} {{ workoutPrCount(workout) === 1 ? 'PR' : 'PRs' }}
+                    </span>
                   }
                 </div>
-                <!-- Exercise preview -->
-                <p class="mt-1 truncate text-xs text-zinc-400">{{ exercisePreview(workout) }}</p>
-              </div>
+              </a>
 
-              <!-- Date + meta (right column) -->
-              <div class="shrink-0 text-right">
-                <p class="text-xs font-medium text-zinc-300">{{ formatDate(workout.startedAt) }}</p>
-                <p class="mt-1 text-[0.6875rem] text-zinc-600 tabular-nums">
-                  {{ formatDuration(workout.durationSeconds) }}@if (workoutVolume(workout) > 0) { · {{ formatVolume(workoutVolume(workout)) }}kg }
-                </p>
-              </div>
-
-              <!-- Chevron affordance -->
-              <svg
-                class="h-3.5 w-3.5 shrink-0 text-zinc-700 transition-colors group-hover:text-zinc-500"
-                fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"
-                aria-hidden="true"
+            <!-- ── PR WORKOUT ── -->
+            } @else if (workoutHasPr(workout)) {
+              <a
+                class="anim-stagger group relative flex flex-col overflow-hidden rounded-2xl border border-amber-400/25 bg-gradient-to-br from-amber-400/[0.05] to-zinc-900/50 px-4 py-4 transition-colors hover:border-amber-400/45 hover:from-amber-400/[0.08] active:scale-[0.995]"
+                [style.--stagger-i]="i"
+                [routerLink]="['/app/workouts', workout.id]"
               >
-                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-              </svg>
-            </a>
+                <span class="pointer-events-none absolute inset-y-0 left-0 w-[3px] rounded-r-full bg-gradient-to-b from-amber-400 via-amber-400/60 to-transparent" aria-hidden="true"></span>
+
+                <div class="flex items-start justify-between gap-3">
+                  <p class="truncate text-[0.9375rem] font-semibold leading-snug text-zinc-50">{{ workout.name }}</p>
+                  <p class="shrink-0 text-xs font-medium text-zinc-500">{{ formatDate(workout.startedAt) }}</p>
+                </div>
+
+                <p class="mt-1 truncate text-xs text-zinc-400">{{ exercisePreview(workout) }}</p>
+
+                <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  @if (workout.durationSeconds) {
+                    <span class="text-xs text-zinc-500">{{ formatDuration(workout.durationSeconds) }}</span>
+                  }
+                  @if (workoutVolume(workout) > 0) {
+                    <span class="text-xs text-zinc-500">{{ formatVolume(workoutVolume(workout)) }} kg</span>
+                  }
+                  <span class="text-xs text-zinc-500">{{ workoutSetCount(workout) }} sets</span>
+                  <span class="text-xs text-zinc-500">{{ workout.exercises.length }} exercises</span>
+                  <span class="ml-auto inline-flex items-center gap-1 rounded-full bg-amber-400/12 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-amber-400 ring-1 ring-amber-400/20">
+                    🏆 {{ workoutPrCount(workout) }} {{ workoutPrCount(workout) === 1 ? 'PR' : 'PRs' }}
+                  </span>
+                </div>
+              </a>
+
+            <!-- ── REGULAR WORKOUT ── -->
+            } @else {
+              <a
+                class="anim-stagger group flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 px-4 py-4 transition-colors hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+                [style.--stagger-i]="i"
+                [routerLink]="['/app/workouts', workout.id]"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <p class="truncate text-[0.9375rem] font-semibold leading-snug text-zinc-100">{{ workout.name }}</p>
+                  <p class="shrink-0 text-xs font-medium text-zinc-500">{{ formatDate(workout.startedAt) }}</p>
+                </div>
+
+                <p class="mt-1 truncate text-xs text-zinc-500">{{ exercisePreview(workout) }}</p>
+
+                <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  @if (workout.durationSeconds) {
+                    <span class="text-xs text-zinc-600">{{ formatDuration(workout.durationSeconds) }}</span>
+                  }
+                  @if (workoutVolume(workout) > 0) {
+                    <span class="text-xs text-zinc-600">{{ formatVolume(workoutVolume(workout)) }} kg</span>
+                  }
+                  <span class="text-xs text-zinc-600">{{ workoutSetCount(workout) }} sets</span>
+                  <span class="text-xs text-zinc-600">{{ workout.exercises.length }} exercises</span>
+                  <svg class="ml-auto h-3.5 w-3.5 shrink-0 text-zinc-700 transition-colors group-hover:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                  </svg>
+                </div>
+              </a>
+            }
           }
         </div>
 
         @if (page() < totalPages()) {
           <div class="mt-6 flex justify-center">
             <button
-              class="h-10 rounded-lg px-6 text-sm font-medium text-zinc-500 transition-colors hover:text-teal-400 active:scale-[0.98]"
-              type="button"
-              (click)="loadMore()"
-            >
-              Load more
-            </button>
+              class="h-10 rounded-xl px-6 text-sm font-medium text-zinc-500 transition-colors hover:text-teal-400 active:scale-[0.98]"
+              type="button" (click)="loadMore()"
+            >Load more</button>
           </div>
         }
       }
-
     </section>
+
   </div>
 </main>
