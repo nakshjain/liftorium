@@ -42,6 +42,12 @@ export const routes: Routes = [
       import('./features/plan/plan-page/plan-page').then((m) => m.PlanPageComponent)
   },
   {
+    path: 'app/progress',
+    canActivate: [authGuard],
+    loadChildren: () =>
+      import('./features/progress/progress.routes').then((m) => m.progressRoutes)
+  },
+  {
     path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>

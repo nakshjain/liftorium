@@ -1,0 +1,274 @@
+<main class="min-h-dvh bg-zinc-950 pb-24 text-zinc-50">
+  <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
+
+    <!-- Header -->
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+      <app-training-hub-link />
+      <div class="mt-1 flex items-end justify-between gap-2">
+        <h1 class="text-2xl font-semibold tracking-tight text-zinc-50">Progress</h1>
+      </div>
+
+      <!-- Tabs -->
+      <div class="mt-3 flex gap-1 pb-px">
+        <button
+          type="button"
+          class="relative pb-3 pr-4 text-sm font-medium transition"
+          [class.text-zinc-50]="activeTab() === 'exercises'"
+          [class.text-zinc-500]="activeTab() !== 'exercises'"
+          [class.hover:text-zinc-300]="activeTab() !== 'exercises'"
+          (click)="switchTab('exercises')"
+        >
+          Exercises
+          @if (activeTab() === 'exercises') {
+            <span class="absolute bottom-0 left-0 right-4 h-px bg-teal-400"></span>
+          }
+        </button>
+        <button
+          type="button"
+          class="relative pb-3 pr-4 text-sm font-medium transition"
+          [class.text-zinc-50]="activeTab() === 'prs'"
+          [class.text-zinc-500]="activeTab() !== 'prs'"
+          [class.hover:text-zinc-300]="activeTab() !== 'prs'"
+          (click)="switchTab('prs')"
+        >
+          <span class="flex items-center gap-1.5">
+            PR Feed
+            @if (activeTab() === 'prs' && prEventsLoading() && !prFeedLoaded()) {
+              <span
+                class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-teal-400"
+                aria-label="Loading"
+              ></span>
+            }
+          </span>
+          @if (activeTab() === 'prs') {
+            <span class="absolute bottom-0 left-0 right-4 h-px bg-teal-400"></span>
+          }
+        </button>
+      </div>
+    </header>
+
+    <!-- Overview strip -->
+    @if (overview(); as ov) {
+      <section class="anim-enter-1 mt-4 grid grid-cols-3 gap-2 sm:gap-3" aria-label="Progress overview">
+
+        <!-- Exercises improving -->
+        <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
+          <p class="text-xl font-bold text-zinc-50">
+            {{ ov.exercisesImproved }}
+            @if (exercisesTotal() > 0) {
+              <span class="text-sm font-medium text-zinc-600 transition-opacity duration-300">/{{ exercisesTotal() }}</span>
+            }
+          </p>
+          <p class="mt-0.5 text-xs text-zinc-500">improving</p>
+        </div>
+
+        <!-- Strongest lift — named so the value has context -->
+        <div class="col-span-1 rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
+          @if (ov.strongestExercise) {
+            <p class="text-xl font-bold text-teal-300">{{ ov.strongestExercise.weightPr }}kg</p>
+            <p class="mt-0.5 truncate text-xs text-zinc-500" [title]="ov.strongestExercise.exerciseName">
+              {{ ov.strongestExercise.exerciseName }}
+            </p>
+          } @else {
+            <p class="text-xl font-bold text-zinc-50">—</p>
+            <p class="mt-0.5 text-xs text-zinc-500">strongest lift</p>
+          }
+        </div>
+
+        <!-- Latest improvement -->
+        <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
+          @if (ov.latestPrDate) {
+            <p class="text-sm font-bold leading-tight text-zinc-50">{{ formatRelativeTime(ov.latestPrDate) }}</p>
+            <p class="mt-0.5 text-xs text-zinc-500">last PR</p>
+          } @else {
+            <p class="text-xl font-bold text-zinc-50">—</p>
+            <p class="mt-0.5 text-xs text-zinc-500">last PR</p>
+          }
+        </div>
+
+      </section>
+
+      <!-- Strongest lift label — shown only when value is present, explains the number above -->
+      @if (ov.strongestExercise) {
+        <p class="mt-1.5 text-center text-[11px] text-zinc-600">
+          Strongest lift · <span class="text-zinc-500">{{ ov.strongestExercise.exerciseName }}</span>
+        </p>
+      }
+
+    } @else {
+      <section class="anim-enter-1 mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+        @for (i of [1, 2, 3]; track i) {
+          <div class="h-[60px] animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
+        }
+      </section>
+    }
+
+    <!-- ── Exercises tab ── -->
+    @if (activeTab() === 'exercises') {
+      <section class="anim-enter-2 mt-4">
+        <!-- Search -->
+        <div class="relative">
+          <!-- Search icon — pulses while debounce is pending to confirm the input was received -->
+          <svg
+            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors"
+            [class.text-zinc-500]="!searchPending()"
+            [class.text-teal-400]="searchPending()"
+            [class.animate-pulse]="searchPending()"
+            fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+          </svg>
+          <input
+            type="search"
+            placeholder="Search exercises..."
+            class="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 pl-9 pr-4 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-teal-400 focus:ring-1 focus:ring-teal-400/20"
+            [value]="searchQuery()"
+            (input)="onSearchInput($any($event.target).value)"
+            aria-label="Search exercises"
+          />
+        </div>
+
+        <!-- List -->
+        <div class="mt-3">
+          @if (exercisesLoading() && exercises().length === 0) {
+            <div class="space-y-2">
+              @for (i of [1, 2, 3, 4, 5, 6]; track i) {
+                <div class="h-[72px] animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
+              }
+            </div>
+          } @else if (exercises().length === 0 && !exercisesLoading()) {
+            <div class="py-16 text-center">
+              @if (searchQuery()) {
+                <p class="text-base font-medium text-zinc-400">No exercises match "{{ searchQuery() }}"</p>
+                <p class="mt-1 text-sm text-zinc-600">Try a different search term.</p>
+              } @else {
+                <p class="text-base font-medium text-zinc-400">No progress tracked yet</p>
+                <p class="mt-1 text-sm text-zinc-600">Complete a workout to start tracking PRs.</p>
+              }
+            </div>
+          } @else {
+            <div class="space-y-2">
+              @for (ex of exercises(); track ex.exerciseId; let i = $index) {
+                <a
+                  class="anim-stagger flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3.5 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+                  [style]="'--stagger-i: ' + i"
+                  [routerLink]="['/app/progress/exercises', ex.exerciseId]"
+                  [attr.aria-label]="ex.exerciseName + ', weight PR ' + formatWeight(ex.weightPr)"
+                >
+                  <div class="min-w-0 flex-1">
+                    <p class="truncate text-sm font-semibold text-zinc-50">{{ ex.exerciseName }}</p>
+                    <!-- Weight PR leads, rep PR second — e1RM removed from list row -->
+                    <div class="mt-1 flex items-center gap-3 text-xs">
+                      <span class="font-semibold text-teal-400">{{ formatWeight(ex.weightPr) }}</span>
+                      @if (ex.repPr.weight > 0) {
+                        <span class="text-zinc-400">{{ formatRepPr(ex.repPr.weight, ex.repPr.reps) }}</span>
+                      }
+                    </div>
+                  </div>
+                  <div class="flex shrink-0 flex-col items-end gap-1">
+                    <span class="text-xs text-zinc-600">{{ formatRelativeTime(ex.lastImprovedAt) }}</span>
+                    <span class="text-xs text-zinc-600">{{ ex.totalSessions }} session{{ ex.totalSessions !== 1 ? 's' : '' }}</span>
+                  </div>
+                </a>
+              }
+            </div>
+
+            @if (hasMoreExercises()) {
+              <div class="mt-5 flex justify-center">
+                <button
+                  type="button"
+                  class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:text-zinc-600"
+                  [disabled]="exercisesLoading()"
+                  (click)="loadMoreExercises()"
+                >
+                  {{ exercisesLoading() ? 'Loading...' : 'Load more' }}
+                </button>
+              </div>
+            }
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ── PR Feed tab ── -->
+    @if (activeTab() === 'prs') {
+      <section class="anim-enter-2 mt-4">
+        <!-- Type filter chips -->
+        <div class="flex gap-2 overflow-x-auto pb-1" role="group" aria-label="Filter by PR type">
+          @for (opt of prTypeOptions; track opt.label) {
+            <button
+              type="button"
+              class="shrink-0 rounded-lg px-3.5 py-2 text-xs font-semibold transition"
+              [class.bg-teal-400]="selectedPrType() === opt.value"
+              [class.text-zinc-950]="selectedPrType() === opt.value"
+              [class.bg-zinc-800]="selectedPrType() !== opt.value"
+              [class.text-zinc-300]="selectedPrType() !== opt.value"
+              [class.hover:bg-zinc-700]="selectedPrType() !== opt.value"
+              (click)="selectPrType(opt.value)"
+            >
+              {{ opt.label }}
+            </button>
+          }
+        </div>
+
+        <!-- Events list -->
+        <div class="mt-3">
+          @if (prEventsLoading() && prEvents().length === 0) {
+            <div class="space-y-2">
+              @for (i of [1, 2, 3, 4, 5]; track i) {
+                <div class="h-[70px] animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
+              }
+            </div>
+          } @else if (prEvents().length === 0 && !prEventsLoading()) {
+            <div class="py-16 text-center">
+              <p class="text-base font-medium text-zinc-400">No PRs recorded yet</p>
+              <p class="mt-1 text-sm text-zinc-600">Complete a workout to start your record.</p>
+            </div>
+          } @else {
+            <div class="space-y-2">
+              @for (event of prEvents(); track event.id; let i = $index) {
+                <a
+                  class="anim-stagger block rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3.5 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+                  [style]="'--stagger-i: ' + i"
+                  [routerLink]="['/app/progress/exercises', event.exerciseId]"
+                  [attr.aria-label]="event.exerciseName + ' — ' + prTypeLabel(event.prType)"
+                >
+                  <!-- Exercise name -->
+                  <p class="text-sm font-semibold text-zinc-50">{{ event.exerciseName }}</p>
+                  <!-- Transition is the hero, date is tertiary -->
+                  <div class="mt-1.5 flex items-end justify-between gap-3">
+                    <p
+                      class="text-base font-bold leading-tight"
+                      [class.text-teal-300]="event.prType === 'WEIGHT'"
+                      [class.text-zinc-200]="event.prType !== 'WEIGHT'"
+                    >
+                      {{ formatPrTransition(event) }}
+                    </p>
+                    <div class="shrink-0 text-right">
+                      <p class="text-xs text-zinc-500">{{ prTypeLabel(event.prType) }}</p>
+                      <p class="text-xs text-zinc-600">{{ formatPrEventDate(event.achievedAt) }}</p>
+                    </div>
+                  </div>
+                </a>
+              }
+            </div>
+
+            @if (hasMorePrs()) {
+              <div class="mt-5 flex justify-center">
+                <button
+                  type="button"
+                  class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:text-zinc-600"
+                  [disabled]="prEventsLoading()"
+                  (click)="loadMorePrs()"
+                >
+                  {{ prEventsLoading() ? 'Loading...' : 'Load more' }}
+                </button>
+              </div>
+            }
+          }
+        </div>
+      </section>
+    }
+
+  </div>
+</main>

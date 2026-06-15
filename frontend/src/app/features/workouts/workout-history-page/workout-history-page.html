@@ -1,19 +1,11 @@
 <main class="min-h-dvh bg-zinc-950 pb-24 text-zinc-50">
-  <div class="mx-auto w-full max-w-2xl px-4 pt-4 sm:px-6">
+  <div class="mx-auto w-full max-w-3xl px-4 pt-4 sm:px-6">
 
     <!-- ════════════════════════════════
          HEADER
     ════════════════════════════════ -->
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur-md sm:-mx-6 sm:px-6">
-      <a
-        class="inline-flex items-center gap-1 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-300"
-        routerLink="/app"
-      >
-        <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
-        </svg>
-        Training hub
-      </a>
+    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+      <app-training-hub-link />
       <div class="mt-2 flex items-center justify-between">
         <h1 class="text-xl font-semibold tracking-tight text-zinc-50">History</h1>
         <div class="flex items-center gap-0.5">
@@ -538,10 +530,7 @@
         @if (page() < totalPages()) {
           <div class="mt-6 flex justify-center">
             <button
-              class="h-10 rounded-xl px-6 text-sm font-medium transition-colors active:scale-[0.98] disabled:pointer-events-none"
-              [class.text-zinc-500]="!loadingMore()"
-              [class.hover:text-teal-400]="!loadingMore()"
-              [class.text-zinc-600]="loadingMore()"
+              class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:text-zinc-600"
               type="button"
               [disabled]="loadingMore()"
               (click)="loadMore()"
