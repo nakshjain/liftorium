@@ -71,10 +71,10 @@
             }
           </div>
 
-          <!-- e1RM — tertiary: muted treatment -->
+          <!-- e1RM — tertiary: readable but visually subordinate -->
           <div class="rounded-lg border border-zinc-800/60 bg-zinc-900/40 p-4">
-            <p class="text-[11px] font-semibold uppercase tracking-wide text-zinc-600">Est. 1RM</p>
-            <p class="mt-2 text-xl font-bold tabular-nums text-zinc-500">
+            <p class="text-[11px] font-semibold uppercase tracking-wide text-zinc-500">Est. 1RM</p>
+            <p class="mt-2 text-xl font-bold tabular-nums text-zinc-400">
               @if (d.estimatedOneRepMaxPr > 0) { {{ d.estimatedOneRepMaxPr.toFixed(1) }}kg } @else { — }
             </p>
           </div>
@@ -124,10 +124,18 @@
             class="relative mt-4 py-3"
             (pointerleave)="onChartPointerLeave()"
           >
-            <!-- Started / Now labels -->
+            <!-- Started / Now labels.
+                 When the summary strip above already shows start/now weights, show
+                 dates here instead to add temporal context without repeating the values.
+                 When there is no summary strip (no weight PR yet), fall back to weights. -->
             <div class="mb-2 flex items-center justify-between px-1">
-              <span class="text-xs text-zinc-600">Started: <span class="font-medium text-zinc-400">{{ chartStartLabel() }}</span></span>
-              <span class="text-xs text-zinc-600">Now: <span class="font-semibold text-zinc-100">{{ chartEndLabel() }}</span></span>
+              @if (progressionSummary()) {
+                <span class="text-xs text-zinc-600">{{ chartStartDateLabel() }}</span>
+                <span class="text-xs text-zinc-600">{{ chartEndDateLabel() }}</span>
+              } @else {
+                <span class="text-xs text-zinc-600">Started: <span class="font-medium text-zinc-400">{{ chartStartLabel() }}</span></span>
+                <span class="text-xs text-zinc-600">Now: <span class="font-semibold text-zinc-100">{{ chartEndLabel() }}</span></span>
+              }
             </div>
 
             <!-- SVG weight progression chart
@@ -311,7 +319,7 @@
               <div class="mt-2 flex justify-center">
                 <button
                   type="button"
-                  class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 disabled:cursor-not-allowed disabled:text-zinc-600"
+                  class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:text-zinc-600"
                   [disabled]="prEventsLoading()"
                   (click)="loadMorePrEvents()"
                 >

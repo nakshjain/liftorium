@@ -56,6 +56,10 @@ export class ExerciseProgressionPageComponent implements OnInit {
   protected readonly chartPoints = computed(() => this.buildChartPoints());
   protected readonly chartStartLabel = computed(() => this.buildStartLabel());
   protected readonly chartEndLabel = computed(() => this.buildEndLabel());
+  // Date labels for the chart edges — shown instead of weight when the summary
+  // strip is already displaying the start/now weights, to avoid redundancy.
+  protected readonly chartStartDateLabel = computed(() => this.buildStartDateLabel());
+  protected readonly chartEndDateLabel = computed(() => this.buildEndDateLabel());
 
   // Progression summary — uses firstWeightPr / weightPr from detail
   protected readonly progressionSummary = computed(() => this.buildProgressionSummary());
@@ -251,6 +255,24 @@ export class ExerciseProgressionPageComponent implements OnInit {
     const entries = this.history();
     if (!entries.length) return '';
     return `${entries[entries.length - 1].bestWeight}kg`;
+  }
+
+  private buildStartDateLabel(): string {
+    const entries = this.history();
+    if (!entries.length) return '';
+    return new Date(entries[0].performedAt).toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  private buildEndDateLabel(): string {
+    const entries = this.history();
+    if (!entries.length) return '';
+    return new Date(entries[entries.length - 1].performedAt).toLocaleDateString('en-US', {
+      month: 'short',
+      year: 'numeric',
+    });
   }
 
   /**
