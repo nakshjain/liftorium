@@ -8,6 +8,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ProgressService } from '../progress.service';
+import { formatRelativeTime } from '../../../shared/utils/format-relative-time';
 import {
   ExerciseProgressSummary,
   PrEvent,
@@ -100,15 +101,7 @@ export class ProgressPageComponent implements OnInit {
   }
 
   protected formatRelativeTime(iso: string | null): string {
-    if (!iso) return '';
-    const ms = Date.now() - new Date(iso).getTime();
-    const days = Math.floor(ms / 86_400_000);
-    if (days === 0) return 'today';
-    if (days === 1) return 'yesterday';
-    if (days < 7) return `${days}d ago`;
-    if (days < 30) return `${Math.floor(days / 7)}w ago`;
-    if (days < 365) return `${Math.floor(days / 30)}mo ago`;
-    return `${Math.floor(days / 365)}y ago`;
+    return formatRelativeTime(iso, 'short');
   }
 
   protected formatPrEventDate(iso: string): string {

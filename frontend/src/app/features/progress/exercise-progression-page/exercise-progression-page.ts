@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProgressService } from '../progress.service';
+import { formatRelativeTime } from '../../../shared/utils/format-relative-time';
 import {
   ExerciseProgressDetail,
   ExerciseProgressHistoryEntry,
@@ -18,6 +19,7 @@ type TooltipState = {
   visible: boolean;
   x: number;
   y: number;
+  flipped: boolean; // true = render below the point (avoids top-of-viewport clipping)
   date: string;
   value: string;
 };
@@ -44,6 +46,7 @@ export class ExerciseProgressionPageComponent implements OnInit {
     visible: false,
     x: 0,
     y: 0,
+    flipped: false,
     date: '',
     value: '',
   });
@@ -119,10 +122,15 @@ export class ExerciseProgressionPageComponent implements OnInit {
     const screenX = closest.svgX * ctm.a + ctm.e;
     const screenY = closest.svgY * ctm.d + ctm.f;
 
+    // Flip the tooltip below the dot when the dot is in the top 20% of the viewport
+    // to prevent it clipping out of view (e.g. on mobile with the chart scrolled up).
+    const flipped = screenY < window.innerHeight * 0.2;
+
     this.tooltip.set({
       visible: true,
       x: screenX,
       y: screenY,
+      flipped,
       date: this.formatTooltipDate(closest.date),
       value: `${closest.weight}kg`,
     });
@@ -181,15 +189,7 @@ export class ExerciseProgressionPageComponent implements OnInit {
   }
 
   protected formatLastImproved(iso: string | null): string {
-    if (!iso) return '';
-    const ms = Date.now() - new Date(iso).getTime();
-    const days = Math.floor(ms / 86_400_000);
-    if (days === 0) return 'today';
-    if (days === 1) return 'yesterday';
-    if (days < 7) return `${days} days ago`;
-    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
-    if (days < 365) return `${Math.floor(days / 30)} months ago`;
-    return `${Math.floor(days / 365)} years ago`;
+    return formatRelativeTime(iso, 'long');
   }
 
   protected hasMorePrEvents = computed(

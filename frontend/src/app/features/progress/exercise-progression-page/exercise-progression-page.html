@@ -190,12 +190,17 @@
             </svg>
             </div>
 
-            <!-- Hover tooltip -->
+            <!-- Hover tooltip —
+                 Normally rendered above the dot (-translate-y-full, top - 12px offset).
+                 When the dot is near the top of the viewport (flipped = true), it renders
+                 below the dot instead to avoid clipping outside the screen. -->
             @if (tooltip().visible) {
               <div
-                class="pointer-events-none fixed z-30 -translate-x-1/2 -translate-y-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs shadow-lg"
+                class="pointer-events-none fixed z-30 -translate-x-1/2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2 text-xs shadow-lg"
+                [class.-translate-y-full]="!tooltip().flipped"
+                [class.translate-y-3]="tooltip().flipped"
                 [style.left.px]="tooltip().x"
-                [style.top.px]="tooltip().y - 12"
+                [style.top.px]="tooltip().flipped ? tooltip().y + 12 : tooltip().y - 12"
               >
                 <p class="font-semibold text-zinc-50">{{ tooltip().value }}</p>
                 <p class="mt-0.5 text-zinc-500">{{ tooltip().date }}</p>
@@ -251,15 +256,15 @@
 
             <!-- Timeline -->
             <div class="relative">
-              <!-- Vertical rule -->
-              <div class="absolute bottom-3 left-[19px] top-3 w-px bg-zinc-800" aria-hidden="true"></div>
-
               <ol class="space-y-0">
                 @for (event of prEvents(); track event.id; let i = $index) {
                   <li
                     class="anim-stagger relative flex gap-4 pb-5"
                     [style]="'--stagger-i: ' + i"
                   >
+                    <!-- Per-item connector rule — hidden on the last entry so the
+                         line doesn't bleed into the whitespace below the timeline. -->
+                    <div class="absolute bottom-0 left-[19px] top-9 w-px bg-zinc-800 last:hidden" aria-hidden="true"></div>
 
                     <!-- Timeline dot — styled by type -->
                     <div

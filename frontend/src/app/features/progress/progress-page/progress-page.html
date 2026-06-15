@@ -33,7 +33,15 @@
           [class.hover:text-zinc-300]="activeTab() !== 'prs'"
           (click)="switchTab('prs')"
         >
-          PR Feed
+          <span class="flex items-center gap-1.5">
+            PR Feed
+            @if (activeTab() === 'prs' && prEventsLoading() && !prFeedLoaded()) {
+              <span
+                class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-teal-400"
+                aria-label="Loading"
+              ></span>
+            }
+          </span>
           @if (activeTab() === 'prs') {
             <span class="absolute bottom-0 left-0 right-4 h-px bg-teal-400"></span>
           }
