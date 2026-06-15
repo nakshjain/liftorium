@@ -1,5 +1,5 @@
 import { DecimalPipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { WorkoutService } from '../workout.service';
 import { WorkoutDto } from '../workout-history.models';
@@ -16,6 +16,16 @@ export class WorkoutDetailPageComponent implements OnInit {
   protected readonly workout = signal<WorkoutDto | null>(null);
   protected readonly loading = signal(true);
   protected readonly error = signal<string | null>(null);
+
+  /** Total lifted volume for the workout. Computed once when the workout loads. */
+  protected readonly totalVolume = computed(() => {
+    const w = this.workout();
+    if (!w) return 0;
+    return w.exercises.reduce(
+      (total, ex) => total + ex.sets.reduce((t, s) => t + s.reps * s.weight, 0),
+      0,
+    );
+  });
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('workoutId');
@@ -39,24 +49,20 @@ export class WorkoutDetailPageComponent implements OnInit {
 
   protected formatDate(iso: string): string {
     return new Date(iso).toLocaleDateString('en-US', {
-      weekday: 'short', month: 'short', day: 'numeric', year: 'numeric'
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
     });
   }
 
+  /** Returns a human-readable duration string, e.g. "1h 5m" or "45m". */
   protected formatDuration(seconds: number | null): string {
     if (!seconds) return '—';
     const h = Math.floor(seconds / 3600);
     const m = Math.floor((seconds % 3600) / 60);
     if (h > 0) return `${h}h ${m}m`;
-    return `${m} min`;
-  }
-
-  protected totalVolume(): number {
-    const w = this.workout();
-    if (!w) return 0;
-    return w.exercises.reduce(
-      (total, ex) => total + ex.sets.reduce((t, s) => t + s.reps * s.weight, 0), 0
-    );
+    return `${m}m`;
   }
 
   protected formatWeight(weight: number): string {

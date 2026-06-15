@@ -1,6 +1,7 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { WorkoutService } from '../workout.service';
 import { HistoryInsights, WorkoutDto, WorkoutStats } from '../workout-history.models';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
@@ -20,8 +21,12 @@ export type HeatmapDay = {
   imports: [RouterLink, FormsModule, TrainingHubLinkComponent],
   templateUrl: './workout-history-page.html',
 })
-export class WorkoutHistoryPageComponent implements OnInit {
+export class WorkoutHistoryPageComponent implements OnInit, OnDestroy {
   private readonly workoutService = inject(WorkoutService);
+
+  /** Cancels in-flight history/stats requests when the month changes or the component destroys. */
+  private readonly cancelLoad$ = new Subject<void>();
+  private readonly destroy$ = new Subject<void>();
 
   protected readonly workouts = signal<WorkoutDto[]>([]);
   protected readonly stats = signal<WorkoutStats | null>(null);
@@ -34,8 +39,9 @@ export class WorkoutHistoryPageComponent implements OnInit {
   protected readonly currentMonth = signal(this.getCurrentYearMonth());
   protected readonly page = signal(1);
   protected readonly totalPages = signal(1);
+  protected readonly loadingMore = signal(false);
 
-  /** Live search query for the workout list — client-side, no API. */
+  /** Live search query — filtered client-side, no API call. */
   protected readonly searchQuery = signal('');
 
   // ── Month / navigation ─────────────────────────────────────────────────
@@ -76,12 +82,32 @@ export class WorkoutHistoryPageComponent implements OnInit {
     );
   });
 
-  // ── Best workout (highest volume) ─────────────────────────────────────
+  /**
+   * Pre-computed volume per workout id.
+   * Prevents O(n²) re-computation: isBestWorkout() and the template both need
+   * volumes, so we compute them once per completedWorkouts() change.
+   */
+  protected readonly volumeByWorkoutId = computed((): Map<string, number> => {
+    const map = new Map<string, number>();
+    for (const w of this.completedWorkouts()) {
+      map.set(
+        w.id,
+        w.exercises.reduce(
+          (total, ex) => total + ex.sets.reduce((t, s) => t + s.reps * s.weight, 0),
+          0,
+        ),
+      );
+    }
+    return map;
+  });
+
+  /** Best workout of the month by total volume. Only crowned when ≥2 sessions exist. */
   protected readonly bestWorkout = computed((): WorkoutDto | null => {
     const ws = this.completedWorkouts();
     if (ws.length < 2) return null;
+    const volumes = this.volumeByWorkoutId();
     return ws.reduce((best, w) =>
-      this.workoutVolume(w) > this.workoutVolume(best) ? w : best,
+      (volumes.get(w.id) ?? 0) > (volumes.get(best.id) ?? 0) ? w : best,
     );
   });
 
@@ -92,13 +118,15 @@ export class WorkoutHistoryPageComponent implements OnInit {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Filter to this month before building the Set so off-month workouts
+    // (which previously returned -1) cannot appear as false positives.
     const workedDays = new Set(
-      this.workouts().map((w) => {
-        const d = new Date(w.startedAt);
-        return d.getFullYear() === year && d.getMonth() + 1 === month
-          ? d.getDate()
-          : -1;
-      }),
+      this.workouts()
+        .filter((w) => {
+          const d = new Date(w.startedAt);
+          return d.getFullYear() === year && d.getMonth() + 1 === month;
+        })
+        .map((w) => new Date(w.startedAt).getDate()),
     );
 
     const days: HeatmapDay[] = [];
@@ -149,50 +177,38 @@ export class WorkoutHistoryPageComponent implements OnInit {
 
   protected readonly weekCount = computed(() => this.heatmapWeeks().length);
 
-  /** Days elapsed so far (or total days for past months). */
+  /** Days elapsed so far (or total days for past months). Always ≥ 1 to avoid division by zero. */
   protected readonly elapsedDays = computed(() => {
     const [year, month] = this.currentMonth().split('-').map(Number);
     const daysInMonth = new Date(year, month, 0).getDate();
     if (!this.isCurrentMonth()) return daysInMonth;
-    return new Date().getDate();
+    return Math.max(new Date().getDate(), 1);
   });
 
-  // ── Per-workout helpers ───────────────────────────────────────────────
-  protected exercisePreview(workout: WorkoutDto): string {
-    const names = workout.exercises.map((ex) => ex.exerciseName);
-    if (names.length === 0) return 'No exercises';
-    if (names.length <= 2) return names.join(', ');
-    return `${names[0]}, ${names[1]}, +${names.length - 2}`;
-  }
-
-  protected workoutVolume(workout: WorkoutDto): number {
-    return workout.exercises.reduce(
-      (total, ex) =>
-        total + ex.sets.reduce((t, s) => t + s.reps * s.weight, 0),
-      0,
-    );
-  }
-
-  protected workoutSetCount(workout: WorkoutDto): number {
-    return workout.exercises.reduce((t, ex) => t + ex.sets.length, 0);
-  }
-
-  protected isBestWorkout(workout: WorkoutDto): boolean {
-    const best = this.bestWorkout();
-    return best !== null && best.id === workout.id;
-  }
-
-  /** Whether a load-more request is in flight. */
-  protected readonly loadingMore = signal(false);
+  /** Consistency percentage, safe against division by zero. */
+  protected readonly consistencyPercent = computed(() =>
+    Math.round((this.workedDayCount() / this.elapsedDays()) * 100),
+  );
 
   // ── Skeleton ──────────────────────────────────────────────────────────
+  /**
+   * Alternating tall/short heights mirror typical workout card sizes
+   * so the shimmer placeholder feels proportional to real content.
+   */
   protected readonly skeletonHeights = [88, 76, 88, 76, 68];
 
   // ── Lifecycle ─────────────────────────────────────────────────────────
   ngOnInit(): void {
     this.loadData();
-    // Insights are all-time — load once on init, not on month change.
+    // Insights are all-time — loaded once on init, not on every month change.
     this.loadInsights();
+  }
+
+  ngOnDestroy(): void {
+    this.cancelLoad$.next();
+    this.cancelLoad$.complete();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   protected prevMonth(): void {
@@ -225,11 +241,13 @@ export class WorkoutHistoryPageComponent implements OnInit {
   }
 
   protected loadMore(): void {
-    if (this.page() >= this.totalPages() || this.loadingMore()) return;
+    // Guard: don't append while initial load is in flight, or past last page.
+    if (this.loading() || this.page() >= this.totalPages() || this.loadingMore()) return;
     const nextPage = this.page() + 1;
     this.loadingMore.set(true);
     this.workoutService
       .getHistory({ page: nextPage, limit: 20, month: this.currentMonth() })
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (result) => {
           this.page.set(nextPage);
@@ -241,7 +259,30 @@ export class WorkoutHistoryPageComponent implements OnInit {
       });
   }
 
+  // ── Per-workout helpers ───────────────────────────────────────────────
+  protected exercisePreview(workout: WorkoutDto): string {
+    const names = workout.exercises.map((ex) => ex.exerciseName);
+    if (names.length === 0) return 'No exercises';
+    if (names.length <= 2) return names.join(', ');
+    return `${names[0]}, ${names[1]}, +${names.length - 2}`;
+  }
+
+  /** Volume lookup via pre-computed map — O(1) per call. */
+  protected workoutVolume(workout: WorkoutDto): number {
+    return this.volumeByWorkoutId().get(workout.id) ?? 0;
+  }
+
+  protected workoutSetCount(workout: WorkoutDto): number {
+    return workout.exercises.reduce((t, ex) => t + ex.sets.length, 0);
+  }
+
+  protected isBestWorkout(workout: WorkoutDto): boolean {
+    const best = this.bestWorkout();
+    return best !== null && best.id === workout.id;
+  }
+
   // ── Formatters ────────────────────────────────────────────────────────
+  /** Returns a human-readable duration string, e.g. "1h 5m" or "45m". */
   protected formatDuration(seconds: number | null): string {
     if (!seconds) return '—';
     const h = Math.floor(seconds / 3600);
@@ -263,26 +304,32 @@ export class WorkoutHistoryPageComponent implements OnInit {
   }
 
   protected formatVolume(vol: number): string {
-    if (vol >= 1000)
-      return (vol / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    if (vol >= 1000) return (vol / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
     return Math.round(vol).toString();
   }
 
   // ── Private ───────────────────────────────────────────────────────────
   private loadData(): void {
+    // Cancel any previous in-flight requests for this slot before starting new ones.
+    this.cancelLoad$.next();
+
     this.loading.set(true);
     this.listError.set(false);
     this.statsError.set(false);
     this.stats.set(null);
     const month = this.currentMonth();
 
-    this.workoutService.getStats(month).subscribe({
-      next: (stats) => this.stats.set(stats),
-      error: () => this.statsError.set(true),
-    });
+    this.workoutService
+      .getStats(month)
+      .pipe(takeUntil(this.cancelLoad$))
+      .subscribe({
+        next: (stats) => this.stats.set(stats),
+        error: () => this.statsError.set(true),
+      });
 
     this.workoutService
       .getHistory({ page: 1, limit: 20, month })
+      .pipe(takeUntil(this.cancelLoad$))
       .subscribe({
         next: (result) => {
           this.workouts.set(result.items);
@@ -299,16 +346,19 @@ export class WorkoutHistoryPageComponent implements OnInit {
   private loadInsights(): void {
     this.insightsError.set(false);
     this.insightsLoading.set(true);
-    this.workoutService.getInsights().subscribe({
-      next: (data) => {
-        this.insights.set(data);
-        this.insightsLoading.set(false);
-      },
-      error: () => {
-        this.insightsError.set(true);
-        this.insightsLoading.set(false);
-      },
-    });
+    this.workoutService
+      .getInsights()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data) => {
+          this.insights.set(data);
+          this.insightsLoading.set(false);
+        },
+        error: () => {
+          this.insightsError.set(true);
+          this.insightsLoading.set(false);
+        },
+      });
   }
 
   private getCurrentYearMonth(): string {

@@ -98,7 +98,7 @@
                 <div class="mt-1.5 h-1 overflow-hidden rounded-full bg-zinc-800">
                   <div
                     class="h-full rounded-full bg-teal-400 transition-all duration-700 ease-out"
-                    [style.width.%]="(workedDayCount() / elapsedDays()) * 100"
+                    [style.width.%]="consistencyPercent()"
                   ></div>
                 </div>
               }
@@ -112,7 +112,7 @@
                     </div>
                   } @else if (workedDayCount() > 0) {
                     <p class="text-xs text-zinc-500">
-                      <span class="font-semibold text-zinc-300">{{ ((workedDayCount() / elapsedDays()) * 100).toFixed(0) }}%</span>
+                      <span class="font-semibold text-zinc-300">{{ consistencyPercent() }}%</span>
                       consistency
                     </p>
                   }
@@ -211,10 +211,11 @@
       </section>
 
     } @else if (statsError()) {
-      <div class="mt-5 flex items-center gap-3">
-        <p class="text-xs text-zinc-600">Couldn't load stats.</p>
+      <div class="anim-enter-1 mt-6 rounded-2xl border border-zinc-800 bg-zinc-900/40 px-5 py-6 text-center">
+        <p class="text-sm font-semibold text-zinc-400">Couldn't load stats</p>
+        <p class="mt-1 text-xs text-zinc-600">Check your connection and try again.</p>
         <button
-          class="text-xs font-medium text-zinc-500 underline-offset-2 transition-colors hover:text-zinc-300 hover:underline"
+          class="mt-4 h-9 rounded-xl border border-zinc-700 px-5 text-sm font-medium text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100 active:scale-[0.98]"
           type="button"
           (click)="retry()"
         >Retry</button>
