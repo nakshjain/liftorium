@@ -1,7 +1,7 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { DAY_LABELS, MUSCLE_GROUPS, PLAN_TEMPLATES, MuscleGroup } from '../plan.models';
+import { DAY_LABELS, MUSCLE_GROUPS, MuscleGroup } from '../plan.models';
 import { PlanStore } from '../plan.store';
 import { CachedExercise } from '../../exercises/cache/exercise-cache.models';
 import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
@@ -18,7 +18,7 @@ export class PlanPageComponent {
   protected readonly store = inject(PlanStore);
   private readonly toastService = inject(ToastService);
 
-  protected readonly templates = PLAN_TEMPLATES;
+  protected readonly templates = this.store.templates;
   protected readonly muscleGroups = MUSCLE_GROUPS;
   protected readonly dayLabels = DAY_LABELS;
 
@@ -39,7 +39,7 @@ export class PlanPageComponent {
   protected readonly activeTemplateDescription = computed(() => {
     const tid = this.store.activeTemplateId();
     if (!tid) return null;
-    return this.templates.find((t) => t.id === tid)?.description ?? null;
+    return this.store.templates().find((t) => t.id === tid)?.description ?? null;
   });
 
   constructor() {

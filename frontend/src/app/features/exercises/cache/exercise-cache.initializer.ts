@@ -6,22 +6,21 @@ import { ExerciseStoreService } from './exercise-store.service';
 /**
  * Orchestrates the exercise catalog boot sequence as an Angular APP_INITIALIZER.
  *
- * Registered in app.config.ts via:
- *   provideAppInitializer(() => inject(ExerciseCacheInitializer).initialize())
- *
  * Boot paths:
  *
  * 1. Returning user (IDB populated):
- *    - Hydrate store from IDB immediately → app renders without network wait
+ *    - Hydrate store instantly from IDB → app renders with exercises ready
  *    - Fire-and-forget background version check
  *
  * 2. First launch (IDB empty):
- *    - Await full catalog download + persist → app renders only after exercises ready
- *    - On download failure: set syncStatus to 'error', resolve so app still renders
+ *    - App renders immediately with syncStatus = 'loading'
+ *    - Catalog download starts in the background — non-blocking
+ *    - Exercise picker shows a loading state until catalog is ready
  *
  * 3. IDB unavailable (Safari private, quota exceeded):
- *    - initialize() throws → fall through to downloadAndPersistAll() in-memory only
- *    - Store is fully functional; catalog is re-downloaded every session
+ *    - Download starts in background, in-memory only
+ *
+ * The app NEVER blocks rendering waiting for a network download.
  */
 @Injectable({ providedIn: 'root' })
 export class ExerciseCacheInitializer {
@@ -30,40 +29,33 @@ export class ExerciseCacheInitializer {
   private readonly syncService = inject(CatalogSyncService);
 
   async initialize(): Promise<void> {
-    // Step 1: Open (or upgrade) IndexedDB.
-    // If IDB is unavailable the catch swallows the error and we fall through
-    // to getAllExercises(), which returns [] from an uninitialised service.
+    // Step 1: Open IndexedDB — this is fast (local), worth awaiting
     try {
       await this.cacheService.initialize();
     } catch {
-      // IDB unavailable (e.g. Safari private browsing, storage quota exceeded).
-      // Proceed in in-memory-only mode — download catalog without persisting.
-      try {
-        await this.syncService.downloadAndPersistAll();
-      } catch {
-        this.storeService.setSyncStatus('error');
-      }
+      // IDB unavailable — download in background, in-memory only, don't block
+      this.downloadInBackground();
       return;
     }
 
-    // Step 2: Load any exercises already persisted from a previous session.
+    // Step 2: Load cached exercises — fast local read, worth awaiting
     const cached = await this.cacheService.getAllExercises();
 
     if (cached.length > 0) {
-      // Returning user path — hydrate store instantly from IDB, then check
-      // for catalog updates in the background without blocking app render.
+      // Returning user — hydrate instantly, check for updates in background
       this.storeService.hydrate(cached);
-      this.syncService.checkVersionInBackground(); // fire-and-forget
+      this.syncService.checkVersionInBackground();
     } else {
-      // First launch path — download the full catalog before the app renders.
-      // The store must be populated for the app to be usable.
-      try {
-        await this.syncService.downloadAndPersistAll();
-      } catch {
-        // Network failure — set error state but resolve so the app still renders.
-        // ExercisePickerComponent will surface a retry affordance.
-        this.storeService.setSyncStatus('error');
-      }
+      // First launch — don't block. App renders with syncStatus = 'loading'.
+      // Exercise picker will show loading state until catalog arrives.
+      this.downloadInBackground();
     }
+    // Resolve immediately — app renders now
+  }
+
+  private downloadInBackground(): void {
+    this.syncService.downloadAndPersistAll().catch(() => {
+      this.storeService.setSyncStatus('error');
+    });
   }
 }
