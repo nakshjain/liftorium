@@ -82,19 +82,23 @@
 
     <!-- ══════════════════════════════════════════
          MOBILE BRAND HERO — Zone 1 (lg:hidden)
-         ~55% of screen, full-bleed atmospheric.
+         ~58% of screen, full-bleed atmospheric.
          Zone 2 (form card) slides up and overlaps.
     ══════════════════════════════════════════ -->
-    <div class="relative flex min-h-[56dvh] flex-col overflow-hidden px-6 pb-10 pt-8 lg:hidden">
+    <div class="relative flex min-h-[58dvh] flex-col overflow-hidden bg-zinc-950 px-6 pb-12 pt-8 lg:hidden">
 
-      <!-- Ambient teal glow — top-left -->
-      <div class="pointer-events-none absolute -left-16 -top-16 h-72 w-72 rounded-full bg-teal-500/20 blur-3xl" aria-hidden="true"></div>
-      <!-- Secondary glow — bottom right -->
-      <div class="pointer-events-none absolute -bottom-8 right-0 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl" aria-hidden="true"></div>
+      <!-- Ambient teal glow — top-left, stronger so Zone 1 reads as distinct from card -->
+      <div class="pointer-events-none absolute -left-16 -top-16 h-80 w-80 rounded-full bg-teal-500/25 blur-3xl" aria-hidden="true"></div>
+      <!-- Secondary glow — mid-right for depth -->
+      <div class="pointer-events-none absolute right-0 top-1/3 h-48 w-48 rounded-full bg-teal-400/12 blur-3xl" aria-hidden="true"></div>
 
-      <!-- Barbell — top-right, compositionally paired with the wordmark below it -->
-      <div class="auth-barbell-float pointer-events-none absolute right-4 top-6 opacity-[0.08]" aria-hidden="true">
-        <svg width="160" height="160" viewBox="0 0 200 200" fill="none">
+      <!-- Barbell — pure texture, tucked into the top-right corner.
+           56px so it reads as a subtle mark beside the wordmark, not a feature. -->
+      <div
+        class="auth-barbell-float pointer-events-none absolute right-3 top-3 opacity-[0.06]"
+        aria-hidden="true"
+      >
+        <svg width="56" height="56" viewBox="0 0 200 200" fill="none">
           <rect x="88" y="10" width="24" height="180" rx="4" fill="white"/>
           <rect x="36" y="48" width="52" height="104" rx="7" fill="white"/>
           <rect x="112" y="48" width="52" height="104" rx="7" fill="white"/>
@@ -110,8 +114,8 @@
           routerLink="/auth/login"
           aria-label="Liftorium — home"
         >Liftorium</a>
-        <!-- Teal underline draws in L→R after wordmark lands -->
-        <div class="panel-accent-line mt-2.5 h-[3px] w-12 rounded-full bg-teal-400"></div>
+        <!-- Teal underline — wider and taller so it reads as intentional at this size -->
+        <div class="panel-accent-line mt-2 h-[4px] w-16 rounded-full bg-teal-400"></div>
       </div>
 
       <!-- Headline — anchored to the bottom of the hero zone -->
@@ -123,13 +127,14 @@
           Every PR.
         </p>
 
-        <!-- Body copy + stat pill — one cohesive sub-group -->
-        <p class="panel-line-3 mt-4 text-sm leading-relaxed text-zinc-500">
+        <!-- Body copy — visibly more muted than the headline for clear hierarchy -->
+        <p class="panel-line-3 mt-7 text-sm leading-relaxed text-zinc-500">
           Built for the gym floor. Zero friction.
         </p>
-        <div class="panel-line-3 mt-3 inline-flex items-center gap-2 self-start rounded-full border border-zinc-800 bg-zinc-900/50 px-3 py-1.5 backdrop-blur-sm">
-          <span class="h-1.5 w-1.5 rounded-full bg-teal-400" aria-hidden="true"></span>
-          <span class="text-xs font-medium text-zinc-400">10k+ sessions logged</span>
+        <!-- Stat pill — self-start so it never stretches full-width and clips -->
+        <div class="panel-line-3 mt-4 inline-flex max-w-full items-center gap-2 self-start rounded-full border border-zinc-700 bg-zinc-800/70 px-3.5 py-1.5 backdrop-blur-sm">
+          <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" aria-hidden="true"></span>
+          <span class="truncate text-xs font-medium text-zinc-300">10k+ sessions logged</span>
         </div>
       </div>
     </div>
@@ -143,8 +148,8 @@
     ══════════════════════════════════════════ -->
     <section class="
       auth-card-slide
-      relative -mt-6 flex-1 rounded-t-3xl border-t border-zinc-800/60
-      bg-zinc-950 px-6 pb-10 pt-7 shadow-[0_-8px_40px_rgba(0,0,0,0.5)]
+      relative -mt-6 flex-1 rounded-t-3xl border-t border-zinc-700/70
+      bg-zinc-900 px-6 pb-10 pt-7 shadow-[0_-16px_56px_rgba(0,0,0,0.8)]
       lg:mt-0 lg:rounded-none lg:border-0 lg:bg-transparent lg:px-12
       lg:py-8 lg:shadow-none lg:flex lg:flex-col lg:justify-center
     ">
