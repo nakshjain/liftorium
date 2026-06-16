@@ -79,6 +79,31 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     return day.label ? `${day.label}${groups ? ' · ' + groups : ''}` : groups || null;
   });
 
+  /**
+   * Next upcoming active training day after today.
+   * Used by the Plan card to show "what's coming" not "what's today".
+   */
+  protected readonly nextTrainingDay = computed(() => {
+    const p = this.plan();
+    if (!p) return null;
+    const jsDay = new Date().getDay();
+    const todayIndex = jsDay === 0 ? 6 : jsDay - 1; // 0 = Mon
+    // Search the next 7 days (excluding today)
+    for (let i = 1; i <= 7; i++) {
+      const idx = (todayIndex + i) % 7;
+      const day = p.days.find((d) => d.dayOfWeek === idx);
+      if (day && !day.rest) return day;
+    }
+    return null;
+  });
+
+  /** Count of active (non-rest) days in the week plan. */
+  protected readonly weekTrainingDayCount = computed(() => {
+    const p = this.plan();
+    if (!p) return 0;
+    return p.days.filter((d) => !d.rest).length;
+  });
+
   // ── Progress ───────────────────────────────────────────────────────────
   protected readonly progressOverview = signal<ProgressOverview | null>(null);
 
