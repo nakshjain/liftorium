@@ -46,12 +46,7 @@ export class PlanPageComponent {
   protected pendingRemoval: { dayOfWeek: number; exerciseIndex: number; exerciseName: string; setCount: number } | null = null;
 
   private allExercises: Exercise[] = [];
-  private initialPlanSnapshot: string = '';
   private templateSwitchTimeout: any = null;
-
-  protected readonly hasUnsavedChanges = computed(() => {
-    return JSON.stringify(this.store.plan()) !== this.initialPlanSnapshot;
-  });
 
   protected readonly planLoading = signal(true);
 
@@ -64,45 +59,20 @@ export class PlanPageComponent {
   constructor() {
     this.loadAllExercises();
 
-    // Track initial plan state for unsaved changes
-    effect(() => {
-      // Update snapshot when plan is successfully saved
-      if (this.store.syncSuccess()) {
-        this.initialPlanSnapshot = JSON.stringify(this.store.plan());
-      }
-    }, { allowSignalWrites: false });
-
-    // Wait for plan to load from server
+    // Hide loading skeleton once the plan arrives from the server
     effect(() => {
       const plan = this.store.plan();
       if (plan && plan.days.length > 0) {
         this.planLoading.set(false);
-        this.initialPlanSnapshot = JSON.stringify(plan);
       }
-    }, { allowSignalWrites: false });
-
-    // Warn before leaving with unsaved changes
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeunload', this.handleBeforeUnload);
-    }
+    }, { allowSignalWrites: true });
   }
 
   ngOnDestroy(): void {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('beforeunload', this.handleBeforeUnload);
-    }
     if (this.templateSwitchTimeout) {
       clearTimeout(this.templateSwitchTimeout);
     }
   }
-
-  private handleBeforeUnload = (e: BeforeUnloadEvent): string | undefined => {
-    if (this.hasUnsavedChanges()) {
-      e.preventDefault();
-      return 'You have unsaved changes. Are you sure you want to leave?';
-    }
-    return undefined;
-  };
 
   private loadAllExercises(): void {
     this.exercisesLoading.set(true);
