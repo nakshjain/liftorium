@@ -72,7 +72,7 @@ export class PlanService {
 
   private toModel(dto: PlanDto): WorkoutPlan {
     return {
-      id: dto.id ?? crypto.randomUUID(),
+      id: dto.id ?? null,
       name: 'My Plan',
       days: dto.days.map((d) => ({
         dayOfWeek: d.dayOfWeek,

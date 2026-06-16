@@ -27,6 +27,16 @@
           } @else if (store.syncError()) {
             <span class="text-xs font-medium text-red-400">Save failed</span>
           }
+          <!-- Reset button -->
+          <button
+            class="h-9 rounded-lg border border-zinc-700 px-3 text-sm font-medium text-zinc-400 transition hover:border-rose-400/60 hover:text-rose-300 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
+            type="button"
+            [disabled]="store.resetting()"
+            (click)="showResetDialog()"
+            title="Discard unsaved changes and restore last saved plan"
+          >
+            {{ store.resetting() ? 'Resetting…' : 'Reset' }}
+          </button>
           <!-- Save button — always enabled so users can save at any time -->
           <button
             class="h-9 rounded-lg bg-teal-500 px-4 text-sm font-semibold text-zinc-950 transition hover:bg-teal-400 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
@@ -374,9 +384,9 @@
   <!-- Reset plan confirmation -->
   <app-confirmation-dialog
     [isOpen]="showResetConfirm()"
-    title="Revert to saved plan?"
-    message="Discard all unsaved changes and restore your last saved plan."
-    confirmLabel="Revert"
+    title="Reset plan?"
+    message="This will restore your last saved plan from the server. If nothing has been saved, all days will be cleared."
+    confirmLabel="Reset"
     cancelLabel="Cancel"
     [destructive]="true"
     (confirm)="confirmReset()"

@@ -29,7 +29,7 @@ export class PlanPageComponent {
     { label: 'Legs', groups: ['Legs' as MuscleGroup] },
   ];
 
-  protected readonly expandedDay = signal<number | null>(null);
+  protected readonly expandedDays = signal<Set<number>>(new Set([0, 1, 2, 3, 4, 5, 6]));
   protected readonly showAdvancedMuscleGroups = signal<number | null>(null);
   protected readonly todayIndex = this.store.todayDayOfWeek;
 
@@ -58,6 +58,18 @@ export class PlanPageComponent {
         this.planLoading.set(false);
       }
     }, { allowSignalWrites: true });
+
+    // Show toast on reset result
+    effect(() => {
+      if (this.store.resetSuccess()) {
+        this.toastService.success('Plan restored from server.');
+      }
+    });
+    effect(() => {
+      if (this.store.resetError()) {
+        this.toastService.error('Could not reach server — plan cleared.');
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -67,7 +79,11 @@ export class PlanPageComponent {
   }
 
   protected toggleDay(dayOfWeek: number): void {
-    this.expandedDay.update((current) => (current === dayOfWeek ? null : dayOfWeek));
+    this.expandedDays.update((set) => {
+      const next = new Set(set);
+      next.has(dayOfWeek) ? next.delete(dayOfWeek) : next.add(dayOfWeek);
+      return next;
+    });
   }
 
   protected hasMuscleGroup(dayOfWeek: number, group: MuscleGroup): boolean {
