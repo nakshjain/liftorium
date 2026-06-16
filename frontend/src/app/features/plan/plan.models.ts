@@ -34,7 +34,7 @@ export type PlanDay = {
 };
 
 export type WorkoutPlan = {
-  id: string;
+  id: string | null;
   name: string;
   days: PlanDay[];
 };
@@ -112,7 +112,7 @@ export const PLAN_TEMPLATES: PlanTemplate[] = [
 
 export function emptyPlan(): WorkoutPlan {
   return {
-    id: crypto.randomUUID(),
+    id: null,
     name: 'My Plan',
     days: DAY_LABELS.map((_, i) => ({
       dayOfWeek: i,

@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { MuscleGroup, PlanDay, PLAN_TEMPLATES, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
+import { MuscleGroup, PlanDay, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
 import { PlanService } from './plan.service';
 
 const STORAGE_KEY = 'liftorium_workout_plan';
@@ -14,6 +14,8 @@ export class PlanStore {
   readonly syncError = signal(false);
   readonly syncSuccess = signal(false);
   readonly resetting = signal(false);
+  readonly resetSuccess = signal(false);
+  readonly resetError = signal(false);
 
   readonly activeDayCount = computed(
     () => this.plan().days.filter((d) => !d.rest).length,
@@ -57,22 +59,28 @@ export class PlanStore {
 
   reset(): void {
     this.resetting.set(true);
+    this.resetSuccess.set(false);
+    this.resetError.set(false);
     this.planService.get().subscribe({
       next: (serverPlan) => {
-        this.plan.set(serverPlan);
-        this.persist(serverPlan);
+        // If server returned a plan with no id, it means nothing is saved in DB — clear everything
+        const planToApply = serverPlan.id ? serverPlan : emptyPlan();
+        this.plan.set(planToApply);
+        this.persist(planToApply);
         this.activeTemplateId.set(null);
         this.resetting.set(false);
+        this.resetSuccess.set(true);
+        setTimeout(() => this.resetSuccess.set(false), 2000);
       },
       error: () => {
-        const defaultPlan: WorkoutPlan = {
-          ...emptyPlan(),
-          days: PLAN_TEMPLATES[0].days.map((d) => ({ ...d })),
-        };
-        this.plan.set(defaultPlan);
-        this.persist(defaultPlan);
-        this.activeTemplateId.set(PLAN_TEMPLATES[0].id);
+        // Offline or server error — fall back to empty plan
+        const fallback = emptyPlan();
+        this.plan.set(fallback);
+        this.persist(fallback);
+        this.activeTemplateId.set(null);
         this.resetting.set(false);
+        this.resetError.set(true);
+        setTimeout(() => this.resetError.set(false), 3000);
       },
     });
   }

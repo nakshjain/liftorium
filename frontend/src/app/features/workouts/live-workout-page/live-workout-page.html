@@ -171,28 +171,30 @@
                     <p class="text-xs text-zinc-600">{{ previousSetLabel(exercise.previous, set.order - 1) }}</p>
                   </div>
 
-                  <div class="grid grid-cols-[2.5rem_1fr_2.5rem] overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950">
-                    <button class="h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', -2.5)">-</button>
+                  <div class="grid grid-cols-[2.5rem_1fr_2.5rem] overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition focus-within:border-teal-400/60 sm:grid-cols-[2.5rem_1fr_2.5rem]">
+                    <button class="hidden h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', -2.5)">-</button>
                     <input
-                      class="h-11 min-w-0 bg-transparent text-center text-base font-semibold text-zinc-50 outline-none"
+                      class="col-span-3 h-11 min-w-0 bg-transparent text-center text-base font-semibold text-zinc-50 outline-none focus:outline-none sm:col-span-1"
                       inputmode="decimal"
                       type="number"
                       [value]="set.weight"
+                      (focus)="selectAll($event)"
                       (input)="store.setValue(exercise.id, set.id, 'weight', inputValue($event))"
                     />
-                    <button class="h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', 2.5)">+</button>
+                    <button class="hidden h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', 2.5)">+</button>
                   </div>
 
-                  <div class="grid grid-cols-[2.5rem_1fr_2.5rem] overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950">
-                    <button class="h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)">-</button>
+                  <div class="grid grid-cols-[2.5rem_1fr_2.5rem] overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition focus-within:border-teal-400/60 sm:grid-cols-[2.5rem_1fr_2.5rem]">
+                    <button class="hidden h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)">-</button>
                     <input
-                      class="h-11 min-w-0 bg-transparent text-center text-base font-semibold text-zinc-50 outline-none"
+                      class="col-span-3 h-11 min-w-0 bg-transparent text-center text-base font-semibold text-zinc-50 outline-none focus:outline-none sm:col-span-1"
                       inputmode="numeric"
                       type="number"
                       [value]="set.reps"
+                      (focus)="selectAll($event)"
                       (input)="store.setValue(exercise.id, set.id, 'reps', inputValue($event))"
                     />
-                    <button class="h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)">+</button>
+                    <button class="hidden h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)">+</button>
                   </div>
 
                   <button

@@ -107,6 +107,12 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     return event.target instanceof HTMLInputElement ? event.target.value : '';
   }
 
+  protected selectAll(event: FocusEvent): void {
+    if (event.target instanceof HTMLInputElement) {
+      event.target.select();
+    }
+  }
+
   protected previousSetLabel(previousSets: readonly { reps: number; weight: number }[], index: number): string {
     const previousSet = previousSets[index];
 
