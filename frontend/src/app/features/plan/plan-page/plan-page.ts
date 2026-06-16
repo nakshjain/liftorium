@@ -22,15 +22,7 @@ export class PlanPageComponent {
   protected readonly muscleGroups = MUSCLE_GROUPS;
   protected readonly dayLabels = DAY_LABELS;
 
-  // Muscle group quick-picks
-  protected readonly muscleGroupPresets = [
-    { label: 'Push', groups: ['Chest' as MuscleGroup, 'Shoulders' as MuscleGroup, 'Triceps' as MuscleGroup] },
-    { label: 'Pull', groups: ['Back' as MuscleGroup, 'Biceps' as MuscleGroup, 'Forearms' as MuscleGroup] },
-    { label: 'Legs', groups: ['Legs' as MuscleGroup] },
-  ];
-
   protected readonly expandedDays = signal<Set<number>>(new Set([0, 1, 2, 3, 4, 5, 6]));
-  protected readonly showAdvancedMuscleGroups = signal<number | null>(null);
   protected readonly todayIndex = this.store.todayDayOfWeek;
 
   protected readonly searchingDay = signal<number | null>(null);
@@ -88,33 +80,6 @@ export class PlanPageComponent {
 
   protected hasMuscleGroup(dayOfWeek: number, group: MuscleGroup): boolean {
     return this.store.getDay(dayOfWeek).muscleGroups.includes(group);
-  }
-
-  protected hasAllPresetGroups(dayOfWeek: number, presetGroups: MuscleGroup[]): boolean {
-    const dayGroups = this.store.getDay(dayOfWeek).muscleGroups;
-    return presetGroups.every(g => dayGroups.includes(g));
-  }
-
-  protected togglePresetGroups(dayOfWeek: number, presetGroups: MuscleGroup[]): void {
-    const hasAll = this.hasAllPresetGroups(dayOfWeek, presetGroups);
-    if (hasAll) {
-      presetGroups.forEach(g => {
-        if (this.hasMuscleGroup(dayOfWeek, g)) {
-          this.store.toggleMuscleGroup(dayOfWeek, g);
-        }
-      });
-    } else {
-      presetGroups.forEach(g => {
-        if (!this.hasMuscleGroup(dayOfWeek, g)) {
-          this.store.toggleMuscleGroup(dayOfWeek, g);
-        }
-      });
-    }
-  }
-
-  protected toggleAdvancedMuscleGroups(dayOfWeek: number): void {
-    const current = this.showAdvancedMuscleGroups();
-    this.showAdvancedMuscleGroups.set(current === dayOfWeek ? null : dayOfWeek);
   }
 
   protected muscleGroupChips(dayOfWeek: number): string {

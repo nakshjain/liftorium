@@ -95,7 +95,7 @@
     <section class="mt-6 space-y-2">
       @for (label of dayLabels; track $index) {
         @let day = store.getDay($index);
-        @let isExpanded = expandedDay() === $index;
+        @let isExpanded = expandedDays().has($index);
         @let isToday = todayIndex() === $index;
 
         <!-- Day tile -->
@@ -122,7 +122,7 @@
             <!-- Muscle groups or rest -->
             <div class="min-w-0 flex-1">
               @if (day.rest) {
-                <p class="text-sm font-medium text-zinc-600">Rest</p>
+                <p class="text-sm font-medium text-zinc-500">Rest day</p>
               } @else if (day.label) {
                 <p class="text-sm font-semibold text-zinc-50">{{ day.label }}</p>
                 @if (day.exercises.length) {
@@ -137,32 +137,18 @@
                   }
                 </div>
               } @else {
-                <p class="text-sm font-medium text-zinc-600">Not configured</p>
+                <p class="text-sm font-medium text-zinc-500">Not configured</p>
               }
             </div>
 
-            <!-- Rest toggle + chevron -->
-            <div class="flex shrink-0 items-center gap-3">
-              <button
-                class="h-7 rounded-full border px-3 text-xs font-medium transition"
-                [class.border-zinc-700]="day.rest"
-                [class.text-zinc-500]="day.rest"
-                [class.border-teal-400/40]="!day.rest"
-                [class.text-teal-300]="!day.rest"
-                [class.bg-teal-400/8]="!day.rest"
-                type="button"
-                (click)="$event.stopPropagation(); store.toggleRest($index)"
-              >
-                {{ day.rest ? 'Rest' : 'Active' }}
-              </button>
-              <svg
-                class="h-4 w-4 shrink-0 text-zinc-600 transition-transform duration-200"
-                [class.rotate-180]="isExpanded"
-                fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
-              >
-                <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
-              </svg>
-            </div>
+            <!-- Chevron only -->
+            <svg
+              class="h-4 w-4 shrink-0 text-zinc-600 transition-transform duration-200"
+              [class.rotate-180]="isExpanded"
+              fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" d="m19 9-7 7-7-7" />
+            </svg>
           </button>
 
           <!-- Inline editor -->
@@ -186,55 +172,23 @@
               <div class="mt-4">
                 <div class="mb-2 flex items-center gap-2">
                   <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">Muscle groups</p>
-                  <span class="text-xs text-zinc-600" title="Tag which muscles you'll train this day">ⓘ</span>
                 </div>
-
-                <!-- Quick-pick presets -->
                 <div class="flex flex-wrap gap-2">
-                  @for (preset of muscleGroupPresets; track preset.label) {
+                  @for (group of muscleGroups; track group) {
                     <button
                       class="h-8 rounded-full border px-3 text-xs font-medium transition active:scale-[0.97]"
-                      [class.border-teal-400]="hasAllPresetGroups(day.dayOfWeek, preset.groups)"
-                      [class.bg-teal-400]="hasAllPresetGroups(day.dayOfWeek, preset.groups)"
-                      [class.text-zinc-950]="hasAllPresetGroups(day.dayOfWeek, preset.groups)"
-                      [class.border-zinc-700]="!hasAllPresetGroups(day.dayOfWeek, preset.groups)"
-                      [class.text-zinc-300]="!hasAllPresetGroups(day.dayOfWeek, preset.groups)"
+                      [class.border-teal-400]="hasMuscleGroup(day.dayOfWeek, group)"
+                      [class.bg-teal-400]="hasMuscleGroup(day.dayOfWeek, group)"
+                      [class.text-zinc-950]="hasMuscleGroup(day.dayOfWeek, group)"
+                      [class.border-zinc-700]="!hasMuscleGroup(day.dayOfWeek, group)"
+                      [class.text-zinc-300]="!hasMuscleGroup(day.dayOfWeek, group)"
                       type="button"
-                      (click)="togglePresetGroups(day.dayOfWeek, preset.groups)"
+                      (click)="store.toggleMuscleGroup(day.dayOfWeek, group)"
                     >
-                      {{ preset.label }}
+                      {{ group }}
                     </button>
                   }
                 </div>
-
-                <!-- Advanced toggle -->
-                <button
-                  class="mt-2 text-xs font-medium text-zinc-500 transition hover:text-teal-300"
-                  type="button"
-                  (click)="toggleAdvancedMuscleGroups(day.dayOfWeek)"
-                >
-                  {{ showAdvancedMuscleGroups() === day.dayOfWeek ? '− Hide individual groups' : '+ Choose individual groups' }}
-                </button>
-
-                <!-- All muscle groups (progressive disclosure) -->
-                @if (showAdvancedMuscleGroups() === day.dayOfWeek) {
-                  <div class="mt-3 flex flex-wrap gap-2 rounded-lg border border-zinc-800 bg-zinc-900/40 p-3">
-                    @for (group of muscleGroups; track group) {
-                      <button
-                        class="h-7 rounded-full border px-2.5 text-xs font-medium transition active:scale-[0.97]"
-                        [class.border-teal-400]="hasMuscleGroup(day.dayOfWeek, group)"
-                        [class.bg-teal-400]="hasMuscleGroup(day.dayOfWeek, group)"
-                        [class.text-zinc-950]="hasMuscleGroup(day.dayOfWeek, group)"
-                        [class.border-zinc-700]="!hasMuscleGroup(day.dayOfWeek, group)"
-                        [class.text-zinc-300]="!hasMuscleGroup(day.dayOfWeek, group)"
-                        type="button"
-                        (click)="store.toggleMuscleGroup(day.dayOfWeek, group)"
-                      >
-                        {{ group }}
-                      </button>
-                    }
-                  </div>
-                }
               </div>
 
               <!-- Exercises section -->
@@ -351,13 +305,31 @@
                 }
               </div>
 
+              <!-- Set as rest day -->
+              <div class="mt-5 border-t border-zinc-800 pt-4">
+                <button
+                  class="h-9 w-full rounded-lg border border-zinc-700 text-sm font-medium text-zinc-500 transition hover:border-rose-400/50 hover:text-rose-300 active:scale-[0.99]"
+                  type="button"
+                  (click)="store.toggleRest($index)"
+                >
+                  Set as rest day
+                </button>
+              </div>
+
             </div>
           }
 
-          <!-- Expanded rest day — just a note -->
+          <!-- Expanded: rest day -->
           @if (isExpanded && day.rest) {
-            <div class="border-t border-zinc-800 px-4 pb-4 pt-3 anim-enter">
-              <p class="text-sm text-zinc-500">Rest day. Tap "Active" above to schedule training.</p>
+            <div class="border-t border-zinc-800 px-4 pb-4 pt-4 anim-enter">
+              <p class="mb-4 text-sm text-zinc-500">No training scheduled. Tap below to make this a training day.</p>
+              <button
+                class="h-10 w-full rounded-lg bg-teal-500 text-sm font-semibold text-zinc-950 transition hover:bg-teal-400 active:scale-[0.99]"
+                type="button"
+                (click)="store.toggleRest($index)"
+              >
+                Set as training day
+              </button>
             </div>
           }
 
