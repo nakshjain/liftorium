@@ -9,5 +9,6 @@ public interface WorkoutPlanRepository extends MongoRepository<WorkoutPlan, Stri
 
   Optional<WorkoutPlan> findByUserId(String userId);
 
-  List<WorkoutPlan> findAllByTemplateIdIn(List<String> templateIds);
+  /** Fetches template documents — identified by userId matching the known template IDs. */
+  List<WorkoutPlan> findAllByUserIdIn(List<String> userIds);
 }

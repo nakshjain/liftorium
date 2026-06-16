@@ -16,6 +16,7 @@ export class PlanStore {
   readonly syncing = signal(false);
   readonly syncError = signal(false);
   readonly syncSuccess = signal(false);
+  readonly isDirty = signal(false);
   readonly resetting = signal(false);
   readonly resetSuccess = signal(false);
   readonly resetError = signal(false);
@@ -46,8 +47,8 @@ export class PlanStore {
       next: (serverPlan) => {
         this.plan.set(serverPlan);
         this.persist(serverPlan);
-        // Restore active template chip if the plan was saved with a template
         this.activeTemplateId.set(serverPlan.templateId ?? null);
+        this.isDirty.set(false);
       },
       error: () => { /* offline — keep localStorage copy */ },
     });
@@ -64,7 +65,7 @@ export class PlanStore {
         this.persist(this.plan());
         this.syncing.set(false);
         this.syncSuccess.set(true);
-        setTimeout(() => this.syncSuccess.set(false), 2000);
+        this.isDirty.set(false);
       },
       error: () => {
         this.syncing.set(false);
@@ -83,6 +84,7 @@ export class PlanStore {
         this.plan.set(planToApply);
         this.persist(planToApply);
         this.activeTemplateId.set(planToApply.templateId ?? null);
+        this.isDirty.set(false);
         this.resetting.set(false);
         this.resetSuccess.set(true);
         setTimeout(() => this.resetSuccess.set(false), 2000);
@@ -92,6 +94,7 @@ export class PlanStore {
         this.plan.set(fallback);
         this.persist(fallback);
         this.activeTemplateId.set(null);
+        this.isDirty.set(false);
         this.resetting.set(false);
         this.resetError.set(true);
         setTimeout(() => this.resetError.set(false), 3000);
@@ -106,7 +109,10 @@ export class PlanStore {
       templateId: template.id,
     }));
     this.activeTemplateId.set(template.id);
-    this.afterMutation(false); // don't clear templateId
+    this.isDirty.set(true);
+    this.syncSuccess.set(false);
+    this.syncError.set(false);
+    this.afterMutation(false);
   }
 
   clearTemplate(): void {
@@ -116,6 +122,9 @@ export class PlanStore {
       days: p.days.map((d) => ({ ...d, label: '', muscleGroups: [], exercises: [], rest: true })),
     }));
     this.activeTemplateId.set(null);
+    this.isDirty.set(true);
+    this.syncSuccess.set(false);
+    this.syncError.set(false);
     this.afterMutation(false);
   }
 
@@ -254,6 +263,9 @@ export class PlanStore {
       this.activeTemplateId.set(null);
       this.plan.update((p) => ({ ...p, templateId: null }));
     }
+    this.isDirty.set(true);
+    this.syncSuccess.set(false);
+    this.syncError.set(false);
     this.persist(this.plan());
   }
 

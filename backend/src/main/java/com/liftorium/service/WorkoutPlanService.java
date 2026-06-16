@@ -29,7 +29,7 @@ public class WorkoutPlanService {
 
   /** Human-readable metadata for each template. */
   private static final Map<String, String[]> TEMPLATE_META = Map.of(
-      "ppl",         new String[]{"Push / Pull / Legs", "PPL",  "6 days — high frequency, great for intermediate lifters"},
+      "ppl",         new String[]{"Push / Pull / Legs", "PPL",  "3 days — high frequency, great for intermediate lifters"},
       "upper-lower", new String[]{"Upper / Lower",      "U/L",  "4 days — balanced volume, good for all levels"},
       "full-body",   new String[]{"Full Body",           "Full", "3 days — efficient, ideal for beginners"},
       "ppl-x-2",     new String[]{"PPL ×2",              "PPL×2","6 days — push/pull/legs twice a week"},
@@ -41,10 +41,10 @@ public class WorkoutPlanService {
   // ── Templates ─────────────────────────────────────────────────────────────
 
   public List<TemplateDto> getTemplates() {
-    return planRepository.findAllByTemplateIdIn(TEMPLATE_IDS).stream()
+    return planRepository.findAllByUserIdIn(TEMPLATE_IDS).stream()
         .map(plan -> {
-          String[] meta = TEMPLATE_META.getOrDefault(plan.getTemplateId(), new String[]{plan.getTemplateId(), plan.getTemplateId(), ""});
-          return new TemplateDto(plan.getTemplateId(), meta[0], meta[1], meta[2], toDayDtos(plan.getDays()));
+          String[] meta = TEMPLATE_META.getOrDefault(plan.getUserId(), new String[]{plan.getUserId(), plan.getUserId(), ""});
+          return new TemplateDto(plan.getUserId(), meta[0], meta[1], meta[2], toDayDtos(plan.getDays()));
         })
         .toList();
   }
@@ -62,7 +62,10 @@ public class WorkoutPlanService {
         .orElseGet(() -> WorkoutPlan.builder().userId(userId).build());
 
     plan.setDays(toDays(input.days()));
-    plan.setTemplateId(input.templateId());
+    // Only persist templateId as a reference marker — never allow a user plan to use
+    // a reserved template document ID (those docs have no userId and are queried separately)
+    String templateId = input.templateId();
+    plan.setTemplateId(TEMPLATE_IDS.contains(templateId) ? templateId : null);
     return toDto(planRepository.save(plan));
   }
 
