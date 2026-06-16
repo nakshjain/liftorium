@@ -3,20 +3,19 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DAY_LABELS, MUSCLE_GROUPS, PLAN_TEMPLATES, MuscleGroup } from '../plan.models';
 import { PlanStore } from '../plan.store';
-import { ExerciseService } from '../../exercises/exercise.service';
 import { Exercise } from '../../exercises/exercise.models';
 import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
+import { ExercisePickerComponent } from '../../../shared/ui/exercise-picker/exercise-picker';
 
 @Component({
   selector: 'app-plan-page',
-  imports: [RouterLink, FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent],
+  imports: [RouterLink, FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent, ExercisePickerComponent],
   templateUrl: './plan-page.html',
 })
 export class PlanPageComponent {
   protected readonly store = inject(PlanStore);
-  private readonly exerciseService = inject(ExerciseService);
   private readonly toastService = inject(ToastService);
 
   protected readonly templates = PLAN_TEMPLATES;
@@ -35,17 +34,12 @@ export class PlanPageComponent {
   protected readonly todayIndex = this.store.todayDayOfWeek;
 
   protected readonly searchingDay = signal<number | null>(null);
-  protected readonly searchQuery = signal('');
-  protected readonly searchResults = signal<Exercise[]>([]);
-  protected readonly exercisesLoading = signal(true);
-  protected readonly exerciseLoadError = signal(false);
 
   // Confirmation dialog state
   protected readonly showRemoveExerciseConfirm = signal(false);
   protected readonly showResetConfirm = signal(false);
   protected pendingRemoval: { dayOfWeek: number; exerciseIndex: number; exerciseName: string; setCount: number } | null = null;
 
-  private allExercises: Exercise[] = [];
   private templateSwitchTimeout: any = null;
 
   protected readonly planLoading = signal(true);
@@ -57,8 +51,6 @@ export class PlanPageComponent {
   });
 
   constructor() {
-    this.loadAllExercises();
-
     // Hide loading skeleton once the plan arrives from the server
     effect(() => {
       const plan = this.store.plan();
@@ -72,39 +64,6 @@ export class PlanPageComponent {
     if (this.templateSwitchTimeout) {
       clearTimeout(this.templateSwitchTimeout);
     }
-  }
-
-  private loadAllExercises(): void {
-    this.exercisesLoading.set(true);
-    this.exerciseLoadError.set(false);
-    this.allExercises = [];
-    this.fetchPage(undefined);
-  }
-
-  protected retryLoadExercises(): void {
-    this.loadAllExercises();
-  }
-
-  private fetchPage(cursor: string | undefined): void {
-    this.exerciseService.list({ limit: 100, cursor }).subscribe({
-      next: (page) => {
-        this.allExercises = [...this.allExercises, ...page.items];
-        if (page.hasNext && page.nextCursor) {
-          this.fetchPage(page.nextCursor);
-        } else {
-          this.exercisesLoading.set(false);
-          this.exerciseLoadError.set(false);
-        }
-      },
-      error: () => {
-        this.exercisesLoading.set(false);
-        this.exerciseLoadError.set(true);
-      },
-    });
-  }
-
-  protected get exerciseCount(): number {
-    return this.allExercises.length;
   }
 
   protected toggleDay(dayOfWeek: number): void {
@@ -123,14 +82,12 @@ export class PlanPageComponent {
   protected togglePresetGroups(dayOfWeek: number, presetGroups: MuscleGroup[]): void {
     const hasAll = this.hasAllPresetGroups(dayOfWeek, presetGroups);
     if (hasAll) {
-      // Remove all preset groups
       presetGroups.forEach(g => {
         if (this.hasMuscleGroup(dayOfWeek, g)) {
           this.store.toggleMuscleGroup(dayOfWeek, g);
         }
       });
     } else {
-      // Add all preset groups
       presetGroups.forEach(g => {
         if (!this.hasMuscleGroup(dayOfWeek, g)) {
           this.store.toggleMuscleGroup(dayOfWeek, g);
@@ -159,32 +116,13 @@ export class PlanPageComponent {
 
   protected openExerciseSearch(dayOfWeek: number): void {
     this.searchingDay.set(dayOfWeek);
-    this.searchQuery.set('');
-    this.searchResults.set([]);
   }
 
   protected closeExerciseSearch(): void {
     this.searchingDay.set(null);
-    this.searchQuery.set('');
-    this.searchResults.set([]);
   }
 
-  protected onSearchInput(value: string): void {
-    this.searchQuery.set(value);
-    if (value.length < 2) {
-      this.searchResults.set([]);
-      return;
-    }
-    const query = value.toLowerCase();
-    const filtered = this.allExercises
-      .filter((e) => e.name.toLowerCase().includes(query))
-      .slice(0, 15);
-    this.searchResults.set(filtered);
-  }
-
-  protected selectExercise(exercise: Exercise): void {
-    const dayOfWeek = this.searchingDay();
-    if (dayOfWeek === null) return;
+  protected onExerciseSelected(exercise: Exercise, dayOfWeek: number): void {
     this.store.addExercise(dayOfWeek, {
       exerciseId: exercise.id,
       exerciseName: exercise.name,
@@ -278,12 +216,9 @@ export class PlanPageComponent {
   }
 
   protected applyTemplateDebounced(template: any): void {
-    // Clear any pending template switch
     if (this.templateSwitchTimeout) {
       clearTimeout(this.templateSwitchTimeout);
     }
-
-    // Debounce rapid template switching
     this.templateSwitchTimeout = setTimeout(() => {
       this.store.applyTemplate(template);
     }, 200);
@@ -293,7 +228,6 @@ export class PlanPageComponent {
     if (this.templateSwitchTimeout) {
       clearTimeout(this.templateSwitchTimeout);
     }
-
     this.templateSwitchTimeout = setTimeout(() => {
       this.store.clearTemplate();
     }, 200);

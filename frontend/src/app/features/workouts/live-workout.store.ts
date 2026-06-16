@@ -1,8 +1,4 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
-import { Subject } from 'rxjs';
-import { ExerciseService } from '../exercises/exercise.service';
 import { PlanExercise } from '../plan/plan.models';
 import { WorkoutService } from './workout.service';
 import { ExerciseOption, LiveWorkout, PreviousSet, WorkoutExercise, WorkoutSet } from './live-workout.models';
@@ -12,19 +8,12 @@ const DEFAULT_REST_SECONDS = 90;
 
 @Injectable({ providedIn: 'root' })
 export class LiveWorkoutStore {
-  private readonly exerciseService = inject(ExerciseService);
   private readonly workoutService = inject(WorkoutService);
 
   private readonly workout = signal<LiveWorkout | null>(this.loadFromStorage());
   private readonly finishedWorkout = signal<LiveWorkout | null>(null);
   private readonly now = signal(Date.now());
   private readonly restEndsAt = signal<number | null>(null);
-
-  private readonly exerciseSearch$ = new Subject<string>();
-  readonly exerciseQuery = signal('');
-  readonly exercises = signal<ExerciseOption[]>([]);
-  readonly exercisesLoading = signal(false);
-  readonly exerciseError = signal<string | null>(null);
 
   readonly activeWorkout = this.workout.asReadonly();
   readonly lastFinishedWorkout = this.finishedWorkout.asReadonly();
@@ -62,47 +51,7 @@ export class LiveWorkoutStore {
   );
 
   constructor() {
-    this.exerciseSearch$.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap((q) => {
-        this.exercisesLoading.set(true);
-        this.exerciseError.set(null);
-        const call = q.length >= 2
-          ? this.exerciseService.search({ q, limit: 30 })
-          : this.exerciseService.list({ limit: 30 });
-        return call;
-      }),
-      takeUntilDestroyed(),
-    ).subscribe({
-      next: (page) => {
-        this.exercises.set(page.items.map((ex) => ({
-          id: ex.id,
-          name: ex.name,
-          target: ex.primaryMuscles[0] ?? '',
-          equipment: ex.equipment[0] ?? '',
-          previous: [],
-        })));
-        this.exercisesLoading.set(false);
-        this.exerciseError.set(null);
-      },
-      error: () => {
-        this.exercisesLoading.set(false);
-        this.exerciseError.set('Failed to load exercises.');
-      },
-    });
-
-    // Initial load
-    this.exerciseSearch$.next('');
-  }
-
-  searchExercises(query: string): void {
-    this.exerciseQuery.set(query);
-    this.exerciseSearch$.next(query);
-  }
-
-  retryExerciseSearch(): void {
-    this.exerciseSearch$.next(this.exerciseQuery());
+    // No search pipeline — exercise search is handled by ExercisePickerComponent.
   }
 
   tick(): void {
@@ -163,12 +112,11 @@ export class LiveWorkoutStore {
     this.clearStorage();
   }
 
-  addExercise(exerciseId: string): void {
-    const option = this.exercises().find((ex) => ex.id === exerciseId);
-    if (!option) return;
-
+  /** Add an exercise directly from the shared ExercisePickerComponent. */
+  addExerciseFromPicker(id: string, name: string, target: string, equipment: string): void {
     this.workout.update((workout) => {
-      if (!workout || workout.exercises.some((ex) => ex.exerciseId === exerciseId)) return workout;
+      if (!workout || workout.exercises.some((ex) => ex.exerciseId === id)) return workout;
+      const option: ExerciseOption = { id, name, target, equipment, previous: [] };
       const updated = { ...workout, exercises: [...workout.exercises, this.createWorkoutExercise(option)] };
       this.persist(updated);
       return updated;

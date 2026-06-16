@@ -60,7 +60,7 @@ export class ExerciseDetailPageComponent implements OnInit {
     if (!ex || this.adding()) return;
 
     this.adding.set(true);
-    this.liveWorkoutStore.addExercise(ex.id);
+    this.liveWorkoutStore.addExerciseFromPicker(ex.id, ex.name, ex.primaryMuscles[0] ?? '', ex.equipment[0] ?? '');
     this.toastService.success(`${ex.name} added to workout`);
 
     setTimeout(() => {
@@ -75,12 +75,10 @@ export class ExerciseDetailPageComponent implements OnInit {
 
     this.adding.set(true);
 
-    // Start a workout first if none is active, then add the exercise.
-    // addExercise() is a no-op when no workout exists, so the order matters.
     if (!this.liveWorkoutStore.activeWorkout()) {
       this.liveWorkoutStore.startNewWorkout();
     }
-    this.liveWorkoutStore.addExercise(ex.id);
+    this.liveWorkoutStore.addExerciseFromPicker(ex.id, ex.name, ex.primaryMuscles[0] ?? '', ex.equipment[0] ?? '');
     this.toastService.success(`Started workout with ${ex.name}`);
 
     setTimeout(() => {

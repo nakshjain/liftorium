@@ -107,26 +107,10 @@
     @if (activeTab() === 'exercises') {
       <section class="anim-enter-2 mt-4">
         <!-- Search -->
-        <div class="relative">
-          <!-- Search icon — pulses while debounce is pending to confirm the input was received -->
-          <svg
-            class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transition-colors"
-            [class.text-zinc-500]="!searchPending()"
-            [class.text-teal-400]="searchPending()"
-            [class.animate-pulse]="searchPending()"
-            fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-          </svg>
-          <input
-            type="search"
-            placeholder="Search exercises..."
-            class="h-11 w-full rounded-lg border border-zinc-800 bg-zinc-900 pl-9 pr-4 text-sm text-zinc-100 placeholder-zinc-600 outline-none transition focus:border-teal-400 focus:ring-1 focus:ring-teal-400/20"
-            [value]="searchQuery()"
-            (input)="onSearchInput($any($event.target).value)"
-            aria-label="Search exercises"
-          />
-        </div>
+        <app-exercise-search-input
+          [pending]="searchPending()"
+          (queryChange)="onSearchInput($event)"
+        />
 
         <!-- List -->
         <div class="mt-3">
