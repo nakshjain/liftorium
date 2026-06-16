@@ -53,6 +53,13 @@
     <!-- Template picker -->
     <section class="mt-5">
       <p class="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Start from a template</p>
+      @if (store.templatesLoading()) {
+        <div class="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+          @for (i of [1,2,3,4,5]; track i) {
+            <div class="h-16 w-24 shrink-0 animate-pulse rounded-xl bg-zinc-900/60"></div>
+          }
+        </div>
+      } @else {
       <div class="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
 
         <!-- Custom chip -->
@@ -69,7 +76,7 @@
           <p class="mt-0.5 text-xs text-zinc-500">Build your own</p>
         </button>
 
-        @for (template of templates; track template.id) {
+        @for (template of store.templates(); track template.id) {
           <button
             class="shrink-0 rounded-xl border px-4 py-3 text-left transition active:scale-[0.98]"
             [class.border-teal-400]="store.activeTemplateId() === template.id"
@@ -84,6 +91,7 @@
           </button>
         }
       </div>
+      }
       @if (activeTemplateDescription()) {
         <p class="mt-2 text-xs text-zinc-500">{{ activeTemplateDescription() }}</p>
       } @else {

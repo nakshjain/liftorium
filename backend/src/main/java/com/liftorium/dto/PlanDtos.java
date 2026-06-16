@@ -31,7 +31,8 @@ public final class PlanDtos {
   ) {}
 
   public record UpsertPlanRequest(
-      @NotNull @Size(min = 7, max = 7) @Valid List<PlanDayRequest> days
+      @NotNull @Size(min = 7, max = 7) @Valid List<PlanDayRequest> days,
+      String templateId
   ) {}
 
   public record PlanSetDto(
@@ -55,7 +56,16 @@ public final class PlanDtos {
 
   public record WorkoutPlanDto(
       String id,
+      String templateId,
       List<PlanDayDto> days,
       String updatedAt
+  ) {}
+
+  public record TemplateDto(
+      String id,
+      String name,
+      String shortName,
+      String description,
+      List<PlanDayDto> days
   ) {}
 }
