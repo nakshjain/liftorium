@@ -31,6 +31,17 @@ input {
   font: inherit;
 }
 
+input[type="number"] {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* ─── Easing tokens ────────────────────────────────────────────────────────
    From Emil Kowalski's design-engineering philosophy:
    --ease-out: strong ease-out for UI entrances (starts fast, feels responsive)
