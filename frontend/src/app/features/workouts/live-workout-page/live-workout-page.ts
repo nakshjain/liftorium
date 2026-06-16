@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LiveWorkout } from '../live-workout.models';
-import { Exercise } from '../../exercises/exercise.models';
+import { CachedExercise } from '../../exercises/cache/exercise-cache.models';
 import { LiveWorkoutStore } from '../live-workout.store';
 import { PlanStore } from '../../plan/plan.store';
 import { DAY_LABELS, PlanDay } from '../../plan/plan.models';
@@ -50,7 +50,7 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     () => new Set(this.store.activeWorkout()?.exercises.map((exercise) => exercise.exerciseId) ?? [])
   );
 
-  protected onExercisePicked(exercise: Exercise): void {
+  protected onExercisePicked(exercise: CachedExercise): void {
     this.store.addExerciseFromPicker(exercise.id, exercise.name, exercise.primaryMuscles[0] ?? '', exercise.equipment[0] ?? '');
   }
 

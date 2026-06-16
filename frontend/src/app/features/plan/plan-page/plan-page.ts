@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { DAY_LABELS, MUSCLE_GROUPS, PLAN_TEMPLATES, MuscleGroup } from '../plan.models';
 import { PlanStore } from '../plan.store';
-import { Exercise } from '../../exercises/exercise.models';
+import { CachedExercise } from '../../exercises/cache/exercise-cache.models';
 import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
@@ -122,7 +122,7 @@ export class PlanPageComponent {
     this.searchingDay.set(null);
   }
 
-  protected onExerciseSelected(exercise: Exercise, dayOfWeek: number): void {
+  protected onExerciseSelected(exercise: CachedExercise, dayOfWeek: number): void {
     this.store.addExercise(dayOfWeek, {
       exerciseId: exercise.id,
       exerciseName: exercise.name,
