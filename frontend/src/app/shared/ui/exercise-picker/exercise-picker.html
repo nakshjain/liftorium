@@ -1,0 +1,55 @@
+<div class="rounded-lg border border-teal-400/30 bg-zinc-900/60 p-3">
+
+  <app-exercise-search-input (queryChange)="onQueryChange($event)" />
+
+  @if (loading()) {
+    <div class="mt-3 space-y-1.5">
+      @for (i of [1,2,3,4]; track i) {
+        <div class="h-10 animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
+      }
+    </div>
+  } @else if (loadError()) {
+    <div class="mt-3 flex items-center gap-2">
+      <p class="text-xs text-red-400">Failed to load exercises</p>
+      <button
+        class="text-xs font-medium text-teal-400 transition hover:text-teal-300"
+        type="button"
+        (click)="retry()"
+      >Retry</button>
+    </div>
+  } @else if (searchResults().length > 0) {
+    <div class="mt-2 max-h-52 space-y-1 overflow-y-auto">
+      @for (exercise of searchResults(); track exercise.id) {
+        <button
+          class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left transition active:scale-[0.99]"
+          [class.bg-teal-400/10]="isAdded(exercise.id)"
+          [class.hover:bg-teal-400/15]="isAdded(exercise.id)"
+          [class.hover:bg-zinc-800]="!isAdded(exercise.id)"
+          type="button"
+          (click)="select(exercise)"
+        >
+          <span class="min-w-0 flex-1 truncate text-sm font-medium text-zinc-100">{{ exercise.name }}</span>
+          @if (isAdded(exercise.id)) {
+            <span class="shrink-0 rounded-full bg-teal-400/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-teal-400">Added</span>
+          } @else {
+            <span class="shrink-0 text-xs text-zinc-500">{{ exercise.primaryMuscles[0] }}</span>
+          }
+        </button>
+      }
+    </div>
+  } @else if (!loading() && searchQuery().length === 1) {
+    <p class="mt-3 text-xs text-zinc-500">Keep typing to search…</p>
+  } @else if (!loading() && searchQuery().length >= 2) {
+    <p class="mt-3 text-xs text-zinc-500">No exercises found</p>
+  } @else if (!loading() && searchQuery().length === 0) {
+    <p class="mt-3 text-xs text-zinc-600">Type at least 2 characters to search</p>
+  }
+
+  @if (showCancel) {
+    <button
+      class="mt-3 text-xs font-medium text-zinc-500 transition hover:text-zinc-300"
+      type="button"
+      (click)="cancel()"
+    >Cancel</button>
+  }
+</div>
