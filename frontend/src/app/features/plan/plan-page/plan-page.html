@@ -321,57 +321,11 @@
 
                 <!-- Add exercise button / search -->
                 @if (searchingDay() === day.dayOfWeek) {
-                  <div class="mt-3 rounded-lg border border-teal-400/30 bg-zinc-900/60 p-3">
-                    <input
-                      class="h-9 w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-50 outline-none transition placeholder:text-zinc-600 focus:border-teal-400/60 focus:ring-1 focus:ring-teal-400/30"
-                      type="text"
-                      placeholder="Search exercises..."
-                      [value]="searchQuery()"
-                      (input)="onSearchInput($any($event.target).value)"
-                      autofocus
+                  <div class="mt-3">
+                    <app-exercise-picker
+                      (exerciseSelected)="onExerciseSelected($event, day.dayOfWeek)"
+                      (cancelled)="closeExerciseSearch()"
                     />
-
-                    @if (exercisesLoading()) {
-                      <p class="mt-2 text-xs text-zinc-500">Loading exercises...</p>
-                    } @else if (exerciseLoadError()) {
-                      <div class="mt-2 flex items-center gap-2">
-                        <p class="text-xs text-red-400">Failed to load exercises</p>
-                        <button
-                          class="text-xs font-medium text-teal-400 transition hover:text-teal-300"
-                          type="button"
-                          (click)="retryLoadExercises()"
-                        >
-                          Retry
-                        </button>
-                      </div>
-                    }
-
-                    @if (searchResults().length) {
-                      <div class="mt-2 max-h-48 space-y-1 overflow-y-auto">
-                        @for (result of searchResults(); track result.id) {
-                          <button
-                            class="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left transition hover:bg-zinc-800"
-                            type="button"
-                            (click)="selectExercise(result)"
-                          >
-                            <span class="flex-1 truncate text-sm text-zinc-200">{{ result.name }}</span>
-                            <span class="shrink-0 text-xs text-zinc-400">{{ result.primaryMuscles.join(', ') }}</span>
-                          </button>
-                        }
-                      </div>
-                    } @else if (!exercisesLoading() && searchQuery().length === 1) {
-                      <p class="mt-2 text-xs text-zinc-500">Keep typing to search...</p>
-                    } @else if (!exercisesLoading() && searchQuery().length >= 2) {
-                      <p class="mt-2 text-xs text-zinc-500">No exercises found</p>
-                    }
-
-                    <button
-                      class="mt-2 text-xs font-medium text-zinc-500 transition hover:text-zinc-300"
-                      type="button"
-                      (click)="closeExerciseSearch()"
-                    >
-                      Cancel
-                    </button>
                   </div>
                 } @else {
                   <button

@@ -1,11 +1,12 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { debounceTime, distinctUntilChanged, Subject, switchMap, of } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ExerciseService } from '../exercise.service';
 import { Exercise, ExercisePage, ExerciseType } from '../exercise.models';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
+import { ExerciseSearchInputComponent } from '../../../shared/ui/exercise-search-input/exercise-search-input';
 
 type FilterState = {
   query: string;
@@ -16,7 +17,7 @@ type FilterState = {
 
 @Component({
   selector: 'app-exercises-page',
-  imports: [RouterLink, FormsModule, TrainingHubLinkComponent],
+  imports: [RouterLink, FormsModule, TrainingHubLinkComponent, ExerciseSearchInputComponent],
   templateUrl: './exercises-page.html',
   styleUrl: './exercises-page.scss'
 })

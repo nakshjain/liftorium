@@ -2,10 +2,12 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { LiveWorkout } from '../live-workout.models';
+import { Exercise } from '../../exercises/exercise.models';
 import { LiveWorkoutStore } from '../live-workout.store';
 import { PlanStore } from '../../plan/plan.store';
 import { DAY_LABELS, PlanDay } from '../../plan/plan.models';
 import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
+import { ExercisePickerComponent } from '../../../shared/ui/exercise-picker/exercise-picker';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { WorkoutService } from '../workout.service';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
@@ -18,7 +20,7 @@ type FinishedWorkoutSummary = {
 
 @Component({
   selector: 'app-live-workout-page',
-  imports: [RouterLink, FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent],
+  imports: [RouterLink, FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent, ExercisePickerComponent],
   templateUrl: './live-workout-page.html',
   styleUrl: './live-workout-page.scss'
 })
@@ -47,6 +49,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly addedExerciseIds = computed(
     () => new Set(this.store.activeWorkout()?.exercises.map((exercise) => exercise.exerciseId) ?? [])
   );
+
+  protected onExercisePicked(exercise: Exercise): void {
+    this.store.addExerciseFromPicker(exercise.id, exercise.name, exercise.primaryMuscles[0] ?? '', exercise.equipment[0] ?? '');
+  }
+
   protected readonly elapsedTimeLabel = computed(() => this.formatTime(this.store.elapsedSeconds()));
   protected readonly restTimerLabel = computed(() =>
     this.store.restTimerActive() ? this.formatTime(this.store.restRemainingSeconds()) : 'Ready'
@@ -94,10 +101,6 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     if (this.timerId !== null) {
       window.clearInterval(this.timerId);
     }
-  }
-
-  protected isExerciseAdded(exerciseId: string): boolean {
-    return this.addedExerciseIds().has(exerciseId);
   }
 
   protected inputValue(event: Event): string {
