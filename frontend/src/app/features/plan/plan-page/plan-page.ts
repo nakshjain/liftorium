@@ -1,6 +1,5 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { DAY_LABELS, MUSCLE_GROUPS, MuscleGroup } from '../plan.models';
 import { PlanStore } from '../plan.store';
 import { CachedExercise } from '../../exercises/cache/exercise-cache.models';
@@ -11,7 +10,7 @@ import { ExercisePickerComponent } from '../../../shared/ui/exercise-picker/exer
 
 @Component({
   selector: 'app-plan-page',
-  imports: [RouterLink, FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent, ExercisePickerComponent],
+  imports: [FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent, ExercisePickerComponent],
   templateUrl: './plan-page.html',
 })
 export class PlanPageComponent {

@@ -153,10 +153,7 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     this.authService
       .logout()
       .pipe(finalize(() => this.loggingOut.set(false)))
-      .subscribe({
-        next: () => void this.router.navigateByUrl('/auth/login'),
-        error: () => void this.router.navigateByUrl('/auth/login'),
-      });
+      .subscribe();
   }
 
   // ── Formatters ─────────────────────────────────────────────────────────

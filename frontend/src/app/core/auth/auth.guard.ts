@@ -3,6 +3,7 @@ import { ActivatedRouteSnapshot, CanActivateFn, Router, RouterStateSnapshot } fr
 import { catchError, map, of } from 'rxjs';
 import { AuthGateService } from './auth-gate.service';
 import { AuthService } from './auth.service';
+import { TokenStorageService } from './token-storage.service';
 
 function deriveFeatureName(route: ActivatedRouteSnapshot, url: string): string {
   if (route.data?.['feature']) {
@@ -20,9 +21,18 @@ function deriveFeatureName(route: ActivatedRouteSnapshot, url: string): string {
 export const authGuard: CanActivateFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
   const authService = inject(AuthService);
   const authGateService = inject(AuthGateService);
+  const tokenStorage = inject(TokenStorageService);
 
   if (authService.isAuthenticated()) {
     return true;
+  }
+
+  // Don't attempt a silent refresh when the user has explicitly signed out —
+  // the refresh cookie may still be in-flight and would re-authenticate them.
+  if (tokenStorage.isLoggedOut()) {
+    authGateService.returnUrl.set(state.url);
+    authGateService.pendingFeature.set(deriveFeatureName(route, state.url));
+    return of(false);
   }
 
   return authService.refreshSession().pipe(
