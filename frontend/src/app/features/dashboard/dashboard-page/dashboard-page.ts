@@ -122,6 +122,22 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   // ── Progress ───────────────────────────────────────────────────────────
   protected readonly progressOverview = signal<ProgressOverview | null>(null);
 
+  /**
+   * SVG stroke-dasharray for the week activity ring.
+   * Circle radius = 19, circumference = 2π×19 ≈ 119.4.
+   * Maps sessions this month to a max of 4 visible sessions per week (target).
+   * Capped at full circumference so it never overflows.
+   */
+  protected readonly weekRingDasharray = computed(() => {
+    const CIRCUMFERENCE = 2 * Math.PI * 19; // ≈ 119.38
+    const sessions = this.stats()?.sessions ?? 0;
+    // Show progress as sessions toward a weekly target of 4
+    const target = 4;
+    const ratio = Math.min(sessions / target, 1);
+    const filled = ratio * CIRCUMFERENCE;
+    return `${filled} ${CIRCUMFERENCE}`;
+  });
+
   // ── Lifecycle ─────────────────────────────────────────────────────────
   ngOnInit(): void {
     const currentMonth = this.getCurrentYearMonth();
