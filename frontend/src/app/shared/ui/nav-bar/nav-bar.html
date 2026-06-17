@@ -1,0 +1,51 @@
+<nav class="lft-nav">
+  <div class="lft-nav-inner">
+
+    <!-- Wordmark -->
+    <a routerLink="/app" class="lft-wordmark">Liftorium</a>
+
+    <!-- Auth controls -->
+    <div class="flex items-center gap-2">
+
+      @switch (authStatus()) {
+
+        @case ('checking') {
+          <div class="h-7 w-14 lft-skeleton rounded-lg" aria-hidden="true"></div>
+          <div class="h-7 w-18 lft-skeleton rounded-lg" aria-hidden="true"></div>
+        }
+
+        @case ('anonymous') {
+          <a
+            routerLink="/auth/login"
+            class="px-3 py-1.5 text-sm font-medium text-zinc-400 transition hover:text-zinc-100"
+          >Login</a>
+          <a
+            routerLink="/auth/signup"
+            class="lft-btn lft-btn-primary"
+            style="height:2rem; padding:0 0.875rem; font-size:0.8125rem;"
+          >Sign Up</a>
+        }
+
+        @case ('authenticated') {
+          <!-- Avatar -->
+          <div
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-400/15 ring-1 ring-teal-400/25"
+            aria-hidden="true"
+          >
+            <span class="text-[10px] font-bold leading-none text-teal-300">
+              {{ user()?.displayName?.charAt(0)?.toUpperCase() }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="lft-btn lft-btn-ghost"
+            style="height:2rem; padding:0 0.75rem; font-size:0.8125rem;"
+            (click)="onSignOut()"
+          >Sign Out</button>
+        }
+
+      }
+    </div>
+  </div>
+</nav>

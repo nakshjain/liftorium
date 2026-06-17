@@ -1,11 +1,12 @@
 <main class="min-h-dvh bg-zinc-950 pb-16 text-zinc-50">
   <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <header class="lft-page-header">
       <div class="flex items-center justify-between gap-3">
         <div>
           <app-training-hub-link />
-          <h1 class="mt-1 text-2xl font-semibold tracking-normal text-zinc-50">Exercise catalog</h1>
+          <h1 class="lft-page-title">Exercises</h1>
         </div>
       </div>
 
@@ -16,273 +17,206 @@
         />
       </div>
       @if (resultCount() !== null) {
-        <p class="mt-2 text-xs text-zinc-500">{{ resultCount() }} exercise{{ resultCount() === 1 ? '' : 's' }}</p>
+        <p class="mt-1.5 text-[11px] font-medium text-zinc-500">{{ resultCount() }} exercise{{ resultCount() === 1 ? '' : 's' }}</p>
       }
     </header>
 
-    <section class="mt-4">
-      <!-- Muscle group quick-picks -->
-      <div class="no-scrollbar relative flex items-center gap-2 pb-1">
-        <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Muscle</span>
+    <!-- ── Filters ────────────────────────────────────────────────── -->
+    <section class="mt-4 space-y-2">
+
+      <!-- Muscle quick-picks -->
+      <div class="no-scrollbar relative flex items-center gap-2 overflow-x-auto pb-1">
+        <span class="lft-section-label shrink-0">Muscle</span>
         @for (group of muscleGroups; track group.label) {
           <button
-            class="h-9 shrink-0 rounded-full border px-4 text-xs font-medium transition active:scale-[0.98]"
-            [class.border-teal-400]="hasGroupSelected(group.muscles)"
-            [class.bg-teal-400]="hasGroupSelected(group.muscles)"
-            [class.text-zinc-950]="hasGroupSelected(group.muscles)"
-            [class.border-zinc-700]="!hasGroupSelected(group.muscles)"
-            [class.text-zinc-300]="!hasGroupSelected(group.muscles)"
+            class="lft-chip shrink-0"
+            [class.lft-chip-active]="hasGroupSelected(group.muscles)"
             type="button"
             (click)="onMuscleFilter(group.muscles[0])"
-          >
-            {{ group.label }}
-          </button>
+          >{{ group.label }}</button>
         }
 
-        <!-- Muscle group onboarding tooltip -->
         @if (showMuscleGroupTooltip()) {
-          <div class="absolute left-0 top-full z-30 mt-2 w-72 rounded-lg border border-teal-400/30 bg-zinc-900 p-4 shadow-lg">
+          <div class="absolute left-0 top-full z-30 mt-2 w-72 rounded-2xl border border-teal-400/25 bg-zinc-900 p-4 shadow-xl">
             <div class="flex items-start gap-3">
-              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/20 text-teal-400">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-400">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
                 </svg>
               </div>
               <div class="flex-1">
                 <p class="text-sm font-semibold text-zinc-50">Quick muscle targeting</p>
-                <p class="mt-1 text-xs leading-relaxed text-zinc-400">Tap Upper, Lower, or Core for fast filtering. Need something specific? Use "Show all muscles" below.</p>
+                <p class="mt-1 text-xs leading-relaxed text-zinc-400">Tap Upper, Lower, or Core for fast filtering. Need a specific muscle? Use "All muscles" below.</p>
               </div>
             </div>
-            <button
-              class="mt-3 text-xs font-medium text-teal-400 hover:text-teal-300"
-              type="button"
-              (click)="dismissTooltip('muscleGroup')"
-            >
-              Got it
-            </button>
+            <button class="mt-3 text-xs font-semibold text-teal-400 hover:text-teal-300" type="button" (click)="dismissTooltip('muscleGroup')">Got it</button>
           </div>
         }
       </div>
 
-      <!-- Advanced muscle selection -->
+      <!-- Expand all muscles -->
       <button
-        class="mt-2 text-xs font-medium text-zinc-500 transition hover:text-teal-300"
+        class="text-xs font-medium text-zinc-500 transition hover:text-teal-300"
         type="button"
         (click)="toggleAdvancedMuscles()"
-      >
-        {{ showAdvancedMuscles() ? '− Hide all muscles' : '+ Show all muscles' }}
-      </button>
+      >{{ showAdvancedMuscles() ? '− Hide all muscles' : '+ All muscles' }}</button>
 
       @if (showAdvancedMuscles()) {
-        <div class="mt-3 flex flex-wrap gap-2 rounded-lg border border-zinc-800 bg-zinc-900/40 p-3">
+        <div class="flex flex-wrap gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-3">
           @for (group of muscleGroups; track group.label) {
             @for (muscle of group.muscles; track muscle) {
               <button
-                class="h-9 shrink-0 rounded-full border px-4 text-xs font-medium transition active:scale-[0.98]"
-                [class.border-teal-400]="filters().muscle === muscle"
-                [class.bg-teal-400]="filters().muscle === muscle"
-                [class.text-zinc-950]="filters().muscle === muscle"
-                [class.border-zinc-700]="filters().muscle !== muscle"
-                [class.text-zinc-300]="filters().muscle !== muscle"
+                class="lft-chip"
+                [class.lft-chip-active]="filters().muscle === muscle"
                 type="button"
                 (click)="onMuscleFilter(muscle)"
-              >
-                {{ muscle }}
-              </button>
+              >{{ muscle }}</button>
             }
           }
         </div>
       }
 
-      <div class="relative mt-2 flex items-center gap-2 pb-1">
-        <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Type</span>
-        <div class="no-scrollbar flex items-center gap-2 overflow-x-auto">
-        @for (type of exerciseTypes; track type.value) {
-          <button
-            class="h-9 shrink-0 rounded-full border px-4 text-xs font-medium transition active:scale-[0.98]"
-            [class.border-teal-400]="filters().exerciseType === type.value"
-            [class.bg-teal-400]="filters().exerciseType === type.value"
-            [class.text-zinc-950]="filters().exerciseType === type.value"
-            [class.border-zinc-700]="filters().exerciseType !== type.value"
-            [class.text-zinc-300]="filters().exerciseType !== type.value"
-            type="button"
-            (click)="onTypeFilter(filters().exerciseType === type.value ? '' : type.value)"
-          >
-            {{ type.label }}
-          </button>
-        }
+      <!-- Type filter -->
+      <div class="relative flex items-center gap-2">
+        <span class="lft-section-label shrink-0">Type</span>
+        <div class="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1">
+          @for (type of exerciseTypes; track type.value) {
+            <button
+              class="lft-chip shrink-0"
+              [class.lft-chip-active]="filters().exerciseType === type.value"
+              type="button"
+              (click)="onTypeFilter(filters().exerciseType === type.value ? '' : type.value)"
+            >{{ type.label }}</button>
+          }
         </div>
 
-        <!-- Exercise type onboarding tooltip -->
         @if (showExerciseTypeTooltip()) {
-          <div class="absolute left-0 top-full z-30 mt-2 w-80 rounded-lg border border-teal-400/30 bg-zinc-900 p-4 shadow-lg">
+          <div class="absolute left-0 top-full z-30 mt-2 w-80 rounded-2xl border border-teal-400/25 bg-zinc-900 p-4 shadow-xl">
             <div class="flex items-start gap-3">
-              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/20 text-teal-400">
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-400">
+                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
                 </svg>
               </div>
               <div class="flex-1">
-                <p class="text-sm font-semibold text-zinc-50">Exercise types explained</p>
+                <p class="text-sm font-semibold text-zinc-50">Exercise types</p>
                 <ul class="mt-2 space-y-1 text-xs text-zinc-400">
-                  <li><span class="font-medium text-zinc-300">Strength:</span> Resistance training (weights, bodyweight)</li>
-                  <li><span class="font-medium text-zinc-300">Cardio:</span> Aerobic conditioning</li>
-                  <li><span class="font-medium text-zinc-300">Stretching:</span> Flexibility and mobility</li>
-                  <li><span class="font-medium text-zinc-300">Plyometrics:</span> Explosive power movements</li>
+                  <li><span class="font-semibold text-zinc-300">Strength:</span> Weights &amp; bodyweight</li>
+                  <li><span class="font-semibold text-zinc-300">Cardio:</span> Aerobic conditioning</li>
+                  <li><span class="font-semibold text-zinc-300">Stretching:</span> Flexibility &amp; mobility</li>
+                  <li><span class="font-semibold text-zinc-300">Plyometrics:</span> Explosive power</li>
                 </ul>
               </div>
             </div>
-            <button
-              class="mt-3 text-xs font-medium text-teal-400 hover:text-teal-300"
-              type="button"
-              (click)="dismissTooltip('exerciseType')"
-            >
-              Got it
-            </button>
+            <button class="mt-3 text-xs font-semibold text-teal-400 hover:text-teal-300" type="button" (click)="dismissTooltip('exerciseType')">Got it</button>
           </div>
         }
       </div>
 
-      <div class="no-scrollbar mt-2 flex items-center gap-2 overflow-x-auto pb-1">
-        <span class="shrink-0 text-xs font-medium uppercase tracking-wide text-zinc-500">Level</span>
+      <!-- Level filter -->
+      <div class="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1">
+        <span class="lft-section-label shrink-0">Level</span>
         @for (lvl of levels; track lvl.value) {
           <button
-            class="h-9 shrink-0 rounded-full border px-4 text-xs font-medium transition active:scale-[0.98]"
-            [class.border-teal-400]="filters().level === lvl.value"
-            [class.bg-teal-400]="filters().level === lvl.value"
-            [class.text-zinc-950]="filters().level === lvl.value"
-            [class.border-zinc-700]="filters().level !== lvl.value"
-            [class.text-zinc-300]="filters().level !== lvl.value"
+            class="lft-chip shrink-0"
+            [class.lft-chip-active]="filters().level === lvl.value"
             type="button"
             (click)="onLevelFilter(filters().level === lvl.value ? '' : lvl.value)"
-          >
-            {{ lvl.label }}
-          </button>
+          >{{ lvl.label }}</button>
         }
       </div>
 
+      <!-- Active filter summary -->
       @if (hasActiveFilters()) {
-        <div class="relative mt-3 flex items-center justify-between gap-3 rounded-lg border border-zinc-800 bg-zinc-900/40 px-3 py-2">
+        <div class="relative flex items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 px-3 py-2">
           <p class="text-xs text-zinc-400">
             Showing
             @if (filters().muscle) { {{ filters().muscle }} }
-            @if (filters().muscle && (filters().exerciseType || filters().level)) { <span class="text-zinc-500">•</span> }
+            @if (filters().muscle && (filters().exerciseType || filters().level)) { <span class="text-zinc-600">·</span> }
             @if (filters().exerciseType) { {{ filters().exerciseType }} }
-            @if (filters().exerciseType && filters().level) { <span class="text-zinc-500">•</span> }
+            @if (filters().exerciseType && filters().level) { <span class="text-zinc-600">·</span> }
             @if (filters().level) { {{ filters().level }} }
-            exercises
           </p>
-          <button
-            class="shrink-0 text-xs font-medium text-rose-300 transition hover:text-rose-200"
-            type="button"
-            (click)="clearFilters()"
-          >
+          <button class="shrink-0 text-xs font-semibold text-rose-400 transition hover:text-rose-300" type="button" (click)="clearFilters()">
             Clear
           </button>
 
-          <!-- Filter logic onboarding tooltip -->
           @if (showFilterLogicTooltip()) {
-            <div class="absolute left-0 top-full z-30 mt-2 w-72 rounded-lg border border-teal-400/30 bg-zinc-900 p-4 shadow-lg">
+            <div class="absolute left-0 top-full z-30 mt-2 w-72 rounded-2xl border border-teal-400/25 bg-zinc-900 p-4 shadow-xl">
               <div class="flex items-start gap-3">
-                <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/20 text-teal-400">
-                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-400">
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
                   </svg>
                 </div>
                 <div class="flex-1">
-                  <p class="text-sm font-semibold text-zinc-50">How filters work</p>
-                  <p class="mt-1 text-xs leading-relaxed text-zinc-400">Multiple filters narrow your search (AND logic). For example: "Chest • Strength" shows only chest exercises that are also strength exercises.</p>
+                  <p class="text-sm font-semibold text-zinc-50">AND filtering</p>
+                  <p class="mt-1 text-xs leading-relaxed text-zinc-400">"Chest · Strength" shows only exercises matching both — Chest AND Strength.</p>
                 </div>
               </div>
-              <button
-                class="mt-3 text-xs font-medium text-teal-400 hover:text-teal-300"
-                type="button"
-                (click)="dismissTooltip('filterLogic')"
-              >
-                Got it
-              </button>
+              <button class="mt-3 text-xs font-semibold text-teal-400 hover:text-teal-300" type="button" (click)="dismissTooltip('filterLogic')">Got it</button>
             </div>
           }
         </div>
       }
     </section>
 
+    <!-- ── Exercise list ───────────────────────────────────────────── -->
     <section class="mt-5">
       @if (loading()) {
-        <div class="space-y-3">
+        <div class="space-y-2">
           @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
-            <div class="h-[72px] animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
+            <div class="lft-skeleton h-[72px] rounded-2xl"></div>
           }
         </div>
+
       } @else if (error()) {
-        <div class="rounded-lg border border-rose-400/20 bg-rose-400/5 px-5 py-6 text-center" role="alert">
-          <p class="text-sm font-medium text-rose-300">{{ error() }}</p>
+        <div class="lft-card rounded-2xl px-5 py-6 text-center" role="alert" style="border-color:rgba(251,113,133,0.20); background:rgba(251,113,133,0.05);">
+          <p class="text-sm font-semibold text-rose-300">{{ error() }}</p>
           <div class="mt-4 flex items-center justify-center gap-3">
-            <button
-              class="h-12 rounded-lg border border-zinc-700 px-5 text-sm font-medium text-zinc-300 transition hover:border-zinc-500 active:scale-[0.98]"
-              type="button"
-              (click)="retryLoad()"
-            >
-              Retry
-            </button>
+            <button class="lft-btn lft-btn-ghost" type="button" (click)="retryLoad()">Retry</button>
             @if (hasActiveFilters() || filters().query) {
-              <button
-                class="h-12 rounded-lg border border-rose-400/40 px-5 text-sm font-medium text-rose-300 transition hover:border-rose-400 active:scale-[0.98]"
-                type="button"
-                (click)="clearFilters()"
-              >
-                Clear filters
-              </button>
+              <button class="lft-btn lft-btn-danger" type="button" (click)="clearFilters()">Clear filters</button>
             }
           </div>
         </div>
+
       } @else if (exercises().length === 0) {
-        <div class="py-16 text-center">
-          <p class="text-base font-medium text-zinc-400">No exercises found</p>
+        <div class="lft-empty">
+          <p class="lft-empty-title">No exercises found</p>
           @if (hasActiveFilters() || filters().query) {
-            <p class="mt-1 text-sm text-zinc-600">Try different filters or search terms.</p>
+            <p class="lft-empty-body">Try different filters or search terms.</p>
           } @else {
-            <p class="mt-1 text-sm text-zinc-600">The exercise catalog is empty.</p>
+            <p class="lft-empty-body">The catalog is empty.</p>
           }
         </div>
+
       } @else {
         <div class="space-y-2">
           @for (exercise of exercises(); track exercise.id) {
             <a
-              class="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3.5 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
+              class="lft-card-interactive flex items-center justify-between gap-4 rounded-2xl px-4 py-3.5"
               [routerLink]="['/app/exercises', exercise.id]"
             >
               <div class="min-w-0 flex-1">
                 <p class="truncate text-sm font-semibold text-zinc-50">{{ exercise.name }}</p>
                 <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
                   @if (primaryMuscleLabel(exercise)) {
-                    <span class="rounded-full bg-teal-400/10 px-2 py-0.5 text-xs font-medium text-teal-300 ring-1 ring-teal-400/20">
-                      {{ primaryMuscleLabel(exercise) }}
-                    </span>
+                    <span class="lft-tag-accent">{{ primaryMuscleLabel(exercise) }}</span>
                   }
                   @if (exercise.equipment.length > 0) {
                     @for (eq of exercise.equipment.slice(0, 2); track eq) {
-                      <span class="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400">
-                        {{ eq }}
-                      </span>
+                      <span class="lft-tag">{{ eq }}</span>
                     }
                     @if (exercise.equipment.length > 2) {
-                      <span class="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400">
-                        +{{ exercise.equipment.length - 2 }}
-                      </span>
+                      <span class="lft-tag">+{{ exercise.equipment.length - 2 }}</span>
                     }
                   } @else {
-                    <span class="rounded-full bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-400">
-                      Bodyweight
-                    </span>
+                    <span class="lft-tag">Bodyweight</span>
                   }
                 </div>
               </div>
-              <div class="shrink-0">
-                <span class="rounded-full border border-zinc-700/60 px-2.5 py-1 text-xs font-medium text-zinc-500">
-                  {{ exercise.exerciseType }}
-                </span>
-              </div>
+              <span class="lft-tag shrink-0">{{ exercise.exerciseType }}</span>
             </a>
           }
         </div>
@@ -290,13 +224,11 @@
         @if (hasNext()) {
           <div class="mt-5 flex justify-center">
             <button
-              class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+              class="lft-btn lft-btn-ghost"
               type="button"
               [disabled]="loadingMore()"
               (click)="loadMore()"
-            >
-              {{ loadingMore() ? 'Loading...' : 'Load more' }}
-            </button>
+            >{{ loadingMore() ? 'Loading…' : 'Load more' }}</button>
           </div>
         }
       }

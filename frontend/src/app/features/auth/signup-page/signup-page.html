@@ -10,7 +10,6 @@
         placeholder="Alex"
         [control]="form.controls.displayName"
       />
-
       <app-auth-form-field
         autocomplete="email"
         label="Email"
@@ -18,7 +17,6 @@
         type="email"
         [control]="form.controls.email"
       />
-
       <app-auth-form-field
         autocomplete="new-password"
         label="Password"
@@ -28,28 +26,34 @@
       />
 
       @if (errorMessage()) {
-        <p class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200" role="alert" aria-live="assertive">
-          {{ errorMessage() }}
-        </p>
+        <div
+          class="auth-error rounded-xl border border-rose-500/25 bg-rose-500/[0.07] px-4 py-3"
+          role="alert"
+          aria-live="assertive"
+        >
+          <p class="text-sm text-rose-300">{{ errorMessage() }}</p>
+        </div>
       }
 
-      <button
-        class="mt-1 h-12 w-full rounded-xl bg-teal-400 px-4 text-sm font-bold tracking-wide text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
-        type="submit"
-        [disabled]="submitDisabled()"
-      >
-        @if (loading()) {
-          <span class="flex items-center justify-center gap-2">
-            <svg class="h-4 w-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-            </svg>
-            Sending code…
+      <div class="pt-1">
+        <button
+          class="lft-btn lft-btn-primary lft-btn-full lft-btn-lg btn-auth"
+          type="submit"
+          [disabled]="submitDisabled()"
+        >
+          <span class="btn-auth-content" [class.is-transitioning]="loading()">
+            @if (loading()) {
+              <svg class="h-4 w-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              Sending code…
+            } @else {
+              Continue
+            }
           </span>
-        } @else {
-          Continue
-        }
-      </button>
+        </button>
+      </div>
     </form>
 
     <p class="mt-7 text-center text-sm text-zinc-600">
@@ -57,6 +61,7 @@
       <a class="font-semibold text-zinc-300 transition-colors hover:text-zinc-50" routerLink="/auth/login">Sign in</a>
     </p>
   </app-auth-shell>
+
 } @else {
   <app-auth-shell
     title="Check your email."
@@ -72,28 +77,34 @@
       />
 
       @if (errorMessage()) {
-        <p class="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200" role="alert" aria-live="assertive">
-          {{ errorMessage() }}
-        </p>
+        <div
+          class="auth-error rounded-xl border border-rose-500/25 bg-rose-500/[0.07] px-4 py-3"
+          role="alert"
+          aria-live="assertive"
+        >
+          <p class="text-sm text-rose-300">{{ errorMessage() }}</p>
+        </div>
       }
 
-      <button
-        class="mt-1 h-12 w-full rounded-xl bg-teal-400 px-4 text-sm font-bold tracking-wide text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40"
-        type="submit"
-        [disabled]="verifyDisabled()"
-      >
-        @if (loading()) {
-          <span class="flex items-center justify-center gap-2">
-            <svg class="h-4 w-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-            </svg>
-            Verifying…
+      <div class="pt-1">
+        <button
+          class="lft-btn lft-btn-primary lft-btn-full lft-btn-lg btn-auth"
+          type="submit"
+          [disabled]="verifyDisabled()"
+        >
+          <span class="btn-auth-content" [class.is-transitioning]="loading()">
+            @if (loading()) {
+              <svg class="h-4 w-4 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              Verifying…
+            } @else {
+              Verify &amp; create account
+            }
           </span>
-        } @else {
-          Verify &amp; create account
-        }
-      </button>
+        </button>
+      </div>
     </form>
 
     <div class="mt-7 flex items-center justify-between">
@@ -101,9 +112,7 @@
         class="text-sm font-medium text-zinc-500 transition-colors hover:text-zinc-200"
         type="button"
         (click)="goBack()"
-      >
-        ← Back
-      </button>
+      >← Back</button>
 
       <button
         class="text-sm font-medium text-zinc-400 transition-colors hover:text-zinc-100 disabled:cursor-not-allowed disabled:text-zinc-700"
@@ -120,4 +129,3 @@
     </div>
   </app-auth-shell>
 }
-

@@ -107,6 +107,13 @@ export class AuthService {
   }
 
   public refreshSession(): Observable<AuthUser> {
+    // If the user explicitly logged out, do not attempt a silent refresh.
+    // The refresh cookie may still be present in the browser until the
+    // Set-Cookie maxAge=0 response is fully processed, so we must gate here.
+    if (this.tokenStorage.isLoggedOut()) {
+      return throwError(() => new Error('User has logged out'));
+    }
+
     return this.http
       .post<ApiSuccessResponse<AuthSessionData>>(
         `${this.apiBaseUrl}/auth/refresh`,
@@ -142,15 +149,16 @@ export class AuthService {
       .pipe(
         tap(() => this.clearSession()),
         map(() => undefined),
-        catchError((error: unknown) => {
+        catchError(() => {
           this.clearSession();
-          return throwError(() => error);
+          return of(undefined);
         })
       );
   }
 
   public clearSession(): void {
     this.tokenStorage.clearAccessToken();
+    this.tokenStorage.setLoggedOut();
     this.accessTokenSignal.set(null);
     this.userSignal.set(null);
     this.statusSignal.set('anonymous');

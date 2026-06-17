@@ -1,107 +1,109 @@
 <main class="min-h-dvh bg-zinc-950 pb-32 text-zinc-50">
   <div class="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-4 sm:px-6">
-    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+
+    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <header class="anim-enter lft-page-header">
       <div class="flex items-center justify-between gap-3">
         <div>
           <app-training-hub-link />
-          <h1 class="mt-1 text-2xl font-semibold tracking-normal text-zinc-50">Live workout</h1>
+          <h1 class="lft-page-title">Live workout</h1>
         </div>
         @if (store.activeWorkout()) {
-          <div class="rounded-lg border px-3 py-2 text-right" [class.border-teal-400/25]="!store.paused()" [class.bg-teal-400/10]="!store.paused()" [class.border-amber-400/25]="store.paused()" [class.bg-amber-400/10]="store.paused()">
-            <p class="text-xs font-medium uppercase tracking-wide" [class.text-teal-200]="!store.paused()" [class.text-amber-200]="store.paused()">{{ store.paused() ? 'Paused' : 'Elapsed' }}</p>
-            <p class="text-lg font-semibold" [class.text-teal-100]="!store.paused()" [class.text-amber-100]="store.paused()">{{ elapsedTimeLabel() }}</p>
+          <!-- Elapsed / paused timer pill -->
+          <div
+            class="rounded-xl border px-3 py-2 text-right"
+            [class.border-teal-400/25]="!store.paused()"
+            [class.bg-teal-400/8]="!store.paused()"
+            [class.border-amber-400/25]="store.paused()"
+            [class.bg-amber-400/8]="store.paused()"
+          >
+            <p
+              class="text-[10px] font-bold uppercase tracking-[0.12em]"
+              [class.text-teal-400]="!store.paused()"
+              [class.text-amber-400]="store.paused()"
+            >{{ store.paused() ? 'Paused' : 'Elapsed' }}</p>
+            <p
+              class="text-base font-black tabular-nums leading-tight"
+              [class.text-teal-300]="!store.paused()"
+              [class.text-amber-300]="store.paused()"
+            >{{ elapsedTimeLabel() }}</p>
           </div>
         }
       </div>
     </header>
 
+    <!-- ══════════════════════════════════════════════════
+         IDLE / PAUSED / FINISHED STATE
+    ══════════════════════════════════════════════════ -->
     @if (!store.activeWorkout() || store.paused()) {
       <section class="flex flex-1 flex-col justify-center py-8">
-        <div class="anim-enter-1 rounded-xl border border-zinc-800 bg-zinc-900/40 p-8">
+
+        <!-- Start / Resume card -->
+        <div class="anim-enter-1 lft-card rounded-2xl p-7">
           @if (finishedSummary(); as summary) {
-            <p class="text-xs font-medium uppercase tracking-wider text-teal-400">Workout finished</p>
-            <h2 class="mt-3 text-4xl font-semibold tracking-tight text-zinc-50">{{ summary.sets }} sets logged.</h2>
-            <p class="mt-4 max-w-xl text-base leading-7 text-zinc-400">
-              {{ formatVolume(summary.volume) }} kg across {{ summary.exercises }} exercises.
+            <!-- Post-workout summary -->
+            <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-teal-400">Session complete</p>
+            <h2 class="mt-2.5 text-3xl font-black tracking-tight text-zinc-50">
+              {{ summary.sets }} sets logged.
+            </h2>
+            <p class="mt-3 text-sm leading-relaxed text-zinc-400">
+              {{ formatVolume(summary.volume) }} kg lifted · {{ summary.exercises }} exercise{{ summary.exercises !== 1 ? 's' : '' }}
             </p>
 
             @if (authService.status() === 'anonymous') {
-              <!-- Guest: local-storage banner + CTAs -->
-              <div class="mt-6 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3">
-                <p class="text-sm font-medium text-amber-200">Your workout is stored locally</p>
-                <p class="mt-1 text-xs text-amber-300/70">Create an account to back it up and view your history.</p>
+              <!-- Guest: save nudge -->
+              <div class="mt-5 rounded-xl border border-amber-400/25 bg-amber-400/8 px-4 py-3">
+                <p class="text-sm font-semibold text-amber-300">Workout saved locally</p>
+                <p class="mt-0.5 text-xs text-amber-300/60">Create an account to back it up and unlock full history.</p>
               </div>
-              <div class="mt-4 flex flex-wrap gap-3">
-                <a
-                  routerLink="/auth/signup"
-                  class="inline-flex h-11 items-center rounded-lg bg-teal-400 px-5 text-sm font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99]"
-                >
-                  Create Account
-                </a>
-                <a
-                  routerLink="/auth/login"
-                  class="inline-flex h-11 items-center rounded-lg border border-zinc-600 px-5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-400 hover:text-zinc-50 active:scale-[0.99]"
-                >
-                  Login
-                </a>
-                <a
-                  routerLink="/app"
-                  class="inline-flex h-11 items-center rounded-lg border border-zinc-700 px-5 text-sm font-medium text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-300 active:scale-[0.99]"
-                >
-                  Continue as Guest
-                </a>
+              <div class="mt-4 flex flex-wrap gap-2.5">
+                <a routerLink="/auth/signup" class="lft-btn lft-btn-primary">Create Account</a>
+                <a routerLink="/auth/login"  class="lft-btn lft-btn-ghost">Login</a>
+                <a routerLink="/app"         class="lft-btn lft-btn-ghost">Back to hub</a>
               </div>
             } @else {
-              <!-- Authenticated: standard completion actions -->
-              <div class="mt-6 flex flex-wrap gap-3">
-                <a
-                  routerLink="/app/workouts/history"
-                  class="inline-flex h-11 items-center rounded-lg border border-zinc-600 px-5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-400 hover:text-zinc-50 active:scale-[0.99]"
-                >
-                  View History
-                </a>
-                <button
-                  class="inline-flex h-11 items-center rounded-lg bg-teal-400 px-5 text-sm font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99]"
-                  type="button"
-                  (click)="store.startNewWorkout()"
-                >
-                  Start New Workout
+              <div class="mt-5 flex flex-wrap gap-2.5">
+                <a routerLink="/app/workouts/history" class="lft-btn lft-btn-ghost">View History</a>
+                <button class="lft-btn lft-btn-primary" type="button" (click)="store.startNewWorkout()">
+                  New Workout
                 </button>
               </div>
             }
           } @else {
-            <h2 class="text-4xl font-semibold tracking-tight text-zinc-50">Start, tap, lift, repeat.</h2>
-            <p class="mt-4 max-w-xl text-base leading-7 text-zinc-400">
-              Previous numbers are visible while you log, set controls stay thumb-friendly, and rest starts the moment a set is checked off.
+            <!-- Pre-start state -->
+            <h2 class="text-3xl font-black tracking-tight text-zinc-50">Tap. Lift. Log. Repeat.</h2>
+            <p class="mt-3 text-sm leading-relaxed text-zinc-400">
+              Previous numbers stay visible while you log. Set controls are thumb-sized. Rest timer starts the moment a set is checked.
             </p>
           }
+
           <button
-            class="mt-8 h-14 w-full rounded-lg bg-teal-400 px-5 text-base font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99] sm:w-auto sm:px-10"
+            class="lft-btn lft-btn-primary lft-btn-full mt-7"
+            style="height:3.25rem; font-size:0.9375rem;"
             type="button"
             (click)="startFromPlan()"
           >
-            {{ store.paused() ? 'Resume workout' : 'Start workout' }}
+            {{ store.paused() ? 'Resume Workout' : 'Start Workout' }}
           </button>
           @if (store.paused()) {
             <button
-              class="mt-3 h-14 w-full rounded-lg border border-rose-400/40 px-5 text-base font-semibold text-rose-300 transition hover:border-rose-400 hover:text-rose-200 active:scale-[0.99] sm:w-auto sm:px-10"
+              class="lft-btn lft-btn-danger lft-btn-full mt-2.5"
+              style="height:3.25rem;"
               type="button"
               (click)="resetWorkout()"
-            >
-              Reset workout
-            </button>
-            <p class="mt-3 text-sm text-zinc-400">
-              Session paused at {{ formatTime(store.elapsedSeconds()) }}
+            >Reset workout</button>
+            <p class="mt-3 text-xs text-zinc-500">
+              Paused at {{ formatTime(store.elapsedSeconds()) }}
             </p>
           }
         </div>
 
-        <!-- Today's Plan -->
-        <div class="anim-enter-2 mt-6 rounded-xl border border-zinc-800 bg-zinc-900/40 p-6">
+        <!-- Today's plan card -->
+        <div class="anim-enter-2 lft-card mt-4 rounded-2xl p-5">
           <div class="flex items-center justify-between gap-3">
-            <h2 class="text-sm font-medium uppercase tracking-wider text-zinc-500">Today's plan</h2>
+            <p class="lft-section-label">Today's plan</p>
             <select
-              class="h-8 rounded-lg border border-zinc-700 bg-zinc-950 px-3 text-sm text-zinc-50 outline-none transition focus:border-teal-400/60"
+              class="h-8 rounded-lg border border-zinc-700 bg-zinc-950 px-3 text-xs font-medium text-zinc-300 outline-none transition focus:border-teal-400/60"
               [value]="selectedDayIndex()"
               (change)="onDayChange($any($event.target).value)"
             >
@@ -114,39 +116,32 @@
           </div>
 
           @if (!hasPlan()) {
-            <div class="mt-4 text-center">
-              <p class="text-sm text-zinc-400">No workout plan created yet.</p>
+            <div class="mt-4">
+              <p class="text-sm text-zinc-400">No plan set up yet.</p>
               <a
-                class="mt-3 inline-block rounded-lg border border-teal-400/40 px-4 py-2 text-sm font-medium text-teal-300 transition hover:border-teal-400 hover:text-teal-200"
+                class="mt-2 inline-block text-sm font-semibold text-teal-400 transition hover:text-teal-300"
                 routerLink="/app/plan"
-              >
-                Create a plan
-              </a>
+              >Build your split →</a>
             </div>
           } @else if (selectedDay().rest) {
-            <p class="mt-4 text-sm text-zinc-500">Rest day — no exercises scheduled.</p>
+            <p class="mt-4 text-sm text-zinc-500">Rest day — no session scheduled.</p>
           } @else if (selectedDay().exercises.length === 0) {
             <div class="mt-4">
-              <p class="text-sm text-zinc-400">
-                {{ selectedDay().label || dayLabels[selectedDayIndex()] }} — no exercises added yet.
-              </p>
-              <a
-                class="mt-2 inline-block text-sm font-medium text-teal-400 transition hover:text-teal-300"
-                routerLink="/app/plan"
-              >
-                Add exercises to this day
+              <p class="text-sm text-zinc-400">{{ selectedDay().label || dayLabels[selectedDayIndex()] }} — no exercises added yet.</p>
+              <a class="mt-1.5 inline-block text-sm font-semibold text-teal-400 transition hover:text-teal-300" routerLink="/app/plan">
+                Add exercises →
               </a>
             </div>
           } @else {
             <div class="mt-4">
               @if (selectedDay().label) {
-                <p class="mb-3 text-base font-semibold text-zinc-50">{{ selectedDay().label }}</p>
+                <p class="mb-3 text-sm font-bold text-zinc-100">{{ selectedDay().label }}</p>
               }
-              <div class="space-y-2">
+              <div class="space-y-1.5">
                 @for (exercise of selectedDay().exercises; track exercise.exerciseId) {
-                  <div class="flex items-center justify-between gap-3 rounded-lg border border-zinc-800 px-3 py-2.5">
+                  <div class="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 px-3 py-2.5">
                     <span class="truncate text-sm font-medium text-zinc-200">{{ exercise.exerciseName }}</span>
-                    <span class="shrink-0 text-xs text-zinc-500">{{ exercise.sets.length }} sets</span>
+                    <span class="shrink-0 text-[11px] font-medium text-zinc-500">{{ exercise.sets.length }} sets</span>
                   </div>
                 }
               </div>
@@ -154,26 +149,37 @@
           }
         </div>
       </section>
+
+    <!-- ══════════════════════════════════════════════════
+         ACTIVE LOGGING STATE
+    ══════════════════════════════════════════════════ -->
     } @else {
+
+      <!-- Stat strip -->
       <section class="anim-enter-1 grid grid-cols-3 gap-2 py-4">
-        <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
-          <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">Sets</p>
-          <p class="mt-2 text-2xl font-semibold tabular-nums">{{ store.completedSetCount() }}</p>
+        <div class="lft-card rounded-2xl p-4">
+          <p class="lft-section-label">Sets</p>
+          <p class="mt-2 text-2xl font-black tabular-nums leading-none">{{ store.completedSetCount() }}</p>
         </div>
-        <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
-          <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">Volume</p>
-          <p class="mt-2 text-2xl font-semibold tabular-nums">{{ store.totalVolume() }}<span class="ml-1 text-sm font-medium text-zinc-500">kg</span></p>
-        </div>
-        <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-4">
-          <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">Rest</p>
-          <p class="mt-2 text-2xl font-semibold tabular-nums" [class.text-teal-300]="store.restTimerActive()">
-            {{ restTimerLabel() }}
+        <div class="lft-card rounded-2xl p-4">
+          <p class="lft-section-label">Volume</p>
+          <p class="mt-2 text-2xl font-black tabular-nums leading-none">
+            {{ store.totalVolume() }}<span class="ml-0.5 text-sm font-semibold text-zinc-500">kg</span>
           </p>
+        </div>
+        <div class="lft-card rounded-2xl p-4">
+          <p class="lft-section-label">Rest</p>
+          <p
+            class="mt-2 text-2xl font-black tabular-nums leading-none transition-colors"
+            [class.text-teal-300]="store.restTimerActive()"
+            [class.text-zinc-50]="!store.restTimerActive()"
+          >{{ restTimerLabel() }}</p>
         </div>
       </section>
 
+      <!-- Exercise picker -->
       <section class="anim-enter-2 pb-4">
-        <h2 class="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Add exercise</h2>
+        <p class="lft-section-label mb-2.5">Add exercise</p>
         <app-exercise-picker
           [alreadyAddedIds]="addedExerciseIds()"
           [showCancel]="false"
@@ -181,99 +187,107 @@
         />
       </section>
 
+      <!-- Exercise list -->
       <section class="anim-enter-3 space-y-4">
         @for (exercise of store.activeWorkout()?.exercises; track exercise.id; let i = $index) {
           <article
-            class="anim-stagger rounded-lg border border-zinc-800 bg-zinc-900/70"
+            class="anim-stagger overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/70"
             [style]="'--stagger-i: ' + i"
           >
-            <div class="flex items-start justify-between gap-3 border-b border-zinc-800 p-4">
+            <!-- Exercise header -->
+            <div class="flex items-start justify-between gap-3 border-b border-zinc-800 px-4 py-4">
               <div>
-                <h2 class="text-lg font-semibold text-zinc-50">{{ exercise.name }}</h2>
-                <p class="mt-1 text-sm text-zinc-400">{{ exercise.target }} / {{ exercise.equipment }}</p>
+                <h2 class="text-base font-bold text-zinc-50">{{ exercise.name }}</h2>
+                <p class="mt-0.5 text-xs text-zinc-500">{{ exercise.target }} · {{ exercise.equipment }}</p>
               </div>
               <button
-                class="h-10 rounded-lg border border-zinc-700 px-3 text-sm font-medium text-zinc-300 transition hover:border-rose-400 hover:text-rose-200"
+                class="lft-btn lft-btn-ghost"
+                style="height:2rem; padding:0 0.75rem; font-size:0.75rem; border-color: rgba(251,113,133,0.25); color: #fb7185;"
                 type="button"
                 (click)="store.removeExercise(exercise.id)"
-              >
-                Remove
-              </button>
+              >Remove</button>
             </div>
 
-            <div class="grid grid-cols-[2.5rem_1fr_1fr_4rem] gap-2 border-b border-zinc-800 px-4 py-2 text-xs font-medium uppercase tracking-wide text-zinc-500">
-              <span>Set</span>
-              <span>Weight</span>
-              <span>Reps</span>
-              <span class="text-right">Done</span>
+            <!-- Column headers -->
+            <div class="grid grid-cols-[2.5rem_1fr_1fr_4rem] gap-2 border-b border-zinc-800/60 px-4 py-2">
+              <span class="lft-section-label">Set</span>
+              <span class="lft-section-label">Weight</span>
+              <span class="lft-section-label">Reps</span>
+              <span class="lft-section-label text-right">Done</span>
             </div>
 
-            <div class="divide-y divide-zinc-800">
+            <!-- Set rows -->
+            <div class="divide-y divide-zinc-800/60">
               @for (set of exercise.sets; track set.id) {
-                <div class="grid grid-cols-[2.5rem_1fr_1fr_4rem] items-center gap-2 px-4 py-3" [class.bg-teal-400/5]="set.completed">
+                <div
+                  class="grid grid-cols-[2.5rem_1fr_1fr_4rem] items-center gap-2 px-4 py-2.5 transition-colors"
+                  [class.bg-teal-400/5]="set.completed"
+                >
+                  <!-- Set number + previous -->
                   <div>
-                    <p class="text-base font-semibold text-zinc-300">{{ set.order }}</p>
-                    <p class="text-xs text-zinc-600">{{ previousSetLabel(exercise.previous, set.order - 1) }}</p>
+                    <p class="text-sm font-bold text-zinc-300">{{ set.order }}</p>
+                    <p class="text-[10px] font-medium text-zinc-600">{{ previousSetLabel(exercise.previous, set.order - 1) }}</p>
                   </div>
 
-                  <div class="grid grid-cols-[2.5rem_1fr_2.5rem] overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition focus-within:border-teal-400/60 sm:grid-cols-[2.5rem_1fr_2.5rem]">
-                    <button class="hidden h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', -2.5)">-</button>
+                  <!-- Weight stepper -->
+                  <div class="grid grid-cols-[2rem_1fr_2rem] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[2.25rem_1fr_2.25rem]">
+                    <button class="lft-stepper-btn hidden h-11 text-base font-bold text-zinc-400 hover:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', -2.5)">−</button>
                     <input
-                      class="col-span-3 h-11 min-w-0 bg-transparent text-center text-base font-semibold text-zinc-50 outline-none focus:outline-none sm:col-span-1"
+                      class="lft-set-input col-span-3 sm:col-span-1"
                       inputmode="decimal"
                       type="number"
                       [value]="set.weight"
                       (focus)="selectAll($event)"
                       (input)="store.setValue(exercise.id, set.id, 'weight', inputValue($event))"
                     />
-                    <button class="hidden h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', 2.5)">+</button>
+                    <button class="lft-stepper-btn hidden h-11 text-base font-bold text-zinc-400 hover:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', 2.5)">+</button>
                   </div>
 
-                  <div class="grid grid-cols-[2.5rem_1fr_2.5rem] overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition focus-within:border-teal-400/60 sm:grid-cols-[2.5rem_1fr_2.5rem]">
-                    <button class="hidden h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)">-</button>
+                  <!-- Reps stepper -->
+                  <div class="grid grid-cols-[2rem_1fr_2rem] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[2.25rem_1fr_2.25rem]">
+                    <button class="lft-stepper-btn hidden h-11 text-base font-bold text-zinc-400 hover:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)">−</button>
                     <input
-                      class="col-span-3 h-11 min-w-0 bg-transparent text-center text-base font-semibold text-zinc-50 outline-none focus:outline-none sm:col-span-1"
+                      class="lft-set-input col-span-3 sm:col-span-1"
                       inputmode="numeric"
                       type="number"
                       [value]="set.reps"
                       (focus)="selectAll($event)"
                       (input)="store.setValue(exercise.id, set.id, 'reps', inputValue($event))"
                     />
-                    <button class="hidden h-11 text-lg font-semibold text-zinc-300 active:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)">+</button>
+                    <button class="lft-stepper-btn hidden h-11 text-base font-bold text-zinc-400 hover:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)">+</button>
                   </div>
 
+                  <!-- Done toggle — highest-frequency tap in the app -->
                   <button
-                    class="h-11 rounded-lg border text-sm font-bold transition active:scale-95"
-                    [class.border-teal-300]="set.completed"
-                    [class.bg-teal-300]="set.completed"
+                    class="lft-set-done h-11 rounded-xl border text-xs font-bold tracking-wide"
+                    [class.border-teal-400]="set.completed"
+                    [class.bg-teal-400]="set.completed"
                     [class.text-zinc-950]="set.completed"
                     [class.border-zinc-700]="!set.completed"
-                    [class.text-zinc-300]="!set.completed"
+                    [class.text-zinc-400]="!set.completed"
                     type="button"
                     (click)="store.toggleSetComplete(exercise.id, set.id)"
-                  >
-                    {{ set.completed ? 'Done' : 'Tap' }}
-                  </button>
+                    [attr.aria-label]="set.completed ? 'Mark set incomplete' : 'Mark set complete'"
+                    [attr.aria-pressed]="set.completed"
+                  >{{ set.completed ? '✓' : '—' }}</button>
                 </div>
               }
             </div>
 
+            <!-- Add / remove set -->
             <div class="flex gap-2 p-4">
               <button
-                class="h-12 flex-1 rounded-lg border border-zinc-700 bg-zinc-950 text-sm font-semibold text-zinc-100 transition active:scale-[0.99]"
+                class="lft-btn lft-btn-ghost flex-1"
                 type="button"
                 (click)="store.addSet(exercise.id)"
-              >
-                Add set
-              </button>
+              >+ Add set</button>
               @if (exercise.sets.length > 1) {
                 <button
-                  class="h-12 rounded-lg border border-zinc-700 px-4 text-sm font-semibold text-zinc-300 transition active:scale-[0.99]"
+                  class="lft-btn lft-btn-ghost"
+                  style="padding:0 0.875rem;"
                   type="button"
                   (click)="store.removeSet(exercise.id, exercise.sets[exercise.sets.length - 1].id)"
-                >
-                  Remove last
-                </button>
+                >Remove last</button>
               }
             </div>
           </article>
@@ -282,70 +296,57 @@
     }
   </div>
 
+  <!-- ── Footer action bar (active workout only) ───────────────────── -->
   @if (store.activeWorkout() && !store.paused()) {
     <footer class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-800 bg-zinc-950/95 px-4 py-3 backdrop-blur">
-      <div class="mx-auto grid max-w-3xl grid-cols-[1fr_auto_auto] gap-3">
+      <div class="mx-auto grid max-w-3xl grid-cols-[1fr_auto_auto] gap-2.5">
+        <!-- Rest controls -->
         <div class="grid grid-cols-2 gap-2">
-          <button
-            class="h-12 rounded-lg border border-zinc-700 text-sm font-semibold text-zinc-200 active:bg-zinc-800"
-            type="button"
-            (click)="store.addRestTime(30)"
-          >
-            +30s rest
-          </button>
-          <button
-            class="h-12 rounded-lg border border-zinc-700 text-sm font-semibold text-zinc-200 active:bg-zinc-800"
-            type="button"
-            (click)="store.skipRest()"
-          >
-            Skip rest
-          </button>
+          <button class="lft-btn lft-btn-ghost h-12 text-xs" type="button" (click)="store.addRestTime(30)">+30s rest</button>
+          <button class="lft-btn lft-btn-ghost h-12 text-xs" type="button" (click)="store.skipRest()">Skip rest</button>
         </div>
+        <!-- Pause -->
         <button
-          class="h-12 rounded-lg border border-amber-400/60 px-4 text-sm font-bold text-amber-300 transition active:scale-[0.99]"
+          class="lft-btn h-12 border border-amber-400/50 px-4 text-xs font-bold text-amber-300 hover:border-amber-400 hover:bg-amber-400/8"
           type="button"
           (click)="store.pauseWorkout()"
-        >
-          Pause
-        </button>
+        >Pause</button>
+        <!-- Finish -->
         <button
-          class="h-12 rounded-lg px-5 text-sm font-bold transition active:scale-[0.99]"
+          class="lft-btn h-12 px-5 text-xs font-bold"
           [class.bg-teal-400]="hasCompletedSets()"
           [class.text-zinc-950]="hasCompletedSets()"
           [class.bg-zinc-800]="!hasCompletedSets()"
           [class.text-zinc-500]="!hasCompletedSets()"
           [class.cursor-not-allowed]="!hasCompletedSets()"
+          [class.opacity-50]="!hasCompletedSets()"
           type="button"
           [disabled]="!hasCompletedSets()"
-          [title]="hasCompletedSets() ? '' : 'Complete at least one set to finish'"
+          [title]="hasCompletedSets() ? '' : 'Log at least one set to finish'"
           (click)="finishWorkout()"
-        >
-          {{ hasCompletedSets() ? 'Finish' : 'Log a set first' }}
-        </button>
+        >{{ hasCompletedSets() ? 'Finish' : 'No sets yet' }}</button>
       </div>
     </footer>
   }
 
-  <!-- Reset Confirmation Dialog -->
+  <!-- Dialogs -->
   <app-confirmation-dialog
     [isOpen]="showResetConfirm()"
     title="Reset workout?"
-    message="All logged sets will be lost."
+    message="All logged sets will be cleared."
     confirmLabel="Reset"
-    cancelLabel="Cancel"
+    cancelLabel="Keep going"
     [destructive]="true"
     (confirm)="confirmReset()"
     (cancel)="cancelReset()"
   />
-
-  <!-- Finish Confirmation Dialog -->
   <app-confirmation-dialog
     [isOpen]="showFinishConfirm()"
     title="Finish workout?"
-    message="This will end your session and save your progress."
+    message="This ends your session and saves your progress."
     [details]="finishConfirmDetails()"
     confirmLabel="Finish"
-    cancelLabel="Cancel"
+    cancelLabel="Keep going"
     (confirm)="confirmFinish()"
     (cancel)="cancelFinish()"
   />

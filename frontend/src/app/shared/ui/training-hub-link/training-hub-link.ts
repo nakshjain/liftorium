@@ -12,9 +12,9 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   template: `
     <a
-      class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200"
+      class="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-600 transition hover:text-zinc-400"
       routerLink="/app"
-    >← Training hub</a>
+    >← Hub</a>
   `,
 })
 export class TrainingHubLinkComponent {}

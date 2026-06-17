@@ -1,236 +1,893 @@
 @import "@fontsource-variable/geist";
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   LIFTORIUM DESIGN SYSTEM
+   Brand: disciplined · precise · progressive · built for the gym floor
+   Palette: Obsidian base · Forge teal accent · clean zinc neutrals
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Base ──────────────────────────────────────────────────────────────── */
 :root {
   color-scheme: dark;
   font-family:
-    "Geist Variable", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
-    "Segoe UI", sans-serif;
-  background: #09090b;
-  color: #f4f4f5;
+    "Geist Variable", ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* ── Color tokens ──────────────────────────────────────────────────────
+     Accent: --lft-accent   Forge teal — signals action, progress, completion
+     All other surfaces: zinc scale only — no warm grays, no competing hues  */
+
+  /* Accent — teal-400 family */
+  --lft-accent:          #2dd4bf;   /* teal-400 */
+  --lft-accent-dim:      #2dd4bf26; /* teal-400/15 — tinted surfaces */
+  --lft-accent-ring:     #2dd4bf40; /* teal-400/25 — rings, borders */
+  --lft-accent-text:     #5eead4;   /* teal-300 — readable on dark */
+  --lft-accent-hover:    #99f6e4;   /* teal-200 — hover states */
+
+  /* Status */
+  --lft-success:         #4ade80;   /* green-400 */
+  --lft-warning:         #fbbf24;   /* amber-400 */
+  --lft-danger:          #fb7185;   /* rose-400 */
+  --lft-danger-dim:      #fb718520; /* rose-400/12 — error surfaces */
+  --lft-danger-border:   #fb718540; /* rose-400/25 — error borders */
+
+  /* Surfaces — obsidian scale */
+  --lft-base:            #09090b;   /* zinc-950 — page background */
+  --lft-surface-0:       #09090b;   /* zinc-950 — deepest */
+  --lft-surface-1:       #111113;   /* zinc-900 dim — recessed cards */
+  --lft-surface-2:       #18181b;   /* zinc-900 — standard card */
+  --lft-surface-3:       #1f1f23;   /* zinc-800/80 — elevated card */
+  --lft-surface-hover:   #27272a;   /* zinc-800 — hover */
+
+  /* Borders */
+  --lft-border-subtle:   #27272a;   /* zinc-800 — default border */
+  --lft-border-strong:   #3f3f46;   /* zinc-700 — hover / interactive border */
+  --lft-border-accent:   #2dd4bf33; /* teal/20 — accent card border */
+
+  /* Text */
+  --lft-text-primary:    #fafafa;   /* zinc-50 */
+  --lft-text-secondary:  #a1a1aa;   /* zinc-400 */
+  --lft-text-tertiary:   #71717a;   /* zinc-500 */
+  --lft-text-muted:      #3f3f46;   /* zinc-700 — placeholder/empty */
+  --lft-text-accent:     #5eead4;   /* teal-300 */
+
+  background: var(--lft-base);
+  color: var(--lft-text-primary);
 }
 
-* {
-  box-sizing: border-box;
-}
+/* ─── Reset ─────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
 
-html,
-body {
-  min-height: 100%;
-  margin: 0;
-}
+html, body { min-height: 100%; margin: 0; }
 
 body {
   background:
-    radial-gradient(ellipse 80% 50% at 0% 0%, rgba(20, 184, 166, 0.18), transparent 55%),
-    #09090b;
+    radial-gradient(ellipse 70% 40% at 0% 0%, rgba(45, 212, 191, 0.10), transparent 60%),
+    var(--lft-base);
 }
 
-button,
-input {
-  font: inherit;
-}
+button, input, select, textarea { font: inherit; }
 
+/* Hide number spinners — gym inputs need clean tap targets */
 input[type="number"] {
   -webkit-tap-highlight-color: transparent;
   outline: none;
 }
-
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* ─── Easing tokens ────────────────────────────────────────────────────────
-   From Emil Kowalski's design-engineering philosophy:
-   --ease-out: strong ease-out for UI entrances (starts fast, feels responsive)
-   --ease-in-out: for on-screen morphs
-   ───────────────────────────────────────────────────────────────────────── */
+/* Thin custom scrollbar — doesn't eat layout width */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--lft-border-subtle); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--lft-border-strong); }
+
+/* Hide scrollbar for filter chip rows (no-scrollbar utility) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Easing tokens ─────────────────────────────────────────────────────── */
 :root {
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
   --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ─── Entrance keyframes ───────────────────────────────────────────────────
-   Never animate from scale(0) — nothing in the real world appears from nothing.
-   Start from scale(0.98) + translateY so the element has visible shape at rest.
-   ───────────────────────────────────────────────────────────────────────── */
+/* ─── Typography scale ──────────────────────────────────────────────────── */
+/*
+  Display  — workout names, PR numbers, big metrics   font-black  tracking-tight
+  Heading  — page titles, section headers              font-bold   tracking-tight
+  Label    — card titles, nav items                   font-medium
+  Body     — descriptions, plan text                  font-normal leading-relaxed
+  Caption  — metadata, timestamps, units              font-medium text-[11px]
+  Mono-num — stat values, tabular metrics             font-black  tabular-nums
+*/
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   COMPONENT PRIMITIVES
+   Reusable semantic classes applied across every surface.
+   These sit on top of Tailwind — they carry Liftorium's specific decisions.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Cards ─────────────────────────────────────────────────────────────── */
+/*
+  Radius system (locked — never deviate):
+    Cards / modals:  rounded-2xl  (16px)
+    Buttons / pills: rounded-xl   (12px)
+    Inputs:          rounded-xl   (12px)
+    Tags / chips:    rounded-full
+    Table cells:     rounded-lg   (8px) or sharp
+*/
+
+/* Base card — default surface for content blocks */
+.lft-card {
+  border-radius: 1rem; /* rounded-2xl */
+  border: 1px solid var(--lft-border-subtle);
+  background: color-mix(in srgb, var(--lft-surface-2) 60%, transparent);
+  /* No transition — non-interactive cards never animate */
+}
+
+/* Interactive card (link/button) — adds hover + press */
+.lft-card-interactive {
+  border-radius: 1rem;
+  border: 1px solid var(--lft-border-subtle);
+  background: color-mix(in srgb, var(--lft-surface-2) 60%, transparent);
+  /* Explicit properties only — never transition:all (animates layout, causes repaints) */
+  transition:
+    border-color 150ms var(--ease-out),
+    background-color 150ms var(--ease-out),
+    box-shadow 150ms var(--ease-out),
+    transform 80ms var(--ease-out);
+}
+/* Hover gated to pointer devices — touch taps shouldn't trigger hover state */
+@media (hover: hover) and (pointer: fine) {
+  .lft-card-interactive:hover {
+    border-color: var(--lft-border-strong);
+    background: var(--lft-surface-2);
+  }
+}
+.lft-card-interactive:active {
+  /* 0.985 is clearly readable; 80ms makes press feel instant */
+  transform: scale(0.985);
+  transition-duration: 80ms;
+}
+
+/* Accent card — hero action surface (start workout, primary CTA) */
+.lft-card-accent {
+  border-radius: 1rem;
+  border: 1px solid var(--lft-border-accent);
+  background: var(--lft-accent-dim);
+  box-shadow: inset 0 1px 0 rgba(45, 212, 191, 0.10);
+  transition:
+    border-color 150ms var(--ease-out),
+    background-color 150ms var(--ease-out),
+    box-shadow 150ms var(--ease-out),
+    transform 80ms var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lft-card-accent:hover {
+    border-color: rgba(45, 212, 191, 0.35);
+    background: rgba(45, 212, 191, 0.10);
+  }
+}
+.lft-card-accent:active {
+  transform: scale(0.985);
+  transition-duration: 80ms;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────────────────── */
+
+/* Primary — forge teal fill. One per screen. */
+.lft-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 2.75rem; /* 44px — minimum tap target */
+  padding: 0 1.25rem;
+  border-radius: 0.75rem; /* rounded-xl */
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  /* Explicit properties — no transition:all */
+  transition:
+    background-color 150ms var(--ease-out),
+    border-color 150ms var(--ease-out),
+    color 150ms var(--ease-out),
+    box-shadow 150ms var(--ease-out),
+    transform 80ms var(--ease-out),
+    opacity 150ms var(--ease-out);
+  will-change: transform;
+  user-select: none;
+}
+/* Press feedback — 80ms snap, scale 0.97 is clearly readable */
+.lft-btn:active:not(:disabled) {
+  transform: scale(0.97);
+  transition-duration: 80ms;
+}
+.lft-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+/* Keyboard focus — visible ring, not outline:none */
+.lft-btn:focus-visible {
+  outline: 2px solid var(--lft-accent);
+  outline-offset: 2px;
+}
+
+.lft-btn-primary {
+  background: var(--lft-accent);
+  color: #09090b; /* zinc-950 — max contrast on teal */
+}
+@media (hover: hover) and (pointer: fine) {
+  .lft-btn-primary:hover:not(:disabled) {
+    background: var(--lft-accent-hover);
+    /* Subtle lift — elevation communicates interactivity */
+    box-shadow: 0 0 0 1px rgba(45, 212, 191, 0.30), 0 4px 12px rgba(45, 212, 191, 0.18);
+  }
+}
+
+/* Ghost — bordered secondary action */
+.lft-btn-ghost {
+  background: transparent;
+  color: var(--lft-text-secondary);
+  border: 1px solid var(--lft-border-subtle);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lft-btn-ghost:hover:not(:disabled) {
+    border-color: var(--lft-border-strong);
+    color: var(--lft-text-primary);
+  }
+}
+
+/* Danger — destructive action */
+.lft-btn-danger {
+  background: transparent;
+  color: var(--lft-danger);
+  border: 1px solid rgba(251, 113, 133, 0.30);
+}
+@media (hover: hover) and (pointer: fine) {
+  .lft-btn-danger:hover:not(:disabled) {
+    border-color: var(--lft-danger);
+    background: rgba(251, 113, 133, 0.06);
+  }
+}
+
+/* Full-width variant */
+.lft-btn-full { width: 100%; }
+
+/* Large variant — workout start, auth submit */
+.lft-btn-lg { height: 3rem; padding: 0 1.5rem; font-size: 0.9375rem; }
+
+/* Spinner content crossfade during loading state */
+.lft-btn-content {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  transition: opacity 180ms ease, filter 180ms ease;
+}
+.lft-btn-content.is-loading { opacity: 0.55; filter: blur(1px); }
+
+/* ─── Inputs ─────────────────────────────────────────────────────────────── */
+
+.lft-input {
+  height: 2.75rem;
+  width: 100%;
+  border-radius: 0.75rem; /* rounded-xl */
+  border: 1px solid var(--lft-border-subtle);
+  background: color-mix(in srgb, var(--lft-surface-2) 60%, transparent);
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  color: var(--lft-text-primary);
+  outline: none;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+.lft-input::placeholder { color: var(--lft-text-muted); }
+.lft-input:hover:not(:focus) {
+  border-color: var(--lft-border-strong);
+  background: var(--lft-surface-2);
+}
+.lft-input:focus {
+  border-color: rgba(45, 212, 191, 0.70);
+  background: var(--lft-surface-2);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.10);
+}
+
+/* Label — above every input */
+.lft-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.6875rem; /* 11px */
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lft-text-tertiary);
+}
+
+/* Inline set-logging input — compact, inside a grid cell */
+.lft-set-input {
+  height: 2.75rem;
+  width: 100%;
+  background: var(--lft-surface-0);
+  border: 1px solid var(--lft-border-subtle);
+  border-radius: 0.625rem; /* 10px */
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lft-text-primary);
+  text-align: center;
+  outline: none;
+  transition: border-color 120ms var(--ease-out), box-shadow 120ms var(--ease-out);
+}
+.lft-set-input:focus {
+  border-color: rgba(45, 212, 191, 0.55);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.10);
+}
+.lft-set-input:focus-visible {
+  border-color: rgba(45, 212, 191, 0.70);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
+}
+
+/* ─── Tags & Badges ──────────────────────────────────────────────────────── */
+
+/* Muscle group / primary tag — teal tint */
+.lft-tag-accent {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: rgba(45, 212, 191, 0.10);
+  color: var(--lft-accent-text);
+  ring: 1px solid rgba(45, 212, 191, 0.20);
+  border: 1px solid rgba(45, 212, 191, 0.20);
+}
+
+/* Neutral tag — equipment, type labels */
+.lft-tag {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  background: var(--lft-surface-3);
+  color: var(--lft-text-secondary);
+}
+
+/* Filter chip — toggle pill for filter bars */
+.lft-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 2rem;
+  border-radius: 9999px;
+  padding: 0 0.875rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--lft-border-subtle);
+  color: var(--lft-text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  /* Explicit properties — never transition:all */
+  transition:
+    border-color 120ms var(--ease-out),
+    background-color 120ms var(--ease-out),
+    color 120ms var(--ease-out),
+    transform 80ms var(--ease-out);
+}
+.lft-chip:active { transform: scale(0.95); transition-duration: 80ms; }
+@media (hover: hover) and (pointer: fine) {
+  .lft-chip:hover:not(.lft-chip-active) {
+    border-color: var(--lft-border-strong);
+    color: var(--lft-text-primary);
+  }
+}
+.lft-chip:focus-visible {
+  outline: 2px solid var(--lft-accent);
+  outline-offset: 2px;
+}
+.lft-chip-active {
+  background: var(--lft-accent);
+  border-color: var(--lft-accent);
+  color: #09090b;
+  font-weight: 600;
+}
+
+/* Streak / status badge — inline pill */
+.lft-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 9999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.lft-badge-accent {
+  border: 1px solid rgba(45, 212, 191, 0.20);
+  background: rgba(45, 212, 191, 0.10);
+  color: var(--lft-accent-text);
+}
+
+/* ─── Page layout primitives ────────────────────────────────────────────── */
+
+/* Standard page shell — used by every feature page */
+.lft-page { min-height: 100dvh; background: var(--lft-base); padding-bottom: 6rem; color: var(--lft-text-primary); }
+
+/* Page container — max-width + horizontal padding */
+.lft-container { margin: 0 auto; width: 100%; max-width: 48rem; padding-left: 1rem; padding-right: 1rem; }
+@media (min-width: 640px) { .lft-container { padding-left: 1.5rem; padding-right: 1.5rem; } }
+
+/* Narrow container for auth and dashboard */
+.lft-container-sm { margin: 0 auto; width: 100%; max-width: 32rem; padding-left: 1rem; padding-right: 1rem; }
+@media (min-width: 640px) { .lft-container-sm { padding-left: 1.5rem; padding-right: 1.5rem; } }
+
+/* Sticky page header — shared across all feature pages */
+.lft-page-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  margin-left: -1rem;
+  margin-right: -1rem;
+  border-bottom: 1px solid var(--lft-border-subtle);
+  background: rgba(9, 9, 11, 0.95);
+  padding: 0.5rem 1rem 0.75rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+@media (min-width: 640px) {
+  .lft-page-header { margin-left: -1.5rem; margin-right: -1.5rem; padding-left: 1.5rem; padding-right: 1.5rem; }
+}
+
+/* Page title typography */
+.lft-page-title {
+  margin-top: 0.25rem;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--lft-text-primary);
+  line-height: 1.2;
+}
+
+/* Section divider label — single eyebrow per 3 sections max */
+.lft-section-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--lft-text-muted);
+}
+
+/* Stat number — large tabular metric display */
+.lft-stat {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--lft-text-primary);
+}
+.lft-stat-unit {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lft-text-tertiary);
+  margin-bottom: 0.125rem;
+}
+
+/* ─── Modal / backdrop animation ────────────────────────────────────────── */
+/*
+  Modal enters from scale(0.96) + opacity(0) — nothing in the real world
+  appears from nothing. The card settles slightly above center (-8px) so
+  it feels like it's dropping into place.
+  Backdrop fades separately so the two layers feel independent.
+*/
+
+.lft-modal-backdrop {
+  animation: lft-backdrop-in 200ms var(--ease-out) both;
+}
+
+.lft-modal-card {
+  animation: lft-modal-in 240ms var(--ease-spring) both;
+}
+
+@keyframes lft-backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lft-modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ─── Toast transition system ────────────────────────────────────────────── */
+/*
+  CSS transitions instead of keyframes — transitions are interruptible.
+  When toasts stack rapidly, CSS transitions retarget smoothly.
+  Keyframes restart from zero on each new toast, causing visual artifacts.
+
+  Pattern: element renders with data-entering attribute, JS removes it.
+  Angular equivalent: use @starting-style or the mounted class pattern.
+*/
+
+.lft-toast {
+  /* Initial state — element starts here before transition fires */
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 320ms var(--ease-out),
+    transform 320ms var(--ease-spring);
+}
+
+/* @starting-style: fires on first render, triggers the enter transition */
+@starting-style {
+  .lft-toast {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Exit — faster than enter (system is responding, not user deciding) */
+.lft-toast-exit {
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  transition:
+    opacity 180ms var(--ease-out),
+    transform 180ms var(--ease-out);
+}
+
+/* ─── Empty state entrance ───────────────────────────────────────────────── */
+/*
+  Empty states appear after async data loads — they need their own entrance
+  so the UI doesn't feel broken when they appear. Fades in gently, no movement
+  (content shift would be jarring after a load).
+*/
+
+.lft-empty {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  animation: lft-empty-in 300ms var(--ease-out) both;
+}
+
+@keyframes lft-empty-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.lft-empty-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--lft-text-secondary);
+}
+.lft-empty-body {
+  margin-top: 0.375rem;
+  font-size: 0.8125rem;
+  color: var(--lft-text-tertiary);
+}
+
+/* ─── Nav bar ────────────────────────────────────────────────────────────── */
+
+.lft-skeleton {
+  border-radius: 0.5rem;
+  background: var(--lft-surface-3);
+  position: relative;
+  overflow: hidden;
+  /* Slower, gentler pulse rhythm — feels less anxious than fast flashing */
+  animation: lft-pulse 2s ease-in-out infinite;
+}
+
+/* Shimmer sweep — gives the skeleton a sense of motion and perceived progress */
+.lft-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.04) 40%,
+    rgba(255, 255, 255, 0.07) 50%,
+    rgba(255, 255, 255, 0.04) 60%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: lft-shimmer 2s ease-in-out infinite;
+  /* Shimmer offset matches pulse so they feel coordinated */
+  animation-delay: 0.4s;
+}
+
+@keyframes lft-pulse {
+  0%, 100% { opacity: 0.65; }
+  50%       { opacity: 0.35; }
+}
+
+@keyframes lft-shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(200%); }
+}
+
+/* ─── Progress / consistency bar ─────────────────────────────────────────── */
+
+.lft-progress-track {
+  height: 3px;
+  border-radius: 9999px;
+  overflow: hidden;
+  background: var(--lft-surface-3);
+}
+.lft-progress-fill {
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--lft-accent);
+  transition: width 700ms var(--ease-spring);
+}
+
+/* ─── Tab underline indicator ────────────────────────────────────────────── */
+
+.lft-tab-bar {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 1px solid var(--lft-border-subtle);
+}
+.lft-tab {
+  position: relative;
+  padding: 0.625rem 1rem 0.625rem 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--lft-text-tertiary);
+  cursor: pointer;
+  transition: color 150ms;
+  white-space: nowrap;
+  background: none;
+  border: none;
+}
+.lft-tab:hover { color: var(--lft-text-secondary); }
+.lft-tab-active {
+  color: var(--lft-text-primary);
+  font-weight: 600;
+}
+.lft-tab-active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 1rem;
+  height: 2px;
+  border-radius: 1px 1px 0 0;
+  background: var(--lft-accent);
+}
+
+/* ─── Nav bar ────────────────────────────────────────────────────────────── */
+
+.lft-nav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  border-bottom: 1px solid var(--lft-border-subtle);
+  background: rgba(9, 9, 11, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.lft-nav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  height: 3.25rem; /* 52px — tight, gym-appropriate */
+  margin: 0 auto;
+  max-width: 48rem;
+  padding: 0 1rem;
+}
+@media (min-width: 640px) { .lft-nav-inner { padding: 0 1.5rem; } }
+
+/* Wordmark — disciplined, all-caps, tight tracking */
+.lft-wordmark {
+  font-size: 0.9375rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--lft-text-primary);
+  text-decoration: none;
+  transition: color 150ms;
+}
+.lft-wordmark:hover { color: var(--lft-accent-text); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ANIMATION SYSTEM
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Entrance keyframes ──────────────────────────────────────────────────── */
 @keyframes fadeSlideUp {
-  from { opacity: 0; transform: translateY(12px); }
+  from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes authEnter {
-  from { opacity: 0; transform: translateY(16px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(14px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 
-/* Error block slides in from slightly above — arrives with urgency */
 @keyframes errorSlideIn {
-  from { opacity: 0; transform: translateY(-6px) scale(0.99); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
+  from { opacity: 0; transform: translateY(-5px) scale(0.99); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
 }
 
-/* Left panel text lines reveal upward, one at a time */
 @keyframes panelLineIn {
-  from { opacity: 0; transform: translateY(20px); }
+  from { opacity: 0; transform: translateY(18px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Barbell float — subtle continuous drift so the graphic feels alive */
 @keyframes barbellFloat {
-  0%, 100% { transform: translateY(0px) rotate(-8deg); }
-  50%       { transform: translateY(-8px) rotate(-8deg); }
+  0%, 100% { transform: translateY(0)   rotate(-8deg); }
+  50%       { transform: translateY(-7px) rotate(-8deg); }
 }
 
-/* ─── App-wide stagger system ──────────────────────────────────────────── */
-.anim-enter {
-  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+@keyframes cardSlideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.anim-enter-1 { animation: fadeSlideUp 0.4s 0.06s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-enter-2 { animation: fadeSlideUp 0.4s 0.12s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-enter-3 { animation: fadeSlideUp 0.4s 0.18s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-enter-4 { animation: fadeSlideUp 0.4s 0.24s cubic-bezier(0.16, 1, 0.3, 1) both; }
-.anim-enter-5 { animation: fadeSlideUp 0.4s 0.30s cubic-bezier(0.16, 1, 0.3, 1) both; }
-
-.anim-stagger {
-  animation: fadeSlideUp 0.38s calc(min(var(--stagger-i, 0), 8) * 0.055s) cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-/* ─── Auth-specific entrance classes ──────────────────────────────────────
-   Each class is a fixed delay step in the stagger cascade.
-   50ms between items → whole form lands in ~350ms.
-   Strong ease-out (--ease-out) makes each item feel snappy on arrival.
-   ───────────────────────────────────────────────────────────────────────── */
-.auth-item-0 { animation: authEnter 0.5s 0ms    var(--ease-out) both; }
-.auth-item-1 { animation: authEnter 0.5s 50ms   var(--ease-out) both; }
-.auth-item-2 { animation: authEnter 0.5s 100ms  var(--ease-out) both; }
-.auth-item-3 { animation: authEnter 0.5s 160ms  var(--ease-out) both; }
-.auth-item-4 { animation: authEnter 0.5s 220ms  var(--ease-out) both; }
-.auth-item-5 { animation: authEnter 0.5s 290ms  var(--ease-out) both; }
-.auth-item-6 { animation: authEnter 0.5s 350ms  var(--ease-out) both; }
-.auth-item-7 { animation: authEnter 0.5s 420ms  var(--ease-out) both; }
-
-/* Barbell graphic — enters with the brand strip, then floats perpetually */
-.auth-barbell {
-  animation: authEnter 0.8s 60ms var(--ease-out) both;
-}
-.auth-barbell-float {
-  animation: authEnter 0.8s 60ms var(--ease-out) both,
-             barbellFloat 5s 1s ease-in-out infinite;
-}
-
-/* Teal accent underline beneath the desktop wordmark — draws in L→R after the wordmark lands */
 @keyframes accentDraw {
   from { clip-path: inset(0 100% 0 0); }
-  to   { clip-path: inset(0 0% 0 0); }
+  to   { clip-path: inset(0   0%  0 0); }
 }
 
-.panel-accent-line {
-  animation: accentDraw 0.5s 520ms var(--ease-out) both;
+/* ─── App-wide stagger system ─────────────────────────────────────────────── */
+.anim-enter   { animation: fadeSlideUp 0.38s var(--ease-spring) both; }
+.anim-enter-1 { animation: fadeSlideUp 0.38s 0.055s var(--ease-spring) both; }
+.anim-enter-2 { animation: fadeSlideUp 0.38s 0.110s var(--ease-spring) both; }
+.anim-enter-3 { animation: fadeSlideUp 0.38s 0.165s var(--ease-spring) both; }
+.anim-enter-4 { animation: fadeSlideUp 0.38s 0.220s var(--ease-spring) both; }
+.anim-enter-5 { animation: fadeSlideUp 0.38s 0.275s var(--ease-spring) both; }
+.anim-stagger {
+  animation: fadeSlideUp 0.36s calc(min(var(--stagger-i, 0), 8) * 0.05s) var(--ease-spring) both;
 }
 
-/* Left panel lines stagger more slowly — they're mood-setting, not functional.
-   panel-line-0 (wordmark) gets the longest duration — it's the first brand impression. */
-.panel-line-0 { animation: panelLineIn 0.8s 40ms  var(--ease-out) both; }
-.panel-line-1 { animation: panelLineIn 0.75s 200ms var(--ease-out) both; }
-.panel-line-2 { animation: panelLineIn 0.65s 340ms var(--ease-out) both; }
-.panel-line-3 { animation: panelLineIn 0.6s  480ms var(--ease-out) both; }
+/* ─── Auth animation system ───────────────────────────────────────────────── */
+.auth-item-0 { animation: authEnter 0.48s 0ms   var(--ease-out) both; }
+.auth-item-1 { animation: authEnter 0.48s 50ms  var(--ease-out) both; }
+.auth-item-2 { animation: authEnter 0.48s 100ms var(--ease-out) both; }
+.auth-item-3 { animation: authEnter 0.48s 155ms var(--ease-out) both; }
+.auth-item-4 { animation: authEnter 0.48s 210ms var(--ease-out) both; }
+.auth-item-5 { animation: authEnter 0.48s 270ms var(--ease-out) both; }
+.auth-item-6 { animation: authEnter 0.48s 330ms var(--ease-out) both; }
+.auth-item-7 { animation: authEnter 0.48s 395ms var(--ease-out) both; }
 
-/* Mobile form card — slides up over the brand hero zone.
-   Starts 12px below final position (not scale(0) — real sheet mechanics).
-   Delayed slightly so the brand zone lands first. */
-@keyframes cardSlideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
+.auth-barbell       { animation: authEnter 0.75s 60ms  var(--ease-out) both; }
+.auth-barbell-float { animation: authEnter 0.75s 60ms  var(--ease-out) both, barbellFloat 5s 1.2s ease-in-out infinite; }
+
+.panel-accent-line { animation: accentDraw 0.45s 500ms var(--ease-out) both; }
+
+.panel-line-0 { animation: panelLineIn 0.75s  40ms var(--ease-out) both; }
+.panel-line-1 { animation: panelLineIn 0.70s 190ms var(--ease-out) both; }
+.panel-line-2 { animation: panelLineIn 0.60s 330ms var(--ease-out) both; }
+.panel-line-3 { animation: panelLineIn 0.55s 465ms var(--ease-out) both; }
+
+.auth-card-slide { animation: cardSlideUp 0.45s 300ms var(--ease-out) both; }
+.auth-error      { animation: errorSlideIn 0.20s var(--ease-out) both; }
+
+/* ─── Set stepper buttons (live workout) ─────────────────────────────────── */
+/*
+  The −/+ buttons flanking set inputs are used dozens of times per workout.
+  They need crisp, immediate press feedback.
+*/
+.lft-stepper-btn {
+  transition: background-color 100ms var(--ease-out), transform 80ms var(--ease-out);
 }
-.auth-card-slide {
-  animation: cardSlideUp 0.5s 320ms var(--ease-out) both;
+.lft-stepper-btn:active {
+  transform: scale(0.88);
+  transition-duration: 60ms;
+}
+.lft-stepper-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
-
-/* Error block — appears occasionally, slides from above */
-.auth-error {
-  animation: errorSlideIn 0.22s var(--ease-out) both;
+/* ─── Done / complete toggle button (live workout) ───────────────────────── */
+/*
+  This button is the highest-frequency interaction in the entire app —
+  tapped once per set, multiple sets per exercise.
+  Fast: 80ms snap. No hover on touch. Checked state transitions smoothly.
+*/
+.lft-set-done {
+  transition:
+    background-color 120ms var(--ease-out),
+    border-color 120ms var(--ease-out),
+    color 120ms var(--ease-out),
+    transform 80ms var(--ease-out);
 }
-
-/* ─── Button press feedback ────────────────────────────────────────────────
-   scale(0.97) at 100ms ease-out — skill: "buttons must feel responsive to press"
-   Applied via :active pseudo-class so it fires without JS.
-   ───────────────────────────────────────────────────────────────────────── */
+.lft-set-done:active {
+  transform: scale(0.92);
+  transition-duration: 60ms;
+}
+/*
+  Legacy .btn-auth class — kept for auth form backward compatibility.
+  Updated to use explicit transition properties and 80ms snap.
+*/
 .btn-auth {
-  transition: background-color 150ms ease, transform 100ms var(--ease-out), opacity 150ms ease;
+  transition:
+    background-color 150ms var(--ease-out),
+    border-color 150ms var(--ease-out),
+    box-shadow 150ms var(--ease-out),
+    transform 80ms var(--ease-out),
+    opacity 150ms var(--ease-out);
   will-change: transform;
 }
-
 .btn-auth:active:not(:disabled) {
   transform: scale(0.97);
+  transition-duration: 80ms;
+}
+.btn-auth:focus-visible {
+  outline: 2px solid var(--lft-accent);
+  outline-offset: 2px;
 }
 
-/* Button label / spinner blur crossfade — masks the snap between states */
+/* Spinner/label crossfade — blur bridges the visual gap between states */
 .btn-auth-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  transition: opacity 180ms ease, filter 180ms ease;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  transition: opacity 180ms var(--ease-out), filter 180ms var(--ease-out);
 }
-
 .btn-auth-content.is-transitioning {
-  opacity: 0.6;
-  filter: blur(2px);
+  opacity: 0.55;
+  /* Blur < 2px — heavier blur is expensive in Safari */
+  filter: blur(1.5px);
 }
 
-/* ─── Input focus animation ───────────────────────────────────────────────
-   Focus ring grows in, not jumps. Short duration — used often during a session.
-   ───────────────────────────────────────────────────────────────────────── */
+/* ─── Input legacy alias (auth-form-field uses .auth-input) ──────────────── */
 .auth-input {
   transition:
-    border-color 150ms ease,
-    background-color 150ms ease,
-    box-shadow 150ms ease;
+    border-color 150ms var(--ease-out),
+    background-color 150ms var(--ease-out),
+    box-shadow 150ms var(--ease-out);
 }
-
 .auth-input:focus {
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.10);
+}
+.auth-input:focus-visible {
   box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.12);
 }
 
-/* ─── Reduced motion — opacity only, no transforms ────────────────────── */
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+/*
+  Reduced motion = fewer / gentler animations, NOT zero.
+  Keep opacity transitions — they aid comprehension.
+  Remove all transform-based movement.
+*/
 @media (prefers-reduced-motion: reduce) {
-  .anim-enter,
-  .anim-enter-1,
-  .anim-enter-2,
-  .anim-enter-3,
-  .anim-enter-4,
-  .anim-enter-5,
-  .anim-stagger,
-  .auth-item-0,
-  .auth-item-1,
-  .auth-item-2,
-  .auth-item-3,
-  .auth-item-4,
-  .auth-item-5,
-  .auth-item-6,
-  .auth-item-7,
-  .auth-barbell,
-  .auth-barbell-float,
-  .auth-card-slide,
-  .panel-line-0,
-  .panel-line-1,
-  .panel-line-2,
-  .panel-line-3,
-  .panel-accent-line,
-  .auth-error {
+  .anim-enter, .anim-enter-1, .anim-enter-2, .anim-enter-3,
+  .anim-enter-4, .anim-enter-5, .anim-stagger,
+  .auth-item-0, .auth-item-1, .auth-item-2, .auth-item-3,
+  .auth-item-4, .auth-item-5, .auth-item-6, .auth-item-7,
+  .auth-barbell, .auth-barbell-float, .auth-card-slide,
+  .panel-line-0, .panel-line-1, .panel-line-2, .panel-line-3,
+  .panel-accent-line, .auth-error,
+  .lft-modal-backdrop, .lft-modal-card,
+  .lft-toast, .lft-empty {
     animation: none;
+    transition: opacity 150ms ease;
   }
 
+  .lft-progress-fill {
+    transition: none;
+  }
+
+  /* Skeleton: keep fade rhythm, remove shimmer sweep */
+  .lft-skeleton { animation: lft-pulse 2s ease-in-out infinite; }
+  .lft-skeleton::after { display: none; }
+
+  /* Buttons / cards: allow opacity only, remove transform movement */
+  .lft-btn:active:not(:disabled),
   .btn-auth:active:not(:disabled) {
     transform: none;
   }
-
-  .auth-barbell-float {
-    animation: none;
+  .lft-card-interactive:active,
+  .lft-card-accent:active {
+    transform: none;
   }
+  .lft-chip:active { transform: none; }
 }

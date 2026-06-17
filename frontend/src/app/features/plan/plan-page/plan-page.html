@@ -1,83 +1,71 @@
 <main class="min-h-dvh bg-zinc-950 pb-28 text-zinc-50">
   @if (planLoading()) {
-    <!-- Loading skeleton -->
     <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
-      <div class="h-20 animate-pulse rounded-lg bg-zinc-900/60"></div>
-      <div class="mt-5 h-24 animate-pulse rounded-lg bg-zinc-900/60"></div>
-      <div class="mt-6 space-y-2">
+      <div class="lft-skeleton h-20 rounded-2xl"></div>
+      <div class="mt-5 lft-skeleton h-20 rounded-2xl"></div>
+      <div class="mt-5 space-y-2">
         @for (i of [1,2,3,4,5,6,7]; track i) {
-          <div class="h-16 animate-pulse rounded-lg bg-zinc-900/60"></div>
+          <div class="lft-skeleton h-14 rounded-2xl"></div>
         }
       </div>
     </div>
   } @else {
   <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
-    <!-- Header -->
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <header class="lft-page-header">
       <div class="flex items-center justify-between gap-3">
         <div>
           <app-training-hub-link />
-          <h1 class="mt-1 text-2xl font-semibold tracking-tight text-zinc-50">Workout plan</h1>
+          <h1 class="lft-page-title">Training plan</h1>
         </div>
         <div class="flex shrink-0 items-center gap-2">
-          <!-- Reset button -->
           <button
-            class="h-9 rounded-lg border border-zinc-700 px-3 text-sm font-medium text-zinc-400 transition hover:border-rose-400/60 hover:text-rose-300 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
+            class="lft-btn lft-btn-ghost"
+            style="height:2.25rem; padding:0 0.75rem; font-size:0.8125rem; border-color:rgba(251,113,133,0.25); color:#fb7185;"
             type="button"
             [disabled]="store.resetting()"
             (click)="showResetDialog()"
-            title="Discard unsaved changes and restore last saved plan"
-          >
-            {{ store.resetting() ? 'Resetting…' : 'Reset' }}
-          </button>
-          <!-- Save / Use plan button -->
+          >{{ store.resetting() ? 'Resetting…' : 'Reset' }}</button>
+
           <button
-            class="h-9 rounded-lg px-4 text-sm font-semibold transition active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
-            [class.bg-teal-500]="store.isDirty() && !store.syncSuccess()"
-            [class.hover:bg-teal-400]="store.isDirty() && !store.syncSuccess()"
+            class="lft-btn"
+            style="height:2.25rem; padding:0 1rem; font-size:0.8125rem;"
+            [class.bg-teal-400]="store.isDirty() && !store.syncSuccess()"
             [class.text-zinc-950]="store.isDirty() && !store.syncSuccess()"
-            [class.bg-teal-400/20]="!store.isDirty() || store.syncSuccess()"
+            [class.bg-teal-400\/15]="!store.isDirty() || store.syncSuccess()"
             [class.text-teal-300]="!store.isDirty() || store.syncSuccess()"
             type="button"
             [disabled]="store.syncing() || !store.isDirty() || store.syncSuccess()"
             (click)="store.save()"
           >
-            @if (store.syncing()) {
-              Saving…
-            } @else if (store.syncSuccess()) {
-              Saved ✓
-            } @else if (store.syncError()) {
-              Save failed — retry
-            } @else if (store.activeTemplateId() !== null) {
-              Use plan
-            } @else {
-              Save plan
-            }
+            @if (store.syncing()) { Saving… }
+            @else if (store.syncSuccess()) { Saved ✓ }
+            @else if (store.syncError()) { Retry save }
+            @else if (store.activeTemplateId() !== null) { Use plan }
+            @else { Save plan }
           </button>
         </div>
       </div>
     </header>
 
-    <!-- Template picker -->
+    <!-- ── Template picker ──────────────────────────────────────────── -->
     <section class="mt-5">
-      <p class="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Start from a template</p>
+      <p class="lft-section-label mb-3">Start from a template</p>
       @if (store.templatesLoading()) {
-        <div class="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
+        <div class="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
           @for (i of [1,2,3,4,5]; track i) {
-            <div class="h-16 w-24 shrink-0 animate-pulse rounded-xl bg-zinc-900/60"></div>
+            <div class="lft-skeleton h-16 w-24 shrink-0 rounded-xl"></div>
           }
         </div>
       } @else {
-      <div class="-mx-4 flex gap-3 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
-
-        <!-- Custom chip -->
+      <div class="-mx-4 flex gap-2.5 overflow-x-auto px-4 pb-1 sm:mx-0 sm:px-0">
         <button
           class="shrink-0 rounded-xl border px-4 py-3 text-left transition active:scale-[0.98]"
           [class.border-teal-400]="store.activeTemplateId() === null"
-          [class.bg-teal-400/10]="store.activeTemplateId() === null"
+          [class.bg-teal-400\/10]="store.activeTemplateId() === null"
           [class.border-zinc-800]="store.activeTemplateId() !== null"
-          [class.bg-zinc-900/60]="store.activeTemplateId() !== null"
+          [class.bg-zinc-900\/60]="store.activeTemplateId() !== null"
           type="button"
           (click)="clearTemplateDebounced()"
         >
@@ -89,9 +77,9 @@
           <button
             class="shrink-0 rounded-xl border px-4 py-3 text-left transition active:scale-[0.98]"
             [class.border-teal-400]="store.activeTemplateId() === template.id"
-            [class.bg-teal-400/10]="store.activeTemplateId() === template.id"
+            [class.bg-teal-400\/10]="store.activeTemplateId() === template.id"
             [class.border-zinc-800]="store.activeTemplateId() !== template.id"
-            [class.bg-zinc-900/60]="store.activeTemplateId() !== template.id"
+            [class.bg-zinc-900\/60]="store.activeTemplateId() !== template.id"
             type="button"
             (click)="applyTemplateDebounced(template)"
           >
@@ -104,42 +92,40 @@
       @if (activeTemplateDescription()) {
         <p class="mt-2 text-xs text-zinc-500">{{ activeTemplateDescription() }}</p>
       } @else {
-        <p class="mt-2 text-xs text-zinc-500">Quick-start with a proven training split, or build your own custom plan.</p>
+        <p class="mt-2 text-xs text-zinc-500">Quick-start with a proven split, or build your own custom plan.</p>
       }
     </section>
 
-    <!-- Weekly grid -->
-    <section class="mt-6 space-y-2">
+    <!-- ── Weekly grid ────────────────────────────────────────────── -->
+    <section class="mt-5 space-y-2">
       @for (label of dayLabels; track $index) {
         @let day = store.getDay($index);
         @let isExpanded = expandedDays().has($index);
         @let isToday = todayIndex() === $index;
 
-        <!-- Day tile -->
         <div
-          class="overflow-hidden rounded-xl border transition"
-          [class.border-teal-400/30]="!day.rest && !isExpanded"
-          [class.border-teal-400/60]="!day.rest && isExpanded"
+          class="overflow-hidden rounded-2xl border transition-colors"
+          [class.border-teal-400\/30]="!day.rest && !isExpanded"
+          [class.border-teal-400\/50]="!day.rest && isExpanded"
           [class.border-zinc-800]="day.rest && !isExpanded"
           [class.border-zinc-700]="day.rest && isExpanded"
         >
           <button
-            class="flex w-full items-center gap-4 px-4 py-4 text-left transition hover:bg-zinc-900/40 active:scale-[0.995]"
+            class="flex w-full items-center gap-4 px-4 py-3.5 text-left transition hover:bg-zinc-900/40 active:scale-[0.998]"
             type="button"
             (click)="toggleDay($index)"
           >
-            <!-- Day label + today indicator -->
+            <!-- Day label + today dot -->
             <div class="w-10 shrink-0 text-center">
-              <p class="text-xs font-medium uppercase tracking-wider" [class.text-teal-400]="isToday" [class.text-zinc-500]="!isToday">{{ label }}</p>
+              <p class="text-[11px] font-bold uppercase tracking-[0.1em]" [class.text-teal-400]="isToday" [class.text-zinc-500]="!isToday">{{ label }}</p>
               @if (isToday) {
                 <div class="mx-auto mt-1 h-1 w-1 rounded-full bg-teal-400"></div>
               }
             </div>
 
-            <!-- Muscle groups or rest -->
             <div class="min-w-0 flex-1">
               @if (day.rest) {
-                <p class="text-sm font-medium text-zinc-500">Rest day</p>
+                <p class="text-sm font-medium text-zinc-500">Rest</p>
               } @else if (day.label) {
                 <p class="text-sm font-semibold text-zinc-50">{{ day.label }}</p>
                 @if (day.exercises.length) {
@@ -150,15 +136,14 @@
               } @else if (day.muscleGroups.length) {
                 <div class="flex flex-wrap gap-1.5">
                   @for (group of day.muscleGroups; track group) {
-                    <span class="rounded-full bg-teal-400/10 px-2 py-0.5 text-xs font-medium text-teal-300 ring-1 ring-teal-400/20">{{ group }}</span>
+                    <span class="lft-tag-accent">{{ group }}</span>
                   }
                 </div>
               } @else {
-                <p class="text-sm font-medium text-zinc-500">Not configured</p>
+                <p class="text-sm font-medium text-zinc-600">Not configured</p>
               }
             </div>
 
-            <!-- Chevron only -->
             <svg
               class="h-4 w-4 shrink-0 text-zinc-600 transition-transform duration-200"
               [class.rotate-180]="isExpanded"
@@ -170,128 +155,80 @@
 
           <!-- Inline editor -->
           @if (isExpanded && !day.rest) {
-            <div class="border-t border-zinc-800 px-4 pb-4 pt-4 anim-enter">
+            <div class="border-t border-zinc-800 px-4 pb-5 pt-4 anim-enter">
 
-              <!-- Day name input -->
               <label class="block">
-                <span class="mb-2 block text-xs font-medium uppercase tracking-wider text-zinc-500">Day name</span>
+                <span class="lft-label">Day name</span>
                 <input
-                  class="h-10 w-full rounded-lg border border-zinc-800 bg-zinc-950 px-3 text-sm text-zinc-50 outline-none transition placeholder:text-zinc-600 focus:border-teal-400/60 focus:ring-1 focus:ring-teal-400/30"
+                  class="lft-input"
+                  style="height:2.5rem;"
                   type="text"
-                  placeholder="e.g. Push, Chest day, Leg day..."
+                  placeholder="e.g. Push, Chest day, Leg day…"
                   maxlength="40"
                   [ngModel]="getDayLabel(day.dayOfWeek)"
                   (ngModelChange)="onLabelChange(day.dayOfWeek, $event)"
                 />
               </label>
 
-              <!-- Muscle group toggles -->
               <div class="mt-4">
-                <div class="mb-2 flex items-center gap-2">
-                  <p class="text-xs font-medium uppercase tracking-wider text-zinc-500">Muscle groups</p>
-                </div>
+                <p class="lft-label mb-2.5">Muscle groups</p>
                 <div class="flex flex-wrap gap-2">
                   @for (group of muscleGroups; track group) {
                     <button
-                      class="h-8 rounded-full border px-3 text-xs font-medium transition active:scale-[0.97]"
-                      [class.border-teal-400]="hasMuscleGroup(day.dayOfWeek, group)"
-                      [class.bg-teal-400]="hasMuscleGroup(day.dayOfWeek, group)"
-                      [class.text-zinc-950]="hasMuscleGroup(day.dayOfWeek, group)"
-                      [class.border-zinc-700]="!hasMuscleGroup(day.dayOfWeek, group)"
-                      [class.text-zinc-300]="!hasMuscleGroup(day.dayOfWeek, group)"
+                      class="lft-chip"
+                      [class.lft-chip-active]="hasMuscleGroup(day.dayOfWeek, group)"
                       type="button"
                       (click)="store.toggleMuscleGroup(day.dayOfWeek, group)"
-                    >
-                      {{ group }}
-                    </button>
+                    >{{ group }}</button>
                   }
                 </div>
               </div>
 
-              <!-- Exercises section -->
               <div class="mt-5">
-                <p class="mb-3 text-xs font-medium uppercase tracking-wider text-zinc-500">Exercises</p>
-
-                <!-- Exercise list -->
+                <p class="lft-label mb-3">Exercises</p>
                 @if (day.exercises.length) {
-                  <div class="space-y-3">
+                  <div class="space-y-2.5">
                     @for (exercise of day.exercises; track exercise.exerciseId + '-' + $index; let exIdx = $index; let isFirst = $first; let isLast = $last) {
-                      <div class="rounded-lg border border-zinc-800 bg-zinc-900/40">
-                        <!-- Exercise header -->
+                      <div class="lft-card rounded-2xl">
                         <div class="flex items-center gap-2 px-3 py-2.5">
-                          <!-- Reorder buttons -->
                           <div class="flex shrink-0 flex-col gap-0.5">
-                            <button
-                              class="flex h-4 w-4 items-center justify-center rounded text-zinc-600 transition hover:text-teal-400 disabled:opacity-30"
-                              type="button"
-                              [disabled]="isFirst"
-                              (click)="moveExerciseUp(day.dayOfWeek, exIdx)"
-                              [attr.aria-label]="'Move ' + exercise.exerciseName + ' up'"
-                            >
-                              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" />
-                              </svg>
+                            <button class="flex h-4 w-4 items-center justify-center rounded text-zinc-600 transition hover:text-teal-400 disabled:opacity-30" type="button" [disabled]="isFirst" (click)="moveExerciseUp(day.dayOfWeek, exIdx)" [attr.aria-label]="'Move ' + exercise.exerciseName + ' up'">
+                              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5" /></svg>
                             </button>
-                            <button
-                              class="flex h-4 w-4 items-center justify-center rounded text-zinc-600 transition hover:text-teal-400 disabled:opacity-30"
-                              type="button"
-                              [disabled]="isLast"
-                              (click)="moveExerciseDown(day.dayOfWeek, exIdx)"
-                              [attr.aria-label]="'Move ' + exercise.exerciseName + ' down'"
-                            >
-                              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
-                              </svg>
+                            <button class="flex h-4 w-4 items-center justify-center rounded text-zinc-600 transition hover:text-teal-400 disabled:opacity-30" type="button" [disabled]="isLast" (click)="moveExerciseDown(day.dayOfWeek, exIdx)" [attr.aria-label]="'Move ' + exercise.exerciseName + ' down'">
+                              <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
                             </button>
                           </div>
                           <p class="min-w-0 flex-1 truncate text-sm font-medium text-zinc-200">{{ exercise.exerciseName }}</p>
                           <span class="text-xs text-zinc-500">{{ exercise.sets.length }} set{{ exercise.sets.length === 1 ? '' : 's' }}</span>
-                          <button
-                            class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-zinc-600 transition hover:bg-red-500/10 hover:text-red-400"
-                            type="button"
-                            (click)="removeExercise(day.dayOfWeek, exIdx)"
-                          >
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
-                            </svg>
+                          <button class="flex h-6 w-6 shrink-0 items-center justify-center rounded text-zinc-600 transition hover:bg-rose-500/10 hover:text-rose-400" type="button" (click)="removeExercise(day.dayOfWeek, exIdx)">
+                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
                           </button>
                         </div>
-
-                        <!-- Sets sub-section -->
                         <div class="border-t border-zinc-800 px-3 py-2 space-y-1.5">
                           @for (set of exercise.sets; track $index; let setIdx = $index) {
                             <div class="flex items-center gap-2">
                               <span class="w-14 text-xs text-zinc-500">Set {{ setIdx + 1 }}</span>
                               <input
-                                class="h-7 w-14 rounded border border-zinc-700 bg-zinc-950 text-center text-xs text-zinc-50 outline-none transition focus:border-teal-400/60"
-                                type="number"
-                                min="1"
-                                max="100"
+                                class="h-7 w-14 rounded-lg border border-zinc-700 bg-zinc-950 text-center text-xs text-zinc-50 outline-none transition focus:border-teal-400/60"
+                                type="number" min="1" max="100"
                                 [value]="set.reps"
                                 (input)="onSetRepsChange(day.dayOfWeek, exIdx, setIdx, $any($event.target).value)"
                               />
                               <span class="text-xs text-zinc-500">reps</span>
                               @if (exercise.sets.length > 1) {
-                                <button
-                                  class="ml-auto flex h-5 w-5 items-center justify-center rounded text-zinc-600 transition hover:text-red-400"
-                                  type="button"
-                                  (click)="removeSet(day.dayOfWeek, exIdx, setIdx)"
-                                >
-                                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
-                                  </svg>
+                                <button class="ml-auto flex h-5 w-5 items-center justify-center rounded text-zinc-600 transition hover:text-rose-400" type="button" (click)="removeSet(day.dayOfWeek, exIdx, setIdx)">
+                                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" /></svg>
                                 </button>
                               }
                             </div>
                           }
                           <button
-                            class="flex h-7 w-full items-center justify-center gap-1 rounded border border-dashed border-zinc-700 text-xs text-zinc-500 transition hover:border-teal-400/40 hover:text-teal-300"
+                            class="flex h-7 w-full items-center justify-center gap-1 rounded-xl border border-dashed border-zinc-700 text-xs font-medium text-zinc-500 transition hover:border-teal-400/40 hover:text-teal-300"
                             type="button"
                             (click)="addSet(day.dayOfWeek, exIdx)"
                           >
-                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                            </svg>
+                            <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                             Add set
                           </button>
                         </div>
@@ -300,7 +237,6 @@
                   </div>
                 }
 
-                <!-- Add exercise button / search -->
                 @if (searchingDay() === day.dayOfWeek) {
                   <div class="mt-3">
                     <app-exercise-picker
@@ -310,43 +246,36 @@
                   </div>
                 } @else {
                   <button
-                    class="mt-3 flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-dashed border-zinc-700 text-sm font-medium text-zinc-400 transition hover:border-teal-400/40 hover:text-teal-300"
+                    class="mt-3 flex h-10 w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-700 text-sm font-medium text-zinc-400 transition hover:border-teal-400/40 hover:text-teal-300 active:scale-[0.99]"
                     type="button"
                     (click)="openExerciseSearch(day.dayOfWeek)"
                   >
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                     {{ day.exercises.length === 0 ? 'Add your first exercise' : 'Add exercise' }}
                   </button>
                 }
               </div>
 
-              <!-- Set as rest day -->
               <div class="mt-5 border-t border-zinc-800 pt-4">
                 <button
-                  class="h-9 w-full rounded-lg border border-zinc-700 text-sm font-medium text-zinc-500 transition hover:border-rose-400/50 hover:text-rose-300 active:scale-[0.99]"
+                  class="lft-btn lft-btn-danger lft-btn-full"
+                  style="height:2.5rem; font-size:0.8125rem;"
                   type="button"
                   (click)="store.toggleRest($index)"
-                >
-                  Set as rest day
-                </button>
+                >Mark as rest day</button>
               </div>
-
             </div>
           }
 
-          <!-- Expanded: rest day -->
           @if (isExpanded && day.rest) {
-            <div class="border-t border-zinc-800 px-4 pb-4 pt-4 anim-enter">
-              <p class="mb-4 text-sm text-zinc-500">No training scheduled. Tap below to make this a training day.</p>
+            <div class="border-t border-zinc-800 px-4 pb-5 pt-4 anim-enter">
+              <p class="mb-4 text-sm text-zinc-500">No training scheduled. Tap below to activate this day.</p>
               <button
-                class="h-10 w-full rounded-lg bg-teal-500 text-sm font-semibold text-zinc-950 transition hover:bg-teal-400 active:scale-[0.99]"
+                class="lft-btn lft-btn-primary lft-btn-full"
+                style="height:2.5rem;"
                 type="button"
                 (click)="store.toggleRest($index)"
-              >
-                Set as training day
-              </button>
+              >Set as training day</button>
             </div>
           }
 

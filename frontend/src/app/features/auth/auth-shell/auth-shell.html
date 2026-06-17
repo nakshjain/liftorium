@@ -1,167 +1,141 @@
 <main class="flex min-h-dvh flex-col text-zinc-50 lg:grid lg:grid-cols-2">
 
-  <!-- ════════════════════════════════════════════════════
+  <!-- ══════════════════════════════════════════════════════
        LEFT PANEL — desktop brand poster
-       Layout: top wordmark → center tagline → bottom footer
-       Each zone staggers in independently via panel-line-N.
-  ════════════════════════════════════════════════════ -->
-  <div class="relative hidden overflow-hidden lg:flex lg:flex-col bg-zinc-900 px-12 py-10">
+  ══════════════════════════════════════════════════════ -->
+  <div class="relative hidden overflow-hidden bg-zinc-900 px-12 py-10 lg:flex lg:flex-col">
 
-    <!-- Ambient teal glow — top-left origin -->
-    <div class="pointer-events-none absolute -left-20 -top-20 h-96 w-96 rounded-full bg-teal-400/15 blur-3xl" aria-hidden="true"></div>
-    <!-- Secondary glow — bottom right for depth -->
-    <div class="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 rounded-full bg-teal-400/8 blur-3xl" aria-hidden="true"></div>
+    <!-- Ambient glow -->
+    <div class="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-teal-400/12 blur-3xl" aria-hidden="true"></div>
+    <div class="pointer-events-none absolute -bottom-16 right-0 h-72 w-72 rounded-full bg-teal-400/6 blur-3xl" aria-hidden="true"></div>
 
-    <!-- Grid texture overlay -->
+    <!-- Subtle grid texture -->
     <div
-      class="pointer-events-none absolute inset-0 opacity-[0.03]"
-      style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 40px 40px;"
+      class="pointer-events-none absolute inset-0 opacity-[0.025]"
+      style="background-image: linear-gradient(rgba(255,255,255,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.6) 1px, transparent 1px); background-size: 44px 44px;"
       aria-hidden="true"
     ></div>
 
-    <!-- Barbell — large, centered behind the wordmark, pure texture -->
-    <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.055]" aria-hidden="true">
-      <svg width="380" height="380" viewBox="0 0 380 380" fill="none">
-        <!-- bar -->
-        <rect x="163" y="20" width="54" height="340" rx="8" fill="white"/>
-        <!-- inner plates -->
-        <rect x="70" y="88" width="93" height="204" rx="12" fill="white"/>
-        <rect x="217" y="88" width="93" height="204" rx="12" fill="white"/>
-        <!-- outer plates -->
-        <rect x="20" y="120" width="50" height="140" rx="9" fill="white"/>
-        <rect x="310" y="120" width="50" height="140" rx="9" fill="white"/>
+    <!-- Barbell — large backdrop mark -->
+    <div class="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.045]" aria-hidden="true">
+      <svg width="360" height="360" viewBox="0 0 380 380" fill="none">
+        <rect x="163" y="20"  width="54"  height="340" rx="8"  fill="white"/>
+        <rect x="70"  y="88"  width="93"  height="204" rx="12" fill="white"/>
+        <rect x="217" y="88"  width="93"  height="204" rx="12" fill="white"/>
+        <rect x="20"  y="120" width="50"  height="140" rx="9"  fill="white"/>
+        <rect x="310" y="120" width="50"  height="140" rx="9"  fill="white"/>
       </svg>
     </div>
 
-    <!-- ── TOP: Large wordmark — the brand poster header ────────────── -->
+    <!-- TOP: Wordmark -->
     <div class="panel-line-0 relative">
       <a
-        class="block text-5xl font-black uppercase tracking-tight text-zinc-50 transition-colors hover:text-teal-300"
-        routerLink="/auth/login"
+        class="block text-[2.75rem] font-black uppercase tracking-[0.06em] text-zinc-50 transition-colors hover:text-teal-300"
+        routerLink="/app"
       >Liftorium</a>
-      <!-- Teal underline accent — draws in left-to-right after wordmark lands -->
-      <div class="panel-accent-line mt-3 h-[3px] w-14 rounded-full bg-teal-400"></div>
+      <div class="panel-accent-line mt-3 h-[3px] w-12 rounded-full bg-teal-400"></div>
     </div>
 
-    <!-- ── CENTER: Brand tagline — vertically fills the middle ──────── -->
+    <!-- CENTER: Brand statement -->
     <div class="relative my-auto py-16">
-      <p class="panel-line-1 text-[2.75rem] font-black leading-[1.05] tracking-tight text-zinc-50">
+      <p class="panel-line-1 text-[2.5rem] font-black leading-[1.06] tracking-tight text-zinc-50">
         Every set.<br>Every rep.<br>Every PR.
       </p>
-      <p class="panel-line-2 mt-5 max-w-[26ch] text-sm leading-relaxed text-zinc-400">
-        Built for the gym floor. Minimal taps, zero friction — log your session the moment you need to.
+      <p class="panel-line-2 mt-5 max-w-[28ch] text-sm leading-relaxed text-zinc-400">
+        Built for the gym floor. Minimal taps, zero friction — log the moment the set ends.
       </p>
-      <!-- Stat pill -->
-      <div class="panel-line-3 mt-7 inline-flex items-center gap-2 rounded-full border border-zinc-700/60 bg-zinc-800/50 px-3 py-1.5">
+      <div class="panel-line-3 mt-6 inline-flex items-center gap-2 rounded-full border border-zinc-700/50 bg-zinc-800/50 px-3.5 py-1.5">
         <span class="h-1.5 w-1.5 rounded-full bg-teal-400" aria-hidden="true"></span>
-        <span class="text-xs font-medium text-zinc-400">10k+ sessions logged</span>
+        <span class="text-xs font-medium text-zinc-400">Trusted by serious lifters</span>
       </div>
     </div>
 
-    <!-- ── BOTTOM: Tagline footer ────────────────────────────────────── -->
+    <!-- BOTTOM: Tagline -->
     <p class="panel-line-3 relative text-[10px] font-semibold uppercase tracking-[0.2em] text-zinc-700">
-      Your training, nothing else.
+      Your training. Nothing else.
     </p>
   </div>
 
 
-  <!-- ════════════════════════════════════════════════════
-       RIGHT PANEL — form (also full-screen on mobile)
-  ════════════════════════════════════════════════════ -->
+  <!-- ══════════════════════════════════════════════════════
+       RIGHT PANEL — form
+  ══════════════════════════════════════════════════════ -->
   <div class="relative flex min-h-dvh flex-col overflow-hidden lg:min-h-0 lg:bg-zinc-950">
 
-    <!-- ── Desktop: small wordmark top-left ───────────────────────────
-         Left panel carries the brand weight. This is just orientation.
-    ─────────────────────────────────────────────────────────────────── -->
+    <!-- Desktop: small wordmark orientation -->
     <header class="hidden lg:flex lg:items-center lg:justify-between lg:px-12 lg:py-10">
-      <a class="text-sm font-semibold tracking-tight text-zinc-500 transition-colors hover:text-zinc-300" routerLink="/auth/login">
+      <a class="text-sm font-semibold uppercase tracking-[0.08em] text-zinc-600 transition-colors hover:text-zinc-300" routerLink="/app">
         Liftorium
       </a>
     </header>
 
+    <!-- ── MOBILE: brand hero zone ──────────────────────────────────── -->
+    <div class="relative flex min-h-[45dvh] flex-col overflow-hidden bg-zinc-950 px-6 pb-10 pt-8 lg:hidden">
 
-    <!-- ══════════════════════════════════════════
-         MOBILE BRAND HERO — Zone 1 (lg:hidden)
-         ~58% of screen, full-bleed atmospheric.
-         Zone 2 (form card) slides up and overlaps.
-    ══════════════════════════════════════════ -->
-    <div class="relative flex min-h-[58dvh] flex-col overflow-hidden bg-zinc-950 px-6 pb-12 pt-8 lg:hidden">
+      <!-- Glows -->
+      <div class="pointer-events-none absolute -left-16 -top-16 h-80 w-80 rounded-full bg-teal-500/22 blur-3xl" aria-hidden="true"></div>
+      <div class="pointer-events-none absolute right-0 top-1/3 h-48 w-48 rounded-full bg-teal-400/10 blur-3xl" aria-hidden="true"></div>
 
-      <!-- Ambient teal glow — top-left, stronger so Zone 1 reads as distinct from card -->
-      <div class="pointer-events-none absolute -left-16 -top-16 h-80 w-80 rounded-full bg-teal-500/25 blur-3xl" aria-hidden="true"></div>
-      <!-- Secondary glow — mid-right for depth -->
-      <div class="pointer-events-none absolute right-0 top-1/3 h-48 w-48 rounded-full bg-teal-400/12 blur-3xl" aria-hidden="true"></div>
-
-      <!-- Barbell — pure texture, tucked into the top-right corner.
-           56px so it reads as a subtle mark beside the wordmark, not a feature. -->
-      <div
-        class="auth-barbell-float pointer-events-none absolute right-3 top-3 opacity-[0.06]"
-        aria-hidden="true"
-      >
-        <svg width="56" height="56" viewBox="0 0 200 200" fill="none">
-          <rect x="88" y="10" width="24" height="180" rx="4" fill="white"/>
-          <rect x="36" y="48" width="52" height="104" rx="7" fill="white"/>
-          <rect x="112" y="48" width="52" height="104" rx="7" fill="white"/>
-          <rect x="10" y="66" width="26" height="68" rx="5" fill="white"/>
-          <rect x="164" y="66" width="26" height="68" rx="5" fill="white"/>
+      <!-- Barbell mark -->
+      <div class="auth-barbell-float pointer-events-none absolute right-4 top-4 opacity-[0.055]" aria-hidden="true">
+        <svg width="52" height="52" viewBox="0 0 200 200" fill="none">
+          <rect x="88"  y="10"  width="24" height="180" rx="4"  fill="white"/>
+          <rect x="36"  y="48"  width="52" height="104" rx="7"  fill="white"/>
+          <rect x="112" y="48"  width="52" height="104" rx="7"  fill="white"/>
+          <rect x="10"  y="66"  width="26" height="68"  rx="5"  fill="white"/>
+          <rect x="164" y="66"  width="26" height="68"  rx="5"  fill="white"/>
         </svg>
       </div>
 
-      <!-- Wordmark — large, dominant, first visual impression -->
+      <!-- Wordmark -->
       <div class="panel-line-0 relative">
         <a
-          class="block text-4xl font-black uppercase tracking-tight text-zinc-50 transition-colors hover:text-teal-300"
-          routerLink="/auth/login"
+          class="block text-[2.25rem] font-black uppercase tracking-[0.06em] text-zinc-50 transition-colors hover:text-teal-300"
+          routerLink="/app"
           aria-label="Liftorium — home"
         >Liftorium</a>
-        <!-- Teal underline — wider and taller so it reads as intentional at this size -->
-        <div class="panel-accent-line mt-2 h-[4px] w-16 rounded-full bg-teal-400"></div>
+        <div class="panel-accent-line mt-2 h-[3px] w-10 rounded-full bg-teal-400"></div>
       </div>
 
-      <!-- Headline — anchored to the bottom of the hero zone -->
+      <!-- Headline — bottom-anchored -->
       <div class="mt-auto">
-        <p class="panel-line-1 text-[3.25rem] font-black leading-[1.0] tracking-tight text-zinc-50">
+        <p class="panel-line-1 text-[3rem] font-black leading-[1.0] tracking-tight text-zinc-50">
           Every set.<br>Every rep.
         </p>
-        <p class="panel-line-2 text-[3.25rem] font-black leading-[1.0] tracking-tight text-teal-400">
+        <p class="panel-line-2 text-[3rem] font-black leading-[1.0] tracking-tight text-teal-400">
           Every PR.
         </p>
-
-        <!-- Body copy — visibly more muted than the headline for clear hierarchy -->
-        <p class="panel-line-3 mt-7 text-sm leading-relaxed text-zinc-500">
+        <p class="panel-line-3 mt-5 text-sm leading-relaxed text-zinc-500">
           Built for the gym floor. Zero friction.
         </p>
-        <!-- Stat pill — self-start so it never stretches full-width and clips -->
-        <div class="panel-line-3 mt-4 inline-flex max-w-full items-center gap-2 self-start rounded-full border border-zinc-700 bg-zinc-800/70 px-3.5 py-1.5 backdrop-blur-sm">
+        <div class="panel-line-3 mt-4 inline-flex max-w-full items-center gap-2 self-start rounded-full border border-zinc-700 bg-zinc-800/70 px-3.5 py-1.5">
           <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" aria-hidden="true"></span>
-          <span class="truncate text-xs font-medium text-zinc-300">10k+ sessions logged</span>
+          <span class="truncate text-xs font-medium text-zinc-300">Trusted by serious lifters</span>
         </div>
       </div>
     </div>
 
-
-    <!-- ══════════════════════════════════════════
-         FORM ZONE
-         Mobile:  Zone 2 — card slides up over Zone 1,
-                  rounded-t-3xl + -mt-6 + drop-shadow
+    <!-- ── FORM ZONE ──────────────────────────────────────────────────
+         Mobile: card slides up over hero zone
          Desktop: full panel, centered vertically
-    ══════════════════════════════════════════ -->
+    ──────────────────────────────────────────────────────────────────── -->
     <section class="
       auth-card-slide
-      relative -mt-6 flex-1 rounded-t-3xl border-t border-zinc-700/70
-      bg-zinc-900 px-6 pb-10 pt-7 shadow-[0_-16px_56px_rgba(0,0,0,0.8)]
-      lg:mt-0 lg:rounded-none lg:border-0 lg:bg-transparent lg:px-12
-      lg:py-8 lg:shadow-none lg:flex lg:flex-col lg:justify-center
+      relative -mt-6 flex-1 rounded-t-3xl
+      border-t border-zinc-700/60
+      bg-zinc-900 px-6 pb-10 pt-7
+      shadow-[0_-20px_60px_rgba(0,0,0,0.75)]
+      lg:mt-0 lg:rounded-none lg:border-0 lg:bg-transparent
+      lg:px-12 lg:py-8 lg:shadow-none
+      lg:flex lg:flex-col lg:justify-center
     ">
-      <!-- Form heading: mobile uses smaller scale, desktop larger -->
       <div class="auth-item-5 mb-6 lg:mb-8">
-        <h1 class="text-xl font-bold leading-tight tracking-tight text-zinc-50 lg:text-[2rem]">{{ title }}</h1>
+        <h1 class="text-xl font-bold leading-tight tracking-tight text-zinc-50 lg:text-[1.875rem] lg:tracking-tight">{{ title }}</h1>
         @if (description) {
-          <p class="mt-1.5 text-sm leading-relaxed text-zinc-400 lg:mt-3">{{ description }}</p>
+          <p class="mt-1.5 text-sm leading-relaxed text-zinc-400 lg:mt-2.5">{{ description }}</p>
         }
       </div>
 
-      <!-- Projected form content (login, signup, forgot-password…) -->
       <ng-content />
     </section>
 
