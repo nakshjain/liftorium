@@ -24,4 +24,6 @@ public interface WorkoutRepository extends MongoRepository<Workout, String> {
       String userId, WorkoutStatus status, Instant from, Instant to);
 
   List<Workout> findByUserIdAndStatusOrderByStartedAtDesc(String userId, WorkoutStatus status);
+
+  List<Workout> findByUserIdAndClientIdIn(String userId, List<String> clientIds);
 }

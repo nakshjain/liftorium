@@ -8,6 +8,7 @@ import { getApiErrorMessage } from '../../../core/auth/auth-api-error';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AuthFormFieldComponent } from '../../../shared/forms/auth-form-field/auth-form-field';
 import { AuthShellComponent } from '../auth-shell/auth-shell';
+import { WorkoutSyncService } from '../../workouts/workout-sync.service';
 
 @Component({
   selector: 'app-login-page',
@@ -19,6 +20,7 @@ export class LoginPageComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly workoutSyncService = inject(WorkoutSyncService);
 
   protected readonly loading = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
@@ -50,6 +52,7 @@ export class LoginPageComponent {
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
         next: () => {
+          void this.workoutSyncService.checkForPendingWorkouts();
           void this.router.navigateByUrl('/app');
         },
         error: (error: unknown) => {

@@ -7,6 +7,7 @@ import { getApiErrorMessage } from '../../../core/auth/auth-api-error';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AuthFormFieldComponent } from '../../../shared/forms/auth-form-field/auth-form-field';
 import { AuthShellComponent } from '../auth-shell/auth-shell';
+import { WorkoutSyncService } from '../../workouts/workout-sync.service';
 
 type Step = 'email' | 'otp' | 'password';
 
@@ -25,6 +26,7 @@ export class ForgotPasswordPageComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly workoutSyncService = inject(WorkoutSyncService);
 
   protected readonly step = signal<Step>('email');
   protected readonly loading = signal(false);
@@ -107,7 +109,10 @@ export class ForgotPasswordPageComponent {
       .resetPassword({ email, otp, newPassword })
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: () => void this.router.navigateByUrl('/app'),
+        next: () => {
+          void this.workoutSyncService.checkForPendingWorkouts();
+          void this.router.navigateByUrl('/app');
+        },
         error: (error: unknown) => {
           this.errorMessage.set(getApiErrorMessage(error));
           // OTP was invalid or expired — go back to OTP step

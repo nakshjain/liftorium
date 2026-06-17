@@ -23,7 +23,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @CompoundIndexes({
     @CompoundIndex(name = "user_status_started_idx", def = "{'userId': 1, 'status': 1, 'startedAt': -1}"),
     @CompoundIndex(name = "user_finished_idx", def = "{'userId': 1, 'finishedAt': -1}"),
-    @CompoundIndex(name = "user_exercise_started_idx", def = "{'userId': 1, 'exercises.exerciseId': 1, 'startedAt': -1}")
+    @CompoundIndex(name = "user_exercise_started_idx", def = "{'userId': 1, 'exercises.exerciseId': 1, 'startedAt': -1}"),
+    @CompoundIndex(name = "user_clientid_idx", def = "{'userId': 1, 'clientId': 1}")
 })
 public class Workout {
 
@@ -55,4 +56,7 @@ public class Workout {
 
   @LastModifiedDate
   private Instant updatedAt;
+
+  @Indexed
+  private String clientId;  // nullable; set only for guest-synced workouts
 }

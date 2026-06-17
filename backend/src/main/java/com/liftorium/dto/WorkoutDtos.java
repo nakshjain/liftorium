@@ -1,6 +1,7 @@
 package com.liftorium.dto;
 
 import com.liftorium.entity.WorkoutStatus;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -94,6 +95,40 @@ public final class WorkoutDtos {
       int totalSets,
       int streak,
       double previousMonthVolume
+  ) {
+  }
+
+  public record SyncWorkoutSetRequest(
+      @NotNull @Min(0) @Max(1000) Integer reps,
+      @NotNull @Min(0) @Max(2000) Double weight,
+      String completedAt
+  ) {
+  }
+
+  public record SyncWorkoutExerciseRequest(
+      @NotBlank String exerciseId,
+      @NotNull @Valid List<SyncWorkoutSetRequest> sets
+  ) {
+  }
+
+  public record SyncWorkoutRequest(
+      @NotBlank String clientId,
+      @NotBlank @Size(max = 120) String name,
+      @NotNull String startedAt,
+      @NotNull String finishedAt,
+      @Min(0) Integer durationSeconds,
+      @NotNull @Valid List<SyncWorkoutExerciseRequest> exercises
+  ) {
+  }
+
+  public record SyncBulkRequest(
+      @NotNull @Size(min = 1, max = 50) @Valid List<SyncWorkoutRequest> workouts
+  ) {
+  }
+
+  public record SyncBulkResponse(
+      int synced,
+      int skipped
   ) {
   }
 }

@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { Router, RouterLink } from '@angular/router';
 import { Subject, finalize, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
+import { AuthGateService } from '../../../core/auth/auth-gate.service';
 import { LiveWorkoutStore } from '../../workouts/live-workout.store';
 import { WorkoutService } from '../../workouts/workout.service';
 import { WorkoutStats } from '../../workouts/workout-history.models';
@@ -26,6 +27,14 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
+  protected readonly authStatus = this.authService.status;
+  protected readonly authGateService = inject(AuthGateService);
+
+  /** Opens the auth gate modal for a named feature. */
+  protected openAuthGate(feature: string): void {
+    this.authGateService.pendingFeature.set(feature);
+  }
+
   protected readonly loggingOut = signal(false);
   protected readonly logoutButtonLabel = computed(() =>
     this.loggingOut() ? 'Signing out…' : 'Sign out',
@@ -43,6 +52,12 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
     const h = Math.floor(s / 3600);
     const m = Math.floor((s % 3600) / 60);
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
+  });
+
+  /** Time-of-day prefix for the anonymous greeting ("Good morning", etc.). */
+  protected readonly timeOfDay = computed(() => {
+    const hour = new Date().getHours();
+    return hour < 12 ? 'morning' : hour < 17 ? 'afternoon' : 'evening';
   });
 
   /** Time-of-day greeting personalised with the user's first name. */

@@ -1,16 +1,15 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { PlanExercise } from '../plan/plan.models';
-import { WorkoutService } from './workout.service';
+import { GuestWorkoutStorageService } from './guest-workout-storage.service';
 import { ExerciseOption, LiveWorkout, PreviousSet, WorkoutExercise, WorkoutSet } from './live-workout.models';
 
-const STORAGE_KEY = 'liftorium_active_workout';
 const DEFAULT_REST_SECONDS = 90;
 
 @Injectable({ providedIn: 'root' })
 export class LiveWorkoutStore {
-  private readonly workoutService = inject(WorkoutService);
+  private readonly guestStorage = inject(GuestWorkoutStorageService);
 
-  private readonly workout = signal<LiveWorkout | null>(this.loadFromStorage());
+  private readonly workout = signal<LiveWorkout | null>(null);
   private readonly finishedWorkout = signal<LiveWorkout | null>(null);
   private readonly now = signal(Date.now());
   private readonly restEndsAt = signal<number | null>(null);
@@ -51,24 +50,23 @@ export class LiveWorkoutStore {
   );
 
   constructor() {
-    // No search pipeline — exercise search is handled by ExercisePickerComponent.
+    // Hydrate from storage after bootstrap — fire-and-forget (non-blocking).
+    this.hydrateFromStorage();
+  }
+
+  private async hydrateFromStorage(): Promise<void> {
+    const workout = await this.guestStorage.loadActiveWorkout();
+    if (workout) {
+      // Restore in paused state — user resumes explicitly.
+      const accumulated = workout.resumedAt !== 0
+        ? workout.accumulatedMs + (Date.now() - workout.resumedAt)
+        : workout.accumulatedMs;
+      this.workout.set({ ...workout, resumedAt: 0, accumulatedMs: accumulated });
+    }
   }
 
   tick(): void {
     this.now.set(Date.now());
-    this.checkDayBoundary();
-  }
-
-  private checkDayBoundary(): void {
-    const workout = this.workout();
-    if (!workout || workout.finishedAt) return;
-    const startedToday = new Date(workout.startedAt).toDateString() === new Date().toDateString();
-    if (!startedToday) {
-      this.autoCompleteStaleWorkout(workout);
-      this.workout.set(null);
-      this.restEndsAt.set(null);
-      this.clearStorage();
-    }
   }
 
   startWorkout(): void {
@@ -267,62 +265,13 @@ export class LiveWorkoutStore {
   }
 
   private persist(workout: LiveWorkout): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(workout));
-    } catch {
+    this.guestStorage.saveActiveWorkout(workout).catch(() => {
       // storage quota exceeded — non-fatal
-    }
+    });
   }
 
   private clearStorage(): void {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-
-  private loadFromStorage(): LiveWorkout | null {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as LiveWorkout;
-      if (parsed.finishedAt) return null;
-
-      const startedToday = new Date(parsed.startedAt).toDateString() === new Date().toDateString();
-      if (!startedToday) {
-        this.autoCompleteStaleWorkout(parsed);
-        return null;
-      }
-
-      // Restore in paused state — user resumes explicitly
-      const accumulated = parsed.resumedAt !== 0
-        ? parsed.accumulatedMs + (Date.now() - parsed.resumedAt)
-        : parsed.accumulatedMs;
-      return { ...parsed, resumedAt: 0, accumulatedMs: accumulated };
-    } catch {
-      return null;
-    }
-  }
-
-  private autoCompleteStaleWorkout(workout: LiveWorkout): void {
-    const endOfDay = new Date(workout.startedAt);
-    endOfDay.setHours(23, 59, 59, 999);
-    const finishedAt = endOfDay.getTime();
-    const finalAccumulated = workout.resumedAt !== 0
-      ? workout.accumulatedMs + (finishedAt - workout.resumedAt)
-      : workout.accumulatedMs;
-    const finished: LiveWorkout = { ...workout, finishedAt, resumedAt: 0, accumulatedMs: finalAccumulated };
-    this.clearStorage();
-
-    const setCount = finished.exercises.reduce((count, ex) => count + ex.sets.filter(s => s.completed).length, 0);
-
-    this.workoutService.save(finished).subscribe({
-      error: (err) => console.error('Failed to auto-complete stale workout', err),
-    });
-
-    // Store notification flag for component to display on next mount
-    try {
-      localStorage.setItem('liftorium_stale_workout_notification', JSON.stringify({ setCount, timestamp: Date.now() }));
-    } catch {
-      // storage quota — non-fatal
-    }
+    this.guestStorage.clearActiveWorkout().catch(() => {});
   }
 
   private createWorkoutExercise(option: ExerciseOption): WorkoutExercise {

@@ -24,6 +24,51 @@
             <p class="mt-4 max-w-xl text-base leading-7 text-zinc-400">
               {{ formatVolume(summary.volume) }} kg across {{ summary.exercises }} exercises.
             </p>
+
+            @if (authService.status() === 'anonymous') {
+              <!-- Guest: local-storage banner + CTAs -->
+              <div class="mt-6 rounded-lg border border-amber-400/30 bg-amber-400/10 px-4 py-3">
+                <p class="text-sm font-medium text-amber-200">Your workout is stored locally</p>
+                <p class="mt-1 text-xs text-amber-300/70">Create an account to back it up and view your history.</p>
+              </div>
+              <div class="mt-4 flex flex-wrap gap-3">
+                <a
+                  routerLink="/auth/signup"
+                  class="inline-flex h-11 items-center rounded-lg bg-teal-400 px-5 text-sm font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99]"
+                >
+                  Create Account
+                </a>
+                <a
+                  routerLink="/auth/login"
+                  class="inline-flex h-11 items-center rounded-lg border border-zinc-600 px-5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-400 hover:text-zinc-50 active:scale-[0.99]"
+                >
+                  Login
+                </a>
+                <a
+                  routerLink="/app"
+                  class="inline-flex h-11 items-center rounded-lg border border-zinc-700 px-5 text-sm font-medium text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-300 active:scale-[0.99]"
+                >
+                  Continue as Guest
+                </a>
+              </div>
+            } @else {
+              <!-- Authenticated: standard completion actions -->
+              <div class="mt-6 flex flex-wrap gap-3">
+                <a
+                  routerLink="/app/workouts/history"
+                  class="inline-flex h-11 items-center rounded-lg border border-zinc-600 px-5 text-sm font-semibold text-zinc-200 transition hover:border-zinc-400 hover:text-zinc-50 active:scale-[0.99]"
+                >
+                  View History
+                </a>
+                <button
+                  class="inline-flex h-11 items-center rounded-lg bg-teal-400 px-5 text-sm font-semibold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.99]"
+                  type="button"
+                  (click)="store.startNewWorkout()"
+                >
+                  Start New Workout
+                </button>
+              </div>
+            }
           } @else {
             <h2 class="text-4xl font-semibold tracking-tight text-zinc-50">Start, tap, lift, repeat.</h2>
             <p class="mt-4 max-w-xl text-base leading-7 text-zinc-400">

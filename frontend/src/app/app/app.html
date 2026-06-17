@@ -1,2 +1,15 @@
 <router-outlet />
+@if (authGateService.pendingFeature()) {
+  <app-auth-gate-modal
+    [featureName]="authGateService.pendingFeature()!"
+    (dismissed)="authGateService.pendingFeature.set(null)"
+  />
+}
+@if (syncService.syncState() === 'pending' || syncService.syncState() === 'syncing' || syncService.syncState() === 'done' || syncService.syncState() === 'error') {
+  <app-workout-sync-modal
+    [preview]="syncService.preview() ?? { count: 0, earliestDate: '', latestDate: '' }"
+    (confirmed)="syncService.dismissSync()"
+    (skipped)="syncService.dismissSync()"
+  />
+}
 <app-toast-container />
