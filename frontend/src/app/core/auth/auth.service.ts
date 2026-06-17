@@ -137,13 +137,17 @@ export class AuthService {
   }
 
   public logout(): Observable<void> {
+    const token = this.accessTokenSignal();
     return this.http
       .post<ApiSuccessResponse<LogoutData>>(
         `${this.apiBaseUrl}/auth/logout`,
         {},
         {
+          // BYPASS_AUTH_INTERCEPTOR so the 401-retry loop never triggers on logout.
+          // We attach the access token manually below so the backend can identify the session.
           context: this.bypassContext(),
-          withCredentials: true
+          withCredentials: true,
+          ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {})
         }
       )
       .pipe(
