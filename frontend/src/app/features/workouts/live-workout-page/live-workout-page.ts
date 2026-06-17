@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { LiveWorkout } from '../live-workout.models';
 import { CachedExercise } from '../../exercises/cache/exercise-cache.models';
 import { LiveWorkoutStore } from '../live-workout.store';
@@ -11,6 +11,9 @@ import { ExercisePickerComponent } from '../../../shared/ui/exercise-picker/exer
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { WorkoutService } from '../workout.service';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
+import { AuthService } from '../../../core/auth/auth.service';
+import { GuestWorkoutStorageService } from '../guest-workout-storage.service';
+import type { GuestCompletedWorkout } from '../guest-workout.models';
 
 type FinishedWorkoutSummary = {
   exercises: number;
@@ -29,6 +32,9 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly planStore = inject(PlanStore);
   private readonly toastService = inject(ToastService);
   private readonly workoutService = inject(WorkoutService);
+  protected readonly authService = inject(AuthService);
+  private readonly guestStorage = inject(GuestWorkoutStorageService);
+  private readonly router = inject(Router);
   private timerId: number | null = null;
 
   protected readonly showResetConfirm = signal(false);
@@ -184,17 +190,36 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     const finishedWorkout = this.pendingFinishWorkout;
     this.store.finishWorkout();
 
-    this.workoutService.save(finishedWorkout).subscribe({
-      next: () => {
-        this.toastService.success('Workout saved successfully!');
-      },
-      error: () => {
-        this.toastService.error('Failed to save workout.', {
-          label: 'Retry',
-          handler: () => this.retrySaveWorkout(finishedWorkout)
-        });
-      },
-    });
+    if (this.authService.status() === 'anonymous') {
+      const guestWorkout: GuestCompletedWorkout = {
+        id: finishedWorkout.id,
+        name: finishedWorkout.name,
+        startedAt: finishedWorkout.startedAt,
+        finishedAt: finishedWorkout.finishedAt!,
+        accumulatedMs: finishedWorkout.accumulatedMs,
+        exercises: finishedWorkout.exercises,
+        synced: false,
+        syncedAt: null,
+        createdLocally: new Date().toISOString(),
+      };
+      this.guestStorage.saveCompletedWorkout(guestWorkout).then(() => {
+        this.toastService.success('Workout saved locally.');
+      }).catch(() => {
+        this.toastService.error('Failed to save workout locally.');
+      });
+    } else {
+      this.workoutService.save(finishedWorkout).subscribe({
+        next: () => {
+          this.toastService.success('Workout saved successfully!');
+        },
+        error: () => {
+          this.toastService.error('Failed to save workout.', {
+            label: 'Retry',
+            handler: () => this.retrySaveWorkout(finishedWorkout)
+          });
+        },
+      });
+    }
 
     this.pendingFinishWorkout = null;
   }

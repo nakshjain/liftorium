@@ -164,7 +164,7 @@ Transforms the app from a login-wall entry point into a guest-first experience. 
     - Test all three `AuthStatus` values render the correct controls
     - _Requirements: 11.1–11.3_
 
-- [ ] 8. Checkpoint — Routing, storage, and core UI
+- [x] 8. Checkpoint — Routing, storage, and core UI
   - Ensure all tests pass. Verify the app opens at `/app` without auth, live workout saves to IndexedDB, and the NavBar shows correct controls for each auth state. Ask the user if questions arise.
 
 - [x] 9. Update `WorkoutSummaryPageComponent` with guest CTA
@@ -249,7 +249,7 @@ Transforms the app from a login-wall entry point into a guest-first experience. 
     - **Property 1: Guest data isolation**
     - **Validates: Requirements 22.1**
 
-- [~] 12. Checkpoint — Full frontend sync flow
+- [x] 12. Checkpoint — Full frontend sync flow
   - Ensure all tests pass. Run the app as a guest, complete a workout, sign in, and verify the sync modal appears with correct counts. Ask the user if questions arise.
 
 - [x] 13. Backend: add `clientId` to `Workout` entity and `WorkoutRepository`
@@ -311,7 +311,7 @@ Transforms the app from a login-wall entry point into a guest-first experience. 
     - **Property 16: User-scoped deduplication isolation**
     - **Validates: Requirements 22.3, 16.3**
 
-- [~] 17. Final checkpoint — end-to-end integration
+- [x] 17. Final checkpoint — end-to-end integration
   - Ensure all frontend and backend tests pass. Verify the full guest-to-authenticated flow: open app unauthenticated → complete workout → sign up → confirm sync modal → workout appears in history. Verify existing authenticated flows are unchanged. Ask the user if questions arise.
 
 ---
