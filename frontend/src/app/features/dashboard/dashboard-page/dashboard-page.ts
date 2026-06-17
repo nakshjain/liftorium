@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -18,7 +18,7 @@ import { ProgressOverview } from '../../progress/progress.models';
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })
-export class DashboardPageComponent implements OnInit, OnDestroy {
+export class DashboardPageComponent implements OnDestroy {
   protected readonly authService = inject(AuthService);
   private readonly liveStore = inject(LiveWorkoutStore);
   private readonly workoutService = inject(WorkoutService);
@@ -134,23 +134,27 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   });
 
   // ── Lifecycle ─────────────────────────────────────────────────────────
-  ngOnInit(): void {
-    const currentMonth = this.getCurrentYearMonth();
+  // effect() runs in the injection context (constructor), so it can safely
+  // read signals. It fires whenever status changes, and only loads data
+  // once the session is confirmed — guests never hit the backend.
+  constructor() {
+    effect(() => {
+      if (this.authService.status() !== 'authenticated') return;
 
-    this.workoutService
-      .getStats(currentMonth)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (s) => this.stats.set(s), error: () => {} });
+      const currentMonth = this.getCurrentYearMonth();
 
-    this.planService
-      .get()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (p) => this.plan.set(p), error: () => {} });
+      this.workoutService.getStats(currentMonth)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: (s) => this.stats.set(s), error: () => {} });
 
-    this.progressService
-      .getOverview()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({ next: (o) => this.progressOverview.set(o), error: () => {} });
+      this.planService.get()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: (p) => this.plan.set(p), error: () => {} });
+
+      this.progressService.getOverview()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: (o) => this.progressOverview.set(o), error: () => {} });
+    });
   }
 
   ngOnDestroy(): void {
