@@ -5,40 +5,20 @@
 } @else {
 
 <main class="min-h-dvh bg-zinc-950 pb-32 text-zinc-50">
-  <div class="mx-auto w-full max-w-lg px-4 pt-5 sm:px-6">
 
-    <!-- ── Header ──────────────────────────────────────── -->
-    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-      <div class="flex items-center justify-between gap-4">
-        <span class="text-lg font-semibold tracking-tight text-zinc-50">Liftorium</span>
+  <!-- ── Shared top nav ──────────────────────────────────────────────── -->
+  <app-nav-bar />
 
-        @if (authService.status() === 'anonymous') {
-          <!-- Guest header: Login + Sign Up -->
-          <div class="flex items-center gap-2">
-            <a
-              routerLink="/auth/login"
-              class="rounded-lg px-4 py-2 text-sm font-medium text-zinc-400 transition hover:text-zinc-100"
-            >Login</a>
-            <a
-              routerLink="/auth/signup"
-              class="rounded-lg bg-teal-400 px-4 py-2 text-sm font-bold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.97]"
-            >Sign Up</a>
-          </div>
-        } @else {
-          <!-- Authenticated header: Sign out -->
-          <button
-            class="rounded-lg border border-zinc-800 px-4 py-2 text-sm font-medium text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200 disabled:cursor-not-allowed disabled:text-zinc-600"
-            type="button"
-            [disabled]="loggingOut()"
-            (click)="logout()"
-          >{{ logoutButtonLabel() }}</button>
-        }
-      </div>
+  <div class="mx-auto w-full max-w-3xl px-4 pt-4 sm:px-6">
+
+    <!-- ── Page header ────────────────────────────────────────────────── -->
+    <header class="anim-enter lft-page-header">
+      <h1 class="lft-page-title">Training Hub</h1>
     </header>
 
     <!-- ── Context strip ──────────────────────────────────────────────── -->
-    <!-- Day + streak + weekly volume in one scannable line — no card needed -->
-    <div class="anim-enter flex items-center justify-between gap-2">
+    <!-- Greeting + streak in one scannable line — no card needed -->
+    <div class="anim-enter mt-4 flex items-center justify-between gap-2">
 
       <!-- Left: greeting -->
       <div class="min-w-0">
@@ -331,7 +311,7 @@
       <!-- Today's plan pill — compact glanceable -->
       @if (authService.status() === 'authenticated' && todayPlanLabel()) {
         <a
-          class="group flex flex-col justify-center gap-1.5 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 transition-all duration-200 hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.99]"
+          class="db-stat-card group flex flex-col justify-center gap-1.5 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 hover:border-zinc-700 hover:bg-zinc-900"
           routerLink="/app/plan"
         >
           <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">Today</p>
@@ -357,11 +337,11 @@
           <div class="mt-4 flex gap-2.5">
             <a
               routerLink="/auth/signup"
-              class="flex-1 rounded-xl bg-teal-400 py-2.5 text-center text-sm font-bold text-zinc-950 transition hover:bg-teal-300 active:scale-[0.98]"
+              class="lft-btn lft-btn-primary flex-1 justify-center"
             >Sign Up Free</a>
             <a
               routerLink="/auth/login"
-              class="flex-1 rounded-xl border border-zinc-700 py-2.5 text-center text-sm font-semibold text-zinc-300 transition hover:bg-zinc-800 active:scale-[0.98]"
+              class="lft-btn lft-btn-ghost flex-1 justify-center"
             >Login</a>
           </div>
         </div>
@@ -372,3 +352,4 @@
 </main>
 
 }
+

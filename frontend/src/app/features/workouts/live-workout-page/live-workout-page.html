@@ -230,8 +230,8 @@
                   </div>
 
                   <!-- Weight stepper -->
-                  <div class="grid grid-cols-[2rem_1fr_2rem] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 transition focus-within:border-teal-400/50 sm:grid-cols-[2.25rem_1fr_2.25rem]">
-                    <button class="hidden h-11 text-base font-bold text-zinc-400 transition hover:bg-zinc-800 active:bg-zinc-700 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', -2.5)">−</button>
+                  <div class="grid grid-cols-[2rem_1fr_2rem] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[2.25rem_1fr_2.25rem]">
+                    <button class="lft-stepper-btn hidden h-11 text-base font-bold text-zinc-400 hover:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', -2.5)">−</button>
                     <input
                       class="lft-set-input col-span-3 sm:col-span-1"
                       inputmode="decimal"
@@ -240,12 +240,12 @@
                       (focus)="selectAll($event)"
                       (input)="store.setValue(exercise.id, set.id, 'weight', inputValue($event))"
                     />
-                    <button class="hidden h-11 text-base font-bold text-zinc-400 transition hover:bg-zinc-800 active:bg-zinc-700 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', 2.5)">+</button>
+                    <button class="lft-stepper-btn hidden h-11 text-base font-bold text-zinc-400 hover:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', 2.5)">+</button>
                   </div>
 
                   <!-- Reps stepper -->
-                  <div class="grid grid-cols-[2rem_1fr_2rem] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 transition focus-within:border-teal-400/50 sm:grid-cols-[2.25rem_1fr_2.25rem]">
-                    <button class="hidden h-11 text-base font-bold text-zinc-400 transition hover:bg-zinc-800 active:bg-zinc-700 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)">−</button>
+                  <div class="grid grid-cols-[2rem_1fr_2rem] overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[2.25rem_1fr_2.25rem]">
+                    <button class="lft-stepper-btn hidden h-11 text-base font-bold text-zinc-400 hover:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)">−</button>
                     <input
                       class="lft-set-input col-span-3 sm:col-span-1"
                       inputmode="numeric"
@@ -254,21 +254,21 @@
                       (focus)="selectAll($event)"
                       (input)="store.setValue(exercise.id, set.id, 'reps', inputValue($event))"
                     />
-                    <button class="hidden h-11 text-base font-bold text-zinc-400 transition hover:bg-zinc-800 active:bg-zinc-700 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)">+</button>
+                    <button class="lft-stepper-btn hidden h-11 text-base font-bold text-zinc-400 hover:bg-zinc-800 sm:block" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)">+</button>
                   </div>
 
-                  <!-- Done toggle -->
+                  <!-- Done toggle — highest-frequency tap in the app -->
                   <button
-                    class="h-11 rounded-xl border text-xs font-bold tracking-wide transition active:scale-[0.95]"
+                    class="lft-set-done h-11 rounded-xl border text-xs font-bold tracking-wide"
                     [class.border-teal-400]="set.completed"
                     [class.bg-teal-400]="set.completed"
                     [class.text-zinc-950]="set.completed"
                     [class.border-zinc-700]="!set.completed"
                     [class.text-zinc-400]="!set.completed"
-                    [class.hover:border-zinc-500]="!set.completed"
                     type="button"
                     (click)="store.toggleSetComplete(exercise.id, set.id)"
                     [attr.aria-label]="set.completed ? 'Mark set incomplete' : 'Mark set complete'"
+                    [attr.aria-pressed]="set.completed"
                   >{{ set.completed ? '✓' : '—' }}</button>
                 </div>
               }
@@ -307,18 +307,19 @@
         </div>
         <!-- Pause -->
         <button
-          class="lft-btn h-12 border border-amber-400/50 px-4 text-xs font-bold text-amber-300 transition hover:border-amber-400 hover:bg-amber-400/8"
+          class="lft-btn h-12 border border-amber-400/50 px-4 text-xs font-bold text-amber-300 hover:border-amber-400 hover:bg-amber-400/8"
           type="button"
           (click)="store.pauseWorkout()"
         >Pause</button>
         <!-- Finish -->
         <button
-          class="lft-btn h-12 px-5 text-xs font-bold transition"
+          class="lft-btn h-12 px-5 text-xs font-bold"
           [class.bg-teal-400]="hasCompletedSets()"
           [class.text-zinc-950]="hasCompletedSets()"
           [class.bg-zinc-800]="!hasCompletedSets()"
           [class.text-zinc-500]="!hasCompletedSets()"
           [class.cursor-not-allowed]="!hasCompletedSets()"
+          [class.opacity-50]="!hasCompletedSets()"
           type="button"
           [disabled]="!hasCompletedSets()"
           [title]="hasCompletedSets() ? '' : 'Log at least one set to finish'"

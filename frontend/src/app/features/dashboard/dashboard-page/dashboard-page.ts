@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { Subject, finalize, takeUntil } from 'rxjs';
+import { RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../core/auth/auth.service';
 import { AuthGateService } from '../../../core/auth/auth-gate.service';
+import { NavBarComponent } from '../../../shared/ui/nav-bar/nav-bar';
 import { LiveWorkoutStore } from '../../workouts/live-workout.store';
 import { WorkoutService } from '../../workouts/workout.service';
 import { WorkoutStats } from '../../workouts/workout-history.models';
@@ -13,13 +14,12 @@ import { ProgressOverview } from '../../progress/progress.models';
 
 @Component({
   selector: 'app-dashboard-page',
-  imports: [RouterLink],
+  imports: [RouterLink, NavBarComponent],
   templateUrl: './dashboard-page.html',
   styleUrl: './dashboard-page.scss',
 })
 export class DashboardPageComponent implements OnInit, OnDestroy {
   protected readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
   private readonly liveStore = inject(LiveWorkoutStore);
   private readonly workoutService = inject(WorkoutService);
   private readonly planService = inject(PlanService);
@@ -34,11 +34,6 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   protected openAuthGate(feature: string): void {
     this.authGateService.pendingFeature.set(feature);
   }
-
-  protected readonly loggingOut = signal(false);
-  protected readonly logoutButtonLabel = computed(() =>
-    this.loggingOut() ? 'Signing out…' : 'Sign out',
-  );
 
   // ── Live workout ───────────────────────────────────────────────────────
   /** Exposed from the global store — no extra fetch needed. */
@@ -161,15 +156,6 @@ export class DashboardPageComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  protected logout(): void {
-    if (this.loggingOut()) return;
-    this.loggingOut.set(true);
-    this.authService
-      .logout()
-      .pipe(finalize(() => this.loggingOut.set(false)))
-      .subscribe();
   }
 
   // ── Formatters ─────────────────────────────────────────────────────────
