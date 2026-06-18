@@ -130,6 +130,33 @@ export class LiveWorkoutStore {
     });
   }
 
+  moveExercise(workoutExerciseId: string, direction: 'up' | 'down'): void {
+    this.workout.update((workout) => {
+      if (!workout) return workout;
+      const exercises = [...workout.exercises];
+      const idx = exercises.findIndex((ex) => ex.id === workoutExerciseId);
+      const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (idx === -1 || targetIdx < 0 || targetIdx >= exercises.length) return workout;
+      [exercises[idx], exercises[targetIdx]] = [exercises[targetIdx], exercises[idx]];
+      const updated = { ...workout, exercises };
+      this.persist(updated);
+      return updated;
+    });
+  }
+
+  replaceExercise(workoutExerciseId: string, id: string, name: string, target: string, equipment: string): void {
+    this.workout.update((workout) => {
+      if (!workout) return workout;
+      const option: ExerciseOption = { id, name, target, equipment, previous: [], bestSet: null };
+      const exercises = workout.exercises.map((ex) =>
+        ex.id === workoutExerciseId ? { ...this.createWorkoutExercise(option), id: ex.id } : ex
+      );
+      const updated = { ...workout, exercises };
+      this.persist(updated);
+      return updated;
+    });
+  }
+
   addSet(workoutExerciseId: string): void {
     this.workout.update((workout) => {
       const updated = this.updateExercise(workout, workoutExerciseId, (exercise) => {

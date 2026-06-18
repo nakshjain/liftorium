@@ -8,6 +8,8 @@ import { PlanStore } from '../../plan/plan.store';
 import { DAY_LABELS, PlanDay } from '../../plan/plan.models';
 import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
 import { ExercisePickerComponent } from '../../../shared/ui/exercise-picker/exercise-picker';
+import { ExerciseOverflowMenuComponent } from '../exercise-overflow-menu/exercise-overflow-menu';
+import type { ExerciseOverflowAction } from '../exercise-overflow-menu/exercise-overflow-menu';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { WorkoutService } from '../workout.service';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
@@ -23,9 +25,16 @@ type FinishedWorkoutSummary = {
 
 @Component({
   selector: 'app-live-workout-page',
-  imports: [RouterLink, FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent, ExercisePickerComponent],
+  imports: [
+    RouterLink,
+    FormsModule,
+    ConfirmationDialogComponent,
+    TrainingHubLinkComponent,
+    ExercisePickerComponent,
+    ExerciseOverflowMenuComponent,
+  ],
   templateUrl: './live-workout-page.html',
-  styleUrl: './live-workout-page.scss'
+  styleUrl: './live-workout-page.scss',
 })
 export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly store = inject(LiveWorkoutStore);
@@ -40,8 +49,15 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly showFinishConfirm = signal(false);
   private pendingFinishWorkout: LiveWorkout | null = null;
 
-  /** Set ID that just completed — used to fire the one-shot pop animation. */
+  /** Set ID that just completed — drives the one-shot pop animation. */
   protected readonly justCompletedSetId = signal<string | null>(null);
+
+  /**
+   * When non-null the "+ Add Exercise" picker sheet is open.
+   * If replacing, this holds the workoutExerciseId being replaced;
+   * if adding fresh, it is the empty string ''.
+   */
+  protected readonly pickerTarget = signal<string | null>(null);
 
   protected readonly dayLabels = DAY_LABELS;
   protected readonly selectedDayIndex = signal(this.getTodayIndex());
@@ -55,32 +71,89 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   });
 
   protected readonly addedExerciseIds = computed(
-    () => new Set(this.store.activeWorkout()?.exercises.map((exercise) => exercise.exerciseId) ?? [])
+    () => new Set(this.store.activeWorkout()?.exercises.map((ex) => ex.exerciseId) ?? [])
   );
 
-  protected onExercisePicked(exercise: CachedExercise): void {
-    this.store.addExerciseFromPicker(
-      exercise.id,
-      exercise.name,
-      exercise.primaryMuscles[0] ?? '',
-      exercise.equipment[0] ?? '',
-    );
+  // ── Picker sheet ────────────────────────────────────────────────────────
+
+  /** Open the picker to add a fresh exercise. */
+  protected openAddExercise(): void {
+    this.pickerTarget.set('');
   }
+
+  /** Open the picker to replace an existing exercise. */
+  protected openReplaceExercise(workoutExerciseId: string): void {
+    this.pickerTarget.set(workoutExerciseId);
+  }
+
+  protected closePicker(): void {
+    this.pickerTarget.set(null);
+  }
+
+  protected onExercisePicked(exercise: CachedExercise): void {
+    const target = this.pickerTarget();
+    if (target === null) return;
+
+    if (target === '') {
+      // Fresh add
+      this.store.addExerciseFromPicker(
+        exercise.id,
+        exercise.name,
+        exercise.primaryMuscles[0] ?? '',
+        exercise.equipment[0] ?? '',
+      );
+    } else {
+      // Replace existing
+      this.store.replaceExercise(
+        target,
+        exercise.id,
+        exercise.name,
+        exercise.primaryMuscles[0] ?? '',
+        exercise.equipment[0] ?? '',
+      );
+    }
+    this.closePicker();
+  }
+
+  // ── Overflow menu ────────────────────────────────────────────────────────
+
+  protected onOverflowAction(workoutExerciseId: string, action: ExerciseOverflowAction): void {
+    switch (action) {
+      case 'replace':
+        this.openReplaceExercise(workoutExerciseId);
+        break;
+      case 'move-up':
+        this.store.moveExercise(workoutExerciseId, 'up');
+        break;
+      case 'move-down':
+        this.store.moveExercise(workoutExerciseId, 'down');
+        break;
+      case 'remove':
+        this.store.removeExercise(workoutExerciseId);
+        break;
+    }
+  }
+
+  // ── Timer / elapsed ──────────────────────────────────────────────────────
 
   protected readonly elapsedTimeLabel = computed(() => this.formatTime(this.store.elapsedSeconds()));
   protected readonly restTimerLabel = computed(() =>
-    this.store.restTimerActive() ? this.formatTime(this.store.restRemainingSeconds()) : 'Ready'
+    this.store.restTimerActive() ? this.formatTime(this.store.restRemainingSeconds()) : null
   );
+
   protected readonly hasCompletedSets = computed(() => {
     const workout = this.store.activeWorkout();
     if (!workout) return false;
     return workout.exercises.some((ex) => ex.sets.some((s) => s.completed));
   });
+
   protected readonly finishedSummary = computed(() => {
     const workout = this.store.lastFinishedWorkout();
     if (!workout) return null;
     return this.createFinishedSummary(workout);
   });
+
+  // ── Lifecycle ────────────────────────────────────────────────────────────
 
   public ngOnInit(): void {
     this.timerId = window.setInterval(() => this.store.tick(), 1000);
@@ -91,17 +164,14 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     try {
       const raw = localStorage.getItem('liftorium_stale_workout_notification');
       if (!raw) return;
-
       const notification = JSON.parse(raw) as { setCount: number; timestamp: number };
       const ageHours = (Date.now() - notification.timestamp) / (1000 * 60 * 60);
-
       if (ageHours < 24) {
         this.toastService.info(`Yesterday's workout was auto-saved (${notification.setCount} sets).`);
       }
-
       localStorage.removeItem('liftorium_stale_workout_notification');
     } catch {
-      // Invalid JSON or storage error — ignore
+      // storage error — ignore
     }
   }
 
@@ -110,6 +180,8 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
       window.clearInterval(this.timerId);
     }
   }
+
+  // ── Template helpers ─────────────────────────────────────────────────────
 
   protected inputValue(event: Event): string {
     return event.target instanceof HTMLInputElement ? event.target.value : '';
@@ -122,8 +194,8 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Returns a compact weight×reps label for the matching previous-session set.
-   * Shown per-row in the set number column. "–" when no history exists for that index.
+   * Per-row previous-session reference shown under the set number.
+   * Format: "80×8". Falls back to "–" when no history for that index.
    */
   protected previousSetLabel(
     previousSets: readonly { reps: number; weight: number }[],
@@ -134,9 +206,8 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Builds the exercise-level performance summary line.
-   * Format: "Last: 80kg × 8 · Best: 100kg × 5"
-   * Returns null when there is no history at all (no line rendered).
+   * Exercise-level performance line shown in the card header.
+   * "Last: 80kg × 8 · Best: 100kg × 5" — collapses when best === last.
    */
   protected exercisePerfLabel(
     previous: readonly { reps: number; weight: number }[],
@@ -144,12 +215,8 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   ): string | null {
     const lastSet = previous[0] ?? null;
     if (!lastSet && !bestSet) return null;
-
     const parts: string[] = [];
-    if (lastSet) {
-      parts.push(`Last: ${lastSet.weight}kg × ${lastSet.reps}`);
-    }
-    // Only show best if it differs from last (avoids redundant "Last: X · Best: X")
+    if (lastSet) parts.push(`Last: ${lastSet.weight}kg × ${lastSet.reps}`);
     if (bestSet && (!lastSet || bestSet.weight !== lastSet.weight || bestSet.reps !== lastSet.reps)) {
       parts.push(`Best: ${bestSet.weight}kg × ${bestSet.reps}`);
     }
@@ -168,32 +235,29 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Wraps toggleSetComplete and fires a one-shot pop animation
-   * on the Done button whenever a set transitions to completed (not un-completed).
+   * Completes or uncompletes a set and fires the pop animation on completion.
+   * Rest timer is started automatically inside the store on completion.
    */
   protected completeSet(workoutExerciseId: string, setId: string, currentlyCompleted: boolean): void {
     this.store.toggleSetComplete(workoutExerciseId, setId);
     if (!currentlyCompleted) {
       this.justCompletedSetId.set(setId);
       window.setTimeout(() => {
-        if (this.justCompletedSetId() === setId) {
-          this.justCompletedSetId.set(null);
-        }
+        if (this.justCompletedSetId() === setId) this.justCompletedSetId.set(null);
       }, 300);
     }
   }
+
+  // ── Workout lifecycle ────────────────────────────────────────────────────
 
   private createFinishedSummary(workout: LiveWorkout): FinishedWorkoutSummary {
     return {
       exercises: workout.exercises.length,
       sets: workout.exercises.reduce(
-        (count, ex) => count + ex.sets.filter((s) => s.completed).length,
-        0,
+        (count, ex) => count + ex.sets.filter((s) => s.completed).length, 0
       ),
       volume: workout.exercises.reduce(
-        (total, ex) =>
-          total + ex.sets.reduce((t, s) => t + (s.completed ? s.reps * s.weight : 0), 0),
-        0,
+        (total, ex) => total + ex.sets.reduce((t, s) => t + (s.completed ? s.reps * s.weight : 0), 0), 0
       ),
     };
   }
@@ -218,7 +282,6 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected finishWorkout(): void {
     const workout = this.store.activeWorkout();
     if (!workout) return;
-
     this.pendingFinishWorkout = this.captureWorkoutSnapshot(workout);
     this.showFinishConfirm.set(true);
   }
@@ -251,22 +314,16 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
         syncedAt: null,
         createdLocally: new Date().toISOString(),
       };
-      this.guestStorage.saveCompletedWorkout(guestWorkout).then(() => {
-        this.toastService.success('Workout saved locally.');
-      }).catch(() => {
-        this.toastService.error('Failed to save workout locally.');
-      });
+      this.guestStorage.saveCompletedWorkout(guestWorkout)
+        .then(() => this.toastService.success('Workout saved locally.'))
+        .catch(() => this.toastService.error('Failed to save workout locally.'));
     } else {
       this.workoutService.save(finishedWorkout).subscribe({
-        next: () => {
-          this.toastService.success('Workout saved successfully!');
-        },
-        error: () => {
-          this.toastService.error('Failed to save workout.', {
-            label: 'Retry',
-            handler: () => this.retrySaveWorkout(finishedWorkout),
-          });
-        },
+        next: () => this.toastService.success('Workout saved successfully!'),
+        error: () => this.toastService.error('Failed to save workout.', {
+          label: 'Retry',
+          handler: () => this.retrySaveWorkout(finishedWorkout),
+        }),
       });
     }
 
@@ -295,15 +352,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
 
   private retrySaveWorkout(workout: LiveWorkout): void {
     this.workoutService.save(workout).subscribe({
-      next: () => {
-        this.toastService.success('Workout saved successfully!');
-      },
-      error: () => {
-        this.toastService.error('Failed to save workout.', {
-          label: 'Retry',
-          handler: () => this.retrySaveWorkout(workout),
-        });
-      },
+      next: () => this.toastService.success('Workout saved successfully!'),
+      error: () => this.toastService.error('Failed to save workout.', {
+        label: 'Retry',
+        handler: () => this.retrySaveWorkout(workout),
+      }),
     });
   }
 

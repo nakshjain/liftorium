@@ -1,7 +1,7 @@
 <main class="min-h-dvh bg-zinc-950 pb-32 text-zinc-50">
   <div class="mx-auto flex min-h-dvh w-full max-w-3xl flex-col px-4 py-4 sm:px-6">
 
-    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <!-- ── Header ──────────────────────────────────────────────────── -->
     <header class="anim-enter lft-page-header">
       <div class="flex items-center justify-between gap-3">
         <div>
@@ -9,7 +9,6 @@
           <h1 class="lft-page-title">Live workout</h1>
         </div>
         @if (store.activeWorkout()) {
-          <!-- Elapsed / paused timer pill -->
           <div
             class="rounded-xl border px-3 py-2 text-right"
             [class.border-teal-400/25]="!store.paused()"
@@ -38,20 +37,15 @@
     @if (!store.activeWorkout() || store.paused()) {
       <section class="flex flex-1 flex-col justify-center py-8">
 
-        <!-- Start / Resume card -->
         <div class="anim-enter-1 lft-card rounded-2xl p-7">
           @if (finishedSummary(); as summary) {
-            <!-- Post-workout summary -->
             <p class="text-[10px] font-bold uppercase tracking-[0.14em] text-teal-400">Session complete</p>
-            <h2 class="mt-2.5 text-3xl font-black tracking-tight text-zinc-50">
-              {{ summary.sets }} sets logged.
-            </h2>
+            <h2 class="mt-2.5 text-3xl font-black tracking-tight text-zinc-50">{{ summary.sets }} sets logged.</h2>
             <p class="mt-3 text-sm leading-relaxed text-zinc-400">
               {{ formatVolume(summary.volume) }} kg lifted · {{ summary.exercises }} exercise{{ summary.exercises !== 1 ? 's' : '' }}
             </p>
 
             @if (authService.status() === 'anonymous') {
-              <!-- Guest: save nudge -->
               <div class="mt-5 rounded-xl border border-amber-400/25 bg-amber-400/8 px-4 py-3">
                 <p class="text-sm font-semibold text-amber-300">Workout saved locally</p>
                 <p class="mt-0.5 text-xs text-amber-300/60">Create an account to back it up and unlock full history.</p>
@@ -64,13 +58,10 @@
             } @else {
               <div class="mt-5 flex flex-wrap gap-2.5">
                 <a routerLink="/app/workouts/history" class="lft-btn lft-btn-ghost">View History</a>
-                <button class="lft-btn lft-btn-primary" type="button" (click)="store.startNewWorkout()">
-                  New Workout
-                </button>
+                <button class="lft-btn lft-btn-primary" type="button" (click)="store.startNewWorkout()">New Workout</button>
               </div>
             }
           } @else {
-            <!-- Pre-start state -->
             <h2 class="text-3xl font-black tracking-tight text-zinc-50">Tap. Lift. Log. Repeat.</h2>
             <p class="mt-3 text-sm leading-relaxed text-zinc-400">
               Previous numbers stay visible while you log. Set controls are thumb-sized. Rest timer starts the moment a set is checked.
@@ -82,9 +73,8 @@
             style="height:3.25rem; font-size:0.9375rem;"
             type="button"
             (click)="startFromPlan()"
-          >
-            {{ store.paused() ? 'Resume Workout' : 'Start Workout' }}
-          </button>
+          >{{ store.paused() ? 'Resume Workout' : 'Start Workout' }}</button>
+
           @if (store.paused()) {
             <button
               class="lft-btn lft-btn-danger lft-btn-full mt-2.5"
@@ -92,9 +82,7 @@
               type="button"
               (click)="resetWorkout()"
             >Reset workout</button>
-            <p class="mt-3 text-xs text-zinc-500">
-              Paused at {{ formatTime(store.elapsedSeconds()) }}
-            </p>
+            <p class="mt-3 text-xs text-zinc-500">Paused at {{ formatTime(store.elapsedSeconds()) }}</p>
           }
         </div>
 
@@ -118,19 +106,14 @@
           @if (!hasPlan()) {
             <div class="mt-4">
               <p class="text-sm text-zinc-400">No plan set up yet.</p>
-              <a
-                class="mt-2 inline-block text-sm font-semibold text-teal-400 transition hover:text-teal-300"
-                routerLink="/app/plan"
-              >Build your split →</a>
+              <a class="mt-2 inline-block text-sm font-semibold text-teal-400 transition hover:text-teal-300" routerLink="/app/plan">Build your split →</a>
             </div>
           } @else if (selectedDay().rest) {
             <p class="mt-4 text-sm text-zinc-500">Rest day — no session scheduled.</p>
           } @else if (selectedDay().exercises.length === 0) {
             <div class="mt-4">
               <p class="text-sm text-zinc-400">{{ selectedDay().label || dayLabels[selectedDayIndex()] }} — no exercises added yet.</p>
-              <a class="mt-1.5 inline-block text-sm font-semibold text-teal-400 transition hover:text-teal-300" routerLink="/app/plan">
-                Add exercises →
-              </a>
+              <a class="mt-1.5 inline-block text-sm font-semibold text-teal-400 transition hover:text-teal-300" routerLink="/app/plan">Add exercises →</a>
             </div>
           } @else {
             <div class="mt-4">
@@ -155,71 +138,77 @@
     ══════════════════════════════════════════════════ -->
     } @else {
 
-      <!-- ── Stat strip (compact single-row) ───────────────────────── -->
-      <!--
-        Fix #4: Collapsed from 3 separate tall cards to one tight pill row.
-        Each stat is inline: label + value side by side, separated by dividers.
-        Rest timer pulses teal when counting down — still prominent, less space.
-      -->
-      <section class="anim-enter-1 mt-3 mb-2">
+      <!-- ── Compact stat strip ─────────────────────────────────────── -->
+      <section class="anim-enter-1 mt-3 mb-1">
         <div class="lft-card flex items-center divide-x divide-zinc-800 rounded-2xl">
-
-          <!-- Sets -->
           <div class="flex flex-1 items-center gap-2 px-4 py-3">
             <span class="lft-section-label shrink-0">Sets</span>
             <span class="text-lg font-black tabular-nums leading-none text-zinc-50">{{ store.completedSetCount() }}</span>
           </div>
-
-          <!-- Volume -->
           <div class="flex flex-1 items-center gap-2 px-4 py-3">
             <span class="lft-section-label shrink-0">Vol</span>
             <span class="text-lg font-black tabular-nums leading-none text-zinc-50">
               {{ formatVolume(store.totalVolume()) }}<span class="ml-0.5 text-xs font-semibold text-zinc-500">kg</span>
             </span>
           </div>
-
-          <!-- Rest timer -->
+          <!-- Rest: shows timer value when active, "–" when idle -->
           <div class="flex flex-1 items-center gap-2 px-4 py-3">
             <span class="lft-section-label shrink-0">Rest</span>
             <span
               class="text-lg font-black tabular-nums leading-none transition-colors"
               [class.text-teal-300]="store.restTimerActive()"
               [class.text-zinc-50]="!store.restTimerActive()"
-            >{{ restTimerLabel() }}</span>
+            >{{ store.restTimerActive() ? restTimerLabel() : '–' }}</span>
           </div>
-
         </div>
       </section>
 
-      <!-- Exercise picker -->
-      <section class="anim-enter-2 pb-3">
-        <p class="lft-section-label mb-2">Add exercise</p>
-        <app-exercise-picker
-          [alreadyAddedIds]="addedExerciseIds()"
-          [showCancel]="false"
-          (exerciseSelected)="onExercisePicked($event)"
-        />
-      </section>
+      <!-- ── Rest timer banner — appears immediately after set completion ── -->
+      <!--
+        Requirement #2: completing a set auto-starts rest timer.
+        The banner surfaces Skip Rest + +30s with zero extra taps.
+        Animates in from above with lft-rest-banner, dismissed when timer ends.
+      -->
+      @if (store.restTimerActive()) {
+        <div class="lft-rest-banner mx-0 mb-2 mt-2">
+          <div class="flex items-center gap-3 rounded-2xl border border-teal-400/20 bg-teal-400/8 px-4 py-2.5">
+            <!-- Large countdown -->
+            <div class="flex flex-1 items-center gap-2.5">
+              <!-- Pulse dot -->
+              <span class="relative flex h-2 w-2 shrink-0">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400 opacity-60"></span>
+                <span class="relative inline-flex h-2 w-2 rounded-full bg-teal-400"></span>
+              </span>
+              <span class="text-sm font-bold text-teal-300">Resting</span>
+              <span class="text-xl font-black tabular-nums leading-none text-teal-200">{{ restTimerLabel() }}</span>
+            </div>
+            <!-- Quick actions — one thumb reach -->
+            <button
+              class="lft-btn lft-btn-ghost h-8 px-3 text-xs"
+              type="button"
+              (click)="store.addRestTime(30)"
+            >+30s</button>
+            <button
+              class="h-8 rounded-lg border border-teal-400/30 px-3 text-xs font-semibold text-teal-300 transition hover:border-teal-400/60 hover:bg-teal-400/10 active:scale-95"
+              type="button"
+              (click)="store.skipRest()"
+            >Skip</button>
+          </div>
+        </div>
+      }
 
       <!-- ── Exercise list ──────────────────────────────────────────── -->
-      <section class="anim-enter-3 space-y-3">
-        @for (exercise of store.activeWorkout()?.exercises; track exercise.id; let i = $index) {
+      <section class="anim-enter-2 space-y-3">
+        @for (exercise of store.activeWorkout()?.exercises; track exercise.id; let i = $index; let first = $first; let last = $last; let count = $count) {
           <article
             class="anim-stagger overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/70"
             [style]="'--stagger-i: ' + i"
           >
-
-            <!-- ── Exercise header ──────────────────────────────────── -->
-            <!--
-              Fix #1: Previous performance shown inline — no extra taps.
-              "Last: 80kg × 8 · Best: 100kg × 5" sits directly under the name
-              in a single muted line. Zero extra height when no history exists.
-            -->
-            <div class="flex items-start justify-between gap-3 border-b border-zinc-800 px-4 py-3">
+            <!-- ── Exercise header ─────────────────────────────────── -->
+            <div class="flex items-start justify-between gap-2 border-b border-zinc-800 px-3 py-3">
               <div class="min-w-0 flex-1">
                 <h2 class="text-sm font-bold leading-snug text-zinc-50">{{ exercise.name }}</h2>
 
-                <!-- Performance context line — Last + Best combined -->
                 @if (exercisePerfLabel(exercise.previous, exercise.bestSet); as perfLabel) {
                   <p class="mt-0.5 text-[11px] font-medium text-teal-400/80">{{ perfLabel }}</p>
                 } @else {
@@ -227,53 +216,48 @@
                 }
 
                 @if (exercise.target || exercise.equipment) {
-                  <p class="mt-0.5 text-[10px] text-zinc-600">{{ exercise.target }}{{ exercise.target && exercise.equipment ? ' · ' : '' }}{{ exercise.equipment }}</p>
+                  <p class="mt-0.5 text-[10px] text-zinc-600">
+                    {{ exercise.target }}{{ exercise.target && exercise.equipment ? ' · ' : '' }}{{ exercise.equipment }}
+                  </p>
                 }
               </div>
-              <button
-                class="lft-btn lft-btn-ghost shrink-0"
-                style="height:1.875rem; padding:0 0.625rem; font-size:0.6875rem; border-color: rgba(251,113,133,0.20); color: #fb7185;"
-                type="button"
-                (click)="store.removeExercise(exercise.id)"
-                [attr.aria-label]="'Remove ' + exercise.name"
-              >Remove</button>
+
+              <!--
+                Requirement #4: ⋮ overflow menu replaces the visible Remove button.
+                Keeps the card header clean — only the exercise name and perf data visible.
+              -->
+              <app-exercise-overflow-menu
+                [canMoveUp]="!first"
+                [canMoveDown]="!last"
+                (action)="onOverflowAction(exercise.id, $event)"
+              />
             </div>
 
-            <!-- ── Column headers ─────────────────────────────────────── -->
-            <!--
-              Fix #3 + #6: Set number column narrowed. "Prev" replaces the old
-              per-set label in a dedicated header. Done column widened to full
-              tap target — 3.5rem minimum. Steppers are always visible.
-            -->
-            <div class="grid grid-cols-[2rem_1fr_1fr_3rem] gap-x-2 border-b border-zinc-800/60 px-3 py-1.5 sm:grid-cols-[2rem_1fr_1fr_3.5rem]">
+            <!-- ── Column headers ─────────────────────────────────── -->
+            <div class="grid grid-cols-[2rem_1fr_1fr_2.75rem] gap-x-2 border-b border-zinc-800/60 px-3 py-1.5">
               <span class="lft-section-label">#</span>
               <span class="lft-section-label">Weight</span>
               <span class="lft-section-label">Reps</span>
-              <span class="lft-section-label text-right">Done</span>
+              <!-- Done column header aligns with the circular button center -->
+              <span class="lft-section-label text-center">Done</span>
             </div>
 
-            <!-- ── Set rows ───────────────────────────────────────────── -->
-            <!--
-              Fix #2: Previous set value shown per-row under the set number.
-              Fix #3: Row height reduced — py-2 instead of py-2.5, h-10 inputs.
-              Fix #4: Done button fills the column, teal fill + checkmark on complete.
-              Fix #6: Stepper −/+ always visible (removed sm: gate) using h-10 compact targets.
-            -->
+            <!-- ── Set rows ───────────────────────────────────────── -->
             <div class="divide-y divide-zinc-800/60">
               @for (set of exercise.sets; track set.id) {
                 <div
-                  class="grid grid-cols-[2rem_1fr_1fr_3rem] items-center gap-x-2 px-3 py-2 transition-colors sm:grid-cols-[2rem_1fr_1fr_3.5rem]"
+                  class="grid grid-cols-[2rem_1fr_1fr_2.75rem] items-center gap-x-2 px-3 py-2 transition-colors"
                   [class.lft-set-row-complete]="set.completed"
                 >
-                  <!-- Set number + per-set prev reference -->
+                  <!-- Set number + per-set previous reference -->
                   <div class="flex flex-col items-start justify-center">
-                    <span class="text-xs font-bold leading-none text-zinc-400">{{ set.order }}</span>
+                    <span class="text-xs font-bold leading-none" [class.text-zinc-500]="set.completed" [class.text-zinc-400]="!set.completed">{{ set.order }}</span>
                     <span class="mt-0.5 text-[10px] font-medium leading-none text-zinc-600">
                       {{ previousSetLabel(exercise.previous, set.order - 1) }}
                     </span>
                   </div>
 
-                  <!-- Weight stepper — buttons hidden on mobile (tap input to type), shown on desktop -->
+                  <!-- Weight stepper -->
                   <div
                     class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
                     [class.border-transparent]="set.completed"
@@ -283,7 +267,7 @@
                       class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex"
                       type="button"
                       (click)="store.adjustSet(exercise.id, set.id, 'weight', -2.5)"
-                      [attr.aria-label]="'Decrease weight'"
+                      aria-label="Decrease weight"
                     >−</button>
                     <input
                       class="lft-set-input h-10 rounded-none border-0 text-sm"
@@ -298,11 +282,11 @@
                       class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex"
                       type="button"
                       (click)="store.adjustSet(exercise.id, set.id, 'weight', 2.5)"
-                      [attr.aria-label]="'Increase weight'"
+                      aria-label="Increase weight"
                     >+</button>
                   </div>
 
-                  <!-- Reps stepper — buttons hidden on mobile, shown on desktop -->
+                  <!-- Reps stepper -->
                   <div
                     class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
                     [class.border-transparent]="set.completed"
@@ -312,7 +296,7 @@
                       class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex"
                       type="button"
                       (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)"
-                      [attr.aria-label]="'Decrease reps'"
+                      aria-label="Decrease reps"
                     >−</button>
                     <input
                       class="lft-set-input h-10 rounded-none border-0 text-sm"
@@ -327,40 +311,40 @@
                       class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex"
                       type="button"
                       (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)"
-                      [attr.aria-label]="'Increase reps'"
+                      aria-label="Increase reps"
                     >+</button>
                   </div>
 
-                  <!-- ── Done toggle ──────────────────────────────── -->
                   <!--
-                    Fix #2: The most important tap in the app.
-                    Completed → teal fill, large ✓, row dims, pop animation fires.
-                    Incomplete → ghost border, em-dash placeholder.
-                    No hover on touch. Scale pop on complete gives physical confirmation.
+                    Requirement #1: Circular checkmark button.
+                    Incomplete: zinc ring with a hollow circle — clearly tappable, affordance obvious.
+                    Complete: teal filled circle + white SVG checkmark + pop animation.
+                    One tap, no confirmation.
                   -->
-                  <button
-                    class="lft-set-done flex h-10 w-full items-center justify-center rounded-lg border text-sm font-bold"
-                    [class.border-teal-400]="set.completed"
-                    [class.bg-teal-400]="set.completed"
-                    [class.text-zinc-950]="set.completed"
-                    [class.shadow-sm]="set.completed"
-                    [class.border-zinc-700]="!set.completed"
-                    [class.bg-transparent]="!set.completed"
-                    [class.text-zinc-500]="!set.completed"
-                    [class.lft-set-done-pop]="justCompletedSetId() === set.id"
-                    type="button"
-                    (click)="completeSet(exercise.id, set.id, set.completed)"
-                    [attr.aria-label]="set.completed ? 'Mark set ' + set.order + ' incomplete' : 'Complete set ' + set.order"
-                    [attr.aria-pressed]="set.completed"
-                  >
-                    @if (set.completed) {
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                        <path d="M3 8L6.5 11.5L13 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    } @else {
-                      <span class="text-base leading-none text-zinc-600">–</span>
-                    }
-                  </button>
+                  <div class="flex items-center justify-center">
+                    <button
+                      class="lft-set-done flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors"
+                      [class.border-zinc-700]="!set.completed"
+                      [class.bg-transparent]="!set.completed"
+                      [class.border-teal-400]="set.completed"
+                      [class.bg-teal-400]="set.completed"
+                      [class.lft-set-done-pop]="justCompletedSetId() === set.id"
+                      type="button"
+                      (click)="completeSet(exercise.id, set.id, set.completed)"
+                      [attr.aria-label]="set.completed ? 'Mark set ' + set.order + ' incomplete' : 'Complete set ' + set.order"
+                      [attr.aria-pressed]="set.completed"
+                    >
+                      @if (set.completed) {
+                        <!-- Solid white checkmark — max contrast on teal fill -->
+                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                          <path d="M3 8.5L6.5 12L13 5" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      } @else {
+                        <!-- Hollow inner circle — signals "press to fill" -->
+                        <span class="h-3 w-3 rounded-full border-2 border-zinc-600"></span>
+                      }
+                    </button>
+                  </div>
                 </div>
               }
             </div>
@@ -385,19 +369,31 @@
 
           </article>
         }
+
+        <!-- ── Add Exercise CTA ───────────────────────────────────── -->
+        <!--
+          Requirement #3: compact "+ Add Exercise" button instead of the always-open
+          search picker. No vertical space consumed until tapped.
+        -->
+        <button
+          class="flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-zinc-700 py-4 text-sm font-semibold text-zinc-500 transition-colors hover:border-zinc-600 hover:text-zinc-400 active:scale-[0.99]"
+          type="button"
+          (click)="openAddExercise()"
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M8 3v10M3 8h10"/>
+          </svg>
+          Add exercise
+        </button>
+
       </section>
     }
   </div>
 
-  <!-- ── Footer action bar (active workout only) ───────────────────── -->
+  <!-- ── Footer action bar ─────────────────────────────────────────── -->
   @if (store.activeWorkout() && !store.paused()) {
     <footer class="fixed inset-x-0 bottom-0 z-30 border-t border-zinc-800 bg-zinc-950/95 px-4 py-3 backdrop-blur">
-      <div class="mx-auto grid max-w-3xl grid-cols-[1fr_auto_auto] gap-2.5">
-        <!-- Rest controls -->
-        <div class="grid grid-cols-2 gap-2">
-          <button class="lft-btn lft-btn-ghost h-12 text-xs" type="button" (click)="store.addRestTime(30)">+30s rest</button>
-          <button class="lft-btn lft-btn-ghost h-12 text-xs" type="button" (click)="store.skipRest()">Skip rest</button>
-        </div>
+      <div class="mx-auto grid max-w-3xl grid-cols-[auto_auto_1fr] items-center gap-2.5">
         <!-- Pause -->
         <button
           class="lft-btn h-12 border border-amber-400/50 px-4 text-xs font-bold text-amber-300 hover:border-amber-400 hover:bg-amber-400/8"
@@ -418,11 +414,71 @@
           [title]="hasCompletedSets() ? '' : 'Log at least one set to finish'"
           (click)="finishWorkout()"
         >{{ hasCompletedSets() ? 'Finish' : 'No sets yet' }}</button>
+        <!-- Spacer + rest quick-actions repeated in footer when banner not visible -->
+        <div class="flex justify-end gap-2">
+          @if (!store.restTimerActive()) {
+            <span class="self-center text-xs text-zinc-600">No active rest</span>
+          } @else {
+            <button class="lft-btn lft-btn-ghost h-10 px-3 text-xs" type="button" (click)="store.addRestTime(30)">+30s</button>
+            <button
+              class="lft-btn h-10 border border-teal-400/30 px-3 text-xs font-semibold text-teal-300 hover:border-teal-400/60 hover:bg-teal-400/10"
+              type="button"
+              (click)="store.skipRest()"
+            >Skip rest</button>
+          }
+        </div>
       </div>
     </footer>
   }
 
-  <!-- Dialogs -->
+  <!-- ── Exercise picker sheet ─────────────────────────────────────── -->
+  <!--
+    Requirement #3: full-screen sheet shown when Add or Replace is tapped.
+    Backdrop click closes without adding an exercise.
+  -->
+  @if (pickerTarget() !== null) {
+    <div class="fixed inset-0 z-40 flex flex-col" role="dialog" aria-modal="true" aria-label="Add exercise">
+      <!-- Backdrop -->
+      <div
+        class="absolute inset-0 bg-zinc-950/85 backdrop-blur-sm"
+        (click)="closePicker()"
+      ></div>
+
+      <!-- Sheet panel — slides up from bottom -->
+      <div class="relative mt-auto flex max-h-[90dvh] flex-col rounded-t-2xl border-t border-zinc-800 bg-zinc-950 pb-safe">
+        <!-- Sheet handle + header -->
+        <div class="flex shrink-0 items-center justify-between border-b border-zinc-800 px-4 py-3.5">
+          <div>
+            <div class="mx-auto mb-3 h-1 w-10 rounded-full bg-zinc-700"></div>
+            <h2 class="text-base font-bold text-zinc-50">
+              {{ pickerTarget() === '' ? 'Add exercise' : 'Replace exercise' }}
+            </h2>
+          </div>
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-lg text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
+            type="button"
+            aria-label="Close"
+            (click)="closePicker()"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+              <path d="M4 4l8 8M12 4l-8 8"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Picker content — scrollable -->
+        <div class="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+          <app-exercise-picker
+            [alreadyAddedIds]="addedExerciseIds()"
+            [showCancel]="false"
+            (exerciseSelected)="onExercisePicked($event)"
+          />
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Confirmation dialogs -->
   <app-confirmation-dialog
     [isOpen]="showResetConfirm()"
     title="Reset workout?"
