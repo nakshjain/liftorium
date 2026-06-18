@@ -171,6 +171,12 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
 
   protected onOverflowAction(workoutExerciseId: string, action: ExerciseOverflowAction): void {
     switch (action) {
+      case 'add-set':
+        this.store.addSet(workoutExerciseId);
+        break;
+      case 'remove-last-set':
+        this.store.removeSet(workoutExerciseId, this.lastSetId(workoutExerciseId));
+        break;
       case 'replace':
         this.openReplaceExercise(workoutExerciseId);
         break;
@@ -184,6 +190,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
         this.store.removeExercise(workoutExerciseId);
         break;
     }
+  }
+
+  private lastSetId(workoutExerciseId: string): string {
+    const ex = this.store.activeWorkout()?.exercises.find((e) => e.id === workoutExerciseId);
+    return ex?.sets.at(-1)?.id ?? '';
   }
 
   // ── Timer / elapsed ──────────────────────────────────────────────────────

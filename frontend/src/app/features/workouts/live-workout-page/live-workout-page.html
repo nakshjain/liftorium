@@ -264,6 +264,7 @@
               <app-exercise-overflow-menu
                 [canMoveUp]="!first"
                 [canMoveDown]="!last"
+                [canRemoveSet]="exercise.sets.length > 1"
                 (action)="onOverflowAction(exercise.id, $event)"
               />
             </div>
@@ -343,12 +344,14 @@
               }
             </div>
 
-            <!-- ── Add / remove set ───────────────────────────────── -->
-            <div class="flex gap-2 px-3 py-2.5">
-              <button class="lft-btn lft-btn-ghost flex-1" style="height:2.25rem; font-size:0.75rem;" type="button" (click)="store.addSet(exercise.id)">+ Add set</button>
-              @if (exercise.sets.length > 1) {
-                <button class="lft-btn lft-btn-ghost" style="height:2.25rem; padding:0 0.75rem; font-size:0.75rem;" type="button" (click)="store.removeSet(exercise.id, exercise.sets[exercise.sets.length - 1].id)">Remove last</button>
-              }
+            <!-- ── Add set ─────────────────────────────────────── -->
+            <div class="px-3 py-2.5">
+              <button
+                class="lft-btn lft-btn-ghost w-full"
+                style="height:2.25rem; font-size:0.75rem;"
+                type="button"
+                (click)="store.addSet(exercise.id)"
+              >+ Add set</button>
             </div>
             } <!-- end @if (!collapsed) -->
 
