@@ -81,9 +81,13 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
    *   - it has incomplete sets and was not manually collapsed
    */
   protected shouldCollapse(exerciseId: string): boolean {
-    if (exerciseId === this.firstIncompleteExerciseId()) return false;
-    if (this.manuallyExpanded().has(exerciseId)) return false;
+    // Manual collapse always wins — user explicitly closed it
     if (this.manuallyCollapsed().has(exerciseId)) return true;
+    // Manual expand always wins over auto-collapse
+    if (this.manuallyExpanded().has(exerciseId)) return false;
+    // Auto-pin the first incomplete exercise open (only if not manually collapsed above)
+    if (exerciseId === this.firstIncompleteExerciseId()) return false;
+    // Auto-collapse when fully complete
     return this.isFullyComplete(exerciseId);
   }
 
