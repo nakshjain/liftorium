@@ -66,7 +66,8 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
 
   protected readonly firstIncompleteExerciseId = computed(() => {
     const exercises = this.store.activeWorkout()?.exercises ?? [];
-    return exercises.find((ex) => ex.sets.some((s) => !s.completed))?.id ?? null;
+    // An exercise counts as "active" only if it has at least one set and at least one incomplete set.
+    return exercises.find((ex) => ex.sets.length > 0 && ex.sets.some((s) => !s.completed))?.id ?? null;
   });
 
   /**
