@@ -3,7 +3,7 @@
   <!-- ══════════════════════════════════════════════════════
        LEFT PANEL — desktop brand poster
   ══════════════════════════════════════════════════════ -->
-  <div class="relative hidden overflow-hidden bg-zinc-900 px-12 py-10 lg:flex lg:flex-col">
+  <div class="relative hidden overflow-hidden bg-zinc-900 px-12 py-7 lg:flex lg:flex-col">
 
     <!-- Ambient glow -->
     <div class="pointer-events-none absolute -left-24 -top-24 h-96 w-96 rounded-full bg-teal-400/12 blur-3xl" aria-hidden="true"></div>
@@ -27,24 +27,24 @@
       </svg>
     </div>
 
-    <!-- TOP: Logo -->
+    <!-- TOP: Logo (~17% smaller: lft-logo-lg → lft-logo-md) -->
     <div class="panel-line-0 relative">
       <a routerLink="/app" aria-label="Liftorium — home">
-        <img src="home-page-logo.png" alt="Liftorium" class="lft-logo lft-logo-lg" />
+        <img src="home-page-logo.png" alt="Liftorium" class="lft-logo" style="height:60px;width:auto;max-width:300px" />
       </a>
     </div>
 
     <!-- CENTER: Brand statement -->
-    <div class="relative my-auto py-16">
-      <p class="panel-line-1 text-[2.5rem] font-black leading-[1.06] tracking-tight text-zinc-50">
+    <div class="relative my-auto py-10">
+      <p class="panel-line-1 text-[2.15rem] font-black leading-[1.07] tracking-tight text-zinc-50">
         Every set.<br>Every rep.<br>Every PR.
       </p>
-      <p class="panel-line-2 mt-5 max-w-[28ch] text-sm leading-relaxed text-zinc-400">
+      <p class="panel-line-2 mt-3 max-w-[28ch] text-sm leading-relaxed text-zinc-400">
         Built for the gym floor. Minimal taps, zero friction — log the moment the set ends.
       </p>
-      <div class="panel-line-3 mt-6 inline-flex items-center gap-2 rounded-full border border-zinc-700/50 bg-zinc-800/50 px-3.5 py-1.5">
-        <span class="h-1.5 w-1.5 rounded-full bg-teal-400" aria-hidden="true"></span>
-        <span class="text-xs font-medium text-zinc-400">Trusted by serious lifters</span>
+      <div class="panel-line-3 mt-4 inline-flex items-center gap-2 rounded-full border border-zinc-700/50 bg-zinc-800/50 px-3.5 py-[5px]">
+        <span class="h-[7px] w-[7px] rounded-full bg-teal-400" aria-hidden="true"></span>
+        <span class="text-[0.75rem] font-medium text-zinc-400">Trusted by serious lifters</span>
       </div>
     </div>
 
@@ -62,7 +62,7 @@
 
 
     <!-- ── MOBILE: brand hero zone ──────────────────────────────────── -->
-    <div class="relative flex min-h-[45dvh] flex-col overflow-hidden bg-zinc-950 px-6 pb-10 pt-8 lg:hidden">
+    <div class="relative flex min-h-[28dvh] flex-col overflow-hidden bg-zinc-950 px-6 pb-10 pt-5 lg:hidden">
 
       <!-- Glows -->
       <div class="pointer-events-none absolute -left-16 -top-16 h-80 w-80 rounded-full bg-teal-500/22 blur-3xl" aria-hidden="true"></div>
@@ -79,27 +79,29 @@
         </svg>
       </div>
 
-      <!-- Logo -->
+      <!-- Logo (~17% smaller: lft-logo-md → custom 28px on mobile) -->
       <div class="panel-line-0 relative">
         <a routerLink="/app" aria-label="Liftorium — home">
-          <img src="home-page-logo.png" alt="Liftorium" class="lft-logo lft-logo-md" />
+          <img src="home-page-logo.png" alt="Liftorium" class="lft-logo" style="height:28px;width:auto;max-width:155px" />
         </a>
       </div>
 
       <!-- Headline — bottom-anchored -->
-      <div class="mt-auto">
-        <p class="panel-line-1 text-[3rem] font-black leading-[1.0] tracking-tight text-zinc-50">
+      <div class="mt-auto mb-2">
+        <!-- Separator: visually differentiates logo zone from headline zone -->
+        <div class="mb-5 h-px w-10 rounded-full bg-zinc-700/60" aria-hidden="true"></div>
+        <p class="panel-line-1 text-[2.05rem] font-black leading-[1.07] tracking-tight text-zinc-50">
           Every set.<br>Every rep.
         </p>
-        <p class="panel-line-2 text-[3rem] font-black leading-[1.0] tracking-tight text-teal-400">
+        <p class="panel-line-2 text-[2.05rem] font-black leading-[1.07] tracking-tight text-teal-400">
           Every PR.
         </p>
-        <p class="panel-line-3 mt-5 text-sm leading-relaxed text-zinc-500">
+        <p class="panel-line-3 mt-4 text-[0.8125rem] leading-relaxed text-zinc-500">
           Built for the gym floor. Zero friction.
         </p>
-        <div class="panel-line-3 mt-4 inline-flex max-w-full items-center gap-2 self-start rounded-full border border-zinc-700 bg-zinc-800/70 px-3.5 py-1.5">
-          <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-teal-400" aria-hidden="true"></span>
-          <span class="truncate text-xs font-medium text-zinc-300">Trusted by serious lifters</span>
+        <div class="panel-line-3 mt-3.5 inline-flex max-w-full items-center gap-2 self-start rounded-full border border-zinc-700 bg-zinc-800/70 px-3.5 py-[5px]">
+          <span class="h-[7px] w-[7px] shrink-0 rounded-full bg-teal-400" aria-hidden="true"></span>
+          <span class="truncate text-[0.75rem] font-medium text-zinc-300">Trusted by serious lifters</span>
         </div>
       </div>
     </div>
@@ -110,9 +112,9 @@
     ──────────────────────────────────────────────────────────────────── -->
     <section class="
       auth-card-slide
-      relative -mt-6 flex-1 rounded-t-3xl
+      relative -mt-5 flex-1 rounded-t-3xl
       border-t border-zinc-700/60
-      bg-zinc-900 px-6 pb-10 pt-7
+      bg-zinc-900 px-6 pb-10 pt-10
       shadow-[0_-20px_60px_rgba(0,0,0,0.75)]
       lg:mt-0 lg:rounded-none lg:border-0 lg:bg-transparent
       lg:px-12 lg:py-8 lg:shadow-none
