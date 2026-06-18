@@ -13,20 +13,25 @@
 
 
     <!-- ── Context strip ──────────────────────────────────────────────── -->
-    <!-- Greeting + streak in one scannable line — no card needed -->
     <div class="anim-enter mt-4 flex items-center justify-between gap-2">
 
-      <!-- Left: greeting -->
+      <!-- Left: gym-specific context line -->
       <div class="min-w-0">
         @if (authService.status() === 'authenticated') {
           <div class="flex items-center gap-2.5">
             <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-400/15 ring-1 ring-teal-400/25">
               <span class="text-[11px] font-bold leading-none text-teal-300">{{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
             </div>
-            <span class="truncate text-sm font-semibold text-zinc-200">{{ greetingLine() }}</span>
+            <div class="min-w-0">
+              <span class="truncate text-sm font-semibold text-zinc-200">{{ greetingLine() }}</span>
+              @if (nextTrainingDay(); as next) {
+                <span class="mx-1.5 text-zinc-700">·</span>
+                <span class="text-sm font-medium text-zinc-500">{{ next.label || next.muscleGroups[0] || 'Training' }} next</span>
+              }
+            </div>
           </div>
         } @else {
-          <span class="text-sm font-semibold text-zinc-400">Good {{ timeOfDay() }}</span>
+          <span class="text-sm font-semibold text-zinc-400">800+ exercises. No account needed.</span>
         }
       </div>
 
@@ -99,9 +104,17 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
             </svg>
           </div>
-          <div class="flex flex-col gap-1">
-            <p class="text-sm font-semibold leading-snug text-zinc-300">Track every workout</p>
-            <p class="text-[11px] font-medium text-zinc-600">Unlock with account</p>
+          <!-- Ghost data — blurred to show what's possible -->
+          <div class="relative flex flex-col gap-1">
+            <div class="flex items-end gap-1 blur-[5px] select-none" aria-hidden="true">
+              <span class="text-3xl font-black tabular-nums leading-none tracking-tight text-zinc-50">27</span>
+              <span class="mb-0.5 text-sm font-semibold text-zinc-500">sessions</span>
+            </div>
+            <p class="blur-[4px] text-[11px] font-medium text-zinc-500 select-none" aria-hidden="true">this month</p>
+            <!-- Unlock overlay -->
+            <div class="absolute inset-0 flex items-end">
+              <p class="text-[11px] font-semibold text-teal-400/80">Sign in to unlock</p>
+            </div>
           </div>
         </button>
       } @else {
@@ -146,9 +159,19 @@
               <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
             </svg>
           </div>
-          <div class="flex flex-col gap-1">
-            <p class="text-[11px] font-semibold leading-snug text-zinc-400">PPL · Upper/Lower · Full Body</p>
-            <p class="text-[11px] font-medium text-zinc-600">Unlock with account</p>
+          <!-- Ghost data — blurred split plan -->
+          <div class="relative flex flex-col gap-1">
+            <div class="blur-[5px] select-none" aria-hidden="true">
+              <div class="flex items-end gap-1">
+                <span class="text-3xl font-black tabular-nums leading-none tracking-tight text-zinc-50">5</span>
+                <span class="mb-0.5 text-sm font-semibold text-zinc-500">days</span>
+              </div>
+              <p class="mt-0.5 text-[11px] font-medium text-zinc-400 blur-[3px]">PPL · Push tomorrow</p>
+            </div>
+            <!-- Unlock overlay -->
+            <div class="absolute inset-0 flex items-end">
+              <p class="text-[11px] font-semibold text-teal-400/80">Sign in to unlock</p>
+            </div>
           </div>
         </button>
       } @else {
@@ -193,34 +216,42 @@
 
       @if (authService.status() === 'anonymous') {
 
-        <!-- Locked progress card -->
+        <!-- Locked progress card — teal second-hero treatment -->
         <button
           type="button"
-          class="db-stat-card group relative w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-5 text-left hover:border-zinc-700 hover:bg-zinc-900"
+          class="db-stat-card group relative w-full overflow-hidden rounded-2xl border border-teal-400/25 bg-teal-400/[0.06] px-5 py-5 text-left transition hover:border-teal-400/40 hover:bg-teal-400/[0.09]"
           (click)="openAuthGate('Progress & PRs')"
         >
-          <!-- Decorative barbell silhouette -->
-          <div class="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2 opacity-[0.04]" aria-hidden="true">
-            <svg class="h-24 w-24 text-zinc-200" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29l-1.43-1.43z"/>
-            </svg>
-          </div>
-          <div class="flex items-center justify-between gap-4">
-            <div class="min-w-0">
-              <p class="text-sm font-semibold text-zinc-300">Progress &amp; PRs</p>
-              <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1">
-                <span class="text-[11px] font-medium text-zinc-500">Track PRs</span>
-                <span class="text-[11px] text-zinc-700">·</span>
-                <span class="text-[11px] font-medium text-zinc-500">Weekly volume</span>
-                <span class="text-[11px] text-zinc-700">·</span>
-                <span class="text-[11px] font-medium text-zinc-500">Workout streaks</span>
+          <!-- Ambient glow — matches hero card language -->
+          <div class="pointer-events-none absolute -right-8 -top-8 h-32 w-32 rounded-full bg-teal-500/10 blur-3xl" aria-hidden="true"></div>
+          <div class="pointer-events-none absolute -bottom-6 left-8 h-20 w-20 rounded-full bg-teal-400/6 blur-2xl" aria-hidden="true"></div>
+
+          <div class="relative flex items-center justify-between gap-4">
+            <!-- Left: ghost data -->
+            <div class="min-w-0 flex-1">
+              <p class="text-xs font-semibold uppercase tracking-[0.08em] text-teal-400/70">Progress &amp; PRs</p>
+              <div class="mt-2 flex items-end gap-1.5 blur-[6px] select-none" aria-hidden="true">
+                <span class="text-3xl font-black tabular-nums leading-none tracking-tight text-zinc-50">142</span>
+                <span class="mb-0.5 text-sm font-bold text-zinc-400">kg</span>
+              </div>
+              <div class="relative mt-1">
+                <p class="blur-[4px] text-[11px] font-medium text-zinc-400 select-none" aria-hidden="true">Bench Press · top PR</p>
+                <!-- Feature chips — visible, not blurred -->
+                <div class="mt-2.5 flex flex-wrap gap-x-3 gap-y-1">
+                  <span class="text-[11px] font-medium text-teal-300/70">PRs</span>
+                  <span class="text-[11px] text-teal-400/30">·</span>
+                  <span class="text-[11px] font-medium text-teal-300/70">Volume</span>
+                  <span class="text-[11px] text-teal-400/30">·</span>
+                  <span class="text-[11px] font-medium text-teal-300/70">Streaks</span>
+                </div>
               </div>
             </div>
-            <div class="flex shrink-0 items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2">
-              <svg class="h-3.5 w-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+            <!-- Right: sign in pill -->
+            <div class="flex shrink-0 items-center gap-2 rounded-xl border border-teal-400/30 bg-teal-400/10 px-3 py-2 transition group-hover:border-teal-400/50 group-hover:bg-teal-400/15">
+              <svg class="h-3.5 w-3.5 text-teal-300" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
               </svg>
-              <span class="text-xs font-semibold text-zinc-400">Sign in</span>
+              <span class="text-xs font-semibold text-teal-300">Sign in</span>
             </div>
           </div>
         </button>
@@ -238,8 +269,8 @@
               <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29l-1.43-1.43z"/>
             </svg>
           </div>
-          <!-- Week activity ring: 7 day dots -->
-          <div class="db-week-ring shrink-0" aria-label="This week's activity" role="img">
+          <!-- Week activity ring with label -->
+          <div class="db-week-ring shrink-0" aria-label="Sessions this month" role="img">
             <svg viewBox="0 0 48 48" class="h-14 w-14 -rotate-90" aria-hidden="true">
               <!-- Track -->
               <circle cx="24" cy="24" r="19" fill="none" stroke-width="4" class="text-zinc-800" stroke="currentColor"/>
@@ -254,9 +285,10 @@
                 [attr.stroke-dashoffset]="0"
               />
             </svg>
-            <!-- Sessions count overlay -->
-            <div class="db-week-ring__label">
+            <!-- Sessions count + unit overlay -->
+            <div class="db-week-ring__label flex-col gap-0">
               <span class="text-sm font-black tabular-nums leading-none text-zinc-50">{{ stats()?.sessions ?? '—' }}</span>
+              <span class="mt-0.5 text-[8px] font-semibold uppercase tracking-wide leading-none text-zinc-600">sessions</span>
             </div>
           </div>
 
@@ -306,7 +338,7 @@
         <div class="min-w-0">
           <p class="text-xs font-semibold text-zinc-400">Exercises</p>
           <div class="mt-1.5 flex items-end gap-1">
-            <span class="text-2xl font-black tabular-nums leading-none tracking-tight text-zinc-50">300</span>
+            <span class="text-2xl font-black tabular-nums leading-none tracking-tight text-zinc-50">800</span>
             <span class="mb-0.5 text-sm font-bold text-zinc-500">+</span>
           </div>
         </div>
@@ -341,15 +373,11 @@
         <div class="px-5 py-5">
           <p class="text-sm font-semibold text-zinc-200">Save your progress</p>
           <p class="mt-1 text-xs leading-relaxed text-zinc-500">Create a free account to sync workouts across devices, track PRs and unlock history.</p>
-          <div class="mt-4 flex gap-2.5">
-            <a
-              routerLink="/auth/signup"
-              class="lft-btn lft-btn-primary flex-1 justify-center"
-            >Sign Up Free</a>
+          <div class="mt-4">
             <a
               routerLink="/auth/login"
-              class="lft-btn lft-btn-ghost flex-1 justify-center"
-            >Login</a>
+              class="lft-btn lft-btn-primary w-full justify-center"
+            >Sign in / Create account</a>
           </div>
         </div>
       </div>
