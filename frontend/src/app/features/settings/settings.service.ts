@@ -48,7 +48,10 @@ export class SettingsService {
 
   changePassword(request: ChangePasswordRequest): Observable<void> {
     return this.http
-      .put<void>(`${this.baseUrl}/settings/security/password`, request)
+      .put(`${this.baseUrl}/settings/security/password`, request, {
+        headers: { 'Content-Type': 'application/json' },
+        responseType: 'text',
+      })
       .pipe(map(() => undefined));
   }
 
@@ -56,7 +59,7 @@ export class SettingsService {
 
   deleteAccount(): Observable<void> {
     return this.http
-      .delete<void>(`${this.baseUrl}/settings/account`)
+      .delete(`${this.baseUrl}/settings/account`, { responseType: 'text' })
       .pipe(
         map(() => undefined),
         tap(() => this.authService.clearSession()),

@@ -74,10 +74,10 @@
               <button
                 type="button"
                 class="lft-btn-primary px-5 py-2 text-sm"
-                [disabled]="accountSaving || !displayName.trim()"
+                [disabled]="accountSaving() || !displayName.trim()"
                 (click)="saveAccount()"
               >
-                @if (accountSaving) { Saving… } @else { Save Changes }
+                @if (accountSaving()) { Saving… } @else { Save Changes }
               </button>
             </div>
           </div>
@@ -360,10 +360,10 @@
               <button
                 type="button"
                 class="lft-btn-primary px-5 py-2 text-sm"
-                [disabled]="passwordSaving || !canChangePassword"
+                [disabled]="passwordSaving() || !canChangePassword"
                 (click)="savePassword()"
               >
-                @if (passwordSaving) { Changing… } @else { Change Password }
+                @if (passwordSaving()) { Changing… } @else { Change Password }
               </button>
             </div>
           </div>
@@ -405,10 +405,10 @@
               <button
                 type="button"
                 class="rounded-xl bg-red-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
-                [disabled]="deleting || !canDelete()"
+                [disabled]="deleting() || !canDelete()"
                 (click)="confirmDelete()"
               >
-                @if (deleting) { Deleting… } @else { Delete My Account }
+                @if (deleting()) { Deleting… } @else { Delete My Account }
               </button>
             </div>
           </div>

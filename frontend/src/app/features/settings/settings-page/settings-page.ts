@@ -35,14 +35,16 @@ export class SettingsPageComponent implements OnInit {
   protected readonly user = this.authService.user;
   protected readonly activeSection = signal<Section>('account');
 
-  // ── Loading / error state ────────────────────────────────────────────
+  // ── Loading / saving state (signals for reliable CD) ─────────────────
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
+  protected readonly accountSaving = signal(false);
+  protected readonly passwordSaving = signal(false);
+  protected readonly deleting = signal(false);
   protected readonly settings = signal<UserSettings | null>(null);
 
   // ── Account form ─────────────────────────────────────────────────────
   protected displayName = '';
-  protected accountSaving = false;
 
   // ── Workout prefs form ───────────────────────────────────────────────
   protected weightUnit: WeightUnit = 'kg';
@@ -57,14 +59,12 @@ export class SettingsPageComponent implements OnInit {
   protected currentPassword = '';
   protected newPassword = '';
   protected confirmPassword = '';
-  protected passwordSaving = false;
   protected showCurrentPassword = false;
   protected showNewPassword = false;
   protected showConfirmPassword = false;
 
   // ── Delete account ───────────────────────────────────────────────────
   protected deleteConfirmText = '';
-  protected deleting = false;
 
   protected readonly canDelete = computed(() => this.deleteConfirmText === 'DELETE');
 
@@ -81,7 +81,6 @@ export class SettingsPageComponent implements OnInit {
       },
     });
 
-    // Pre-fill display name from auth signal
     const u = this.authService.user();
     if (u) this.displayName = u.displayName;
   }
@@ -108,15 +107,15 @@ export class SettingsPageComponent implements OnInit {
 
   protected saveAccount(): void {
     if (!this.displayName.trim()) return;
-    this.accountSaving = true;
+    this.accountSaving.set(true);
     this.settingsService.updateAccount({ displayName: this.displayName.trim() }).subscribe({
       next: () => {
         this.toastService.success('Name updated');
-        this.accountSaving = false;
+        this.accountSaving.set(false);
       },
       error: (err) => {
         this.toastService.error(err?.error?.error?.message ?? 'Failed to update name');
-        this.accountSaving = false;
+        this.accountSaving.set(false);
       },
     });
   }
@@ -166,8 +165,11 @@ export class SettingsPageComponent implements OnInit {
   // ── Security ──────────────────────────────────────────────────────────
 
   protected get passwordMismatch(): boolean {
-    return this.newPassword.length > 0 && this.confirmPassword.length > 0
-      && this.newPassword !== this.confirmPassword;
+    return (
+      this.newPassword.length > 0 &&
+      this.confirmPassword.length > 0 &&
+      this.newPassword !== this.confirmPassword
+    );
   }
 
   protected get canChangePassword(): boolean {
@@ -180,7 +182,7 @@ export class SettingsPageComponent implements OnInit {
 
   protected savePassword(): void {
     if (!this.canChangePassword) return;
-    this.passwordSaving = true;
+    this.passwordSaving.set(true);
     this.settingsService
       .changePassword({
         currentPassword: this.currentPassword,
@@ -192,11 +194,11 @@ export class SettingsPageComponent implements OnInit {
           this.currentPassword = '';
           this.newPassword = '';
           this.confirmPassword = '';
-          this.passwordSaving = false;
+          this.passwordSaving.set(false);
         },
         error: (err) => {
           this.toastService.error(err?.error?.error?.message ?? 'Failed to change password');
-          this.passwordSaving = false;
+          this.passwordSaving.set(false);
         },
       });
   }
@@ -205,14 +207,14 @@ export class SettingsPageComponent implements OnInit {
 
   protected confirmDelete(): void {
     if (!this.canDelete()) return;
-    this.deleting = true;
+    this.deleting.set(true);
     this.settingsService.deleteAccount().subscribe({
       next: () => {
         this.router.navigate(['/app']);
       },
       error: (err) => {
         this.toastService.error(err?.error?.error?.message ?? 'Failed to delete account');
-        this.deleting = false;
+        this.deleting.set(false);
       },
     });
   }
