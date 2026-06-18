@@ -205,33 +205,46 @@
             [style]="'--stagger-i: ' + i"
           >
             <!-- ── Exercise header ─────────────────────────────────── -->
-            <div class="flex items-start justify-between gap-2 border-b border-zinc-800 px-3 py-3">
-              <div class="min-w-0 flex-1">
-                <h2 class="text-sm font-bold leading-snug text-zinc-50">{{ exercise.name }}</h2>
+            <div class="flex items-center justify-between gap-2 border-b border-zinc-800 px-3 py-3"
+                 [class.border-transparent]="isCollapsed(exercise.id)"
+            >
+              <!-- Collapse toggle — tapping the name row collapses/expands -->
+              <button
+                class="group flex min-w-0 flex-1 items-center gap-2 text-left"
+                type="button"
+                (click)="toggleCollapse(exercise.id)"
+                [attr.aria-expanded]="!isCollapsed(exercise.id)"
+                [attr.aria-label]="(isCollapsed(exercise.id) ? 'Expand ' : 'Collapse ') + exercise.name"
+              >
+                <!-- Chevron indicator -->
+                <svg
+                  class="h-3.5 w-3.5 shrink-0 text-zinc-600 transition-transform duration-200"
+                  [class.rotate-[-90deg]]="isCollapsed(exercise.id)"
+                  viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                >
+                  <path d="M4 6l4 4 4-4"/>
+                </svg>
 
-                @if (exercisePerfLabel(exercise.previous, exercise.bestSet); as perfLabel) {
-                  <p class="mt-0.5 text-[11px] font-medium text-teal-400/80">{{ perfLabel }}</p>
-                } @else {
-                  <p class="mt-0.5 text-[11px] text-zinc-600">No previous data</p>
-                }
+                <div class="min-w-0">
+                  <h2 class="text-sm font-bold leading-snug text-zinc-50">{{ exercise.name }}</h2>
 
-                @if (exercise.target || exercise.equipment) {
-                  <p class="mt-0.5 text-[10px] text-zinc-600">
-                    {{ exercise.target }}{{ exercise.target && exercise.equipment ? ' · ' : '' }}{{ exercise.equipment }}
-                  </p>
-                }
-              </div>
+                  @if (exercisePerfLabel(exercise.previous, exercise.bestSet); as perfLabel) {
+                    <p class="mt-0.5 text-[11px] font-medium text-teal-400/80">{{ perfLabel }}</p>
+                  } @else {
+                    <p class="mt-0.5 text-[11px] text-zinc-600">No previous data</p>
+                  }
+                </div>
+              </button>
 
-              <!--
-                Requirement #4: ⋮ overflow menu replaces the visible Remove button.
-                Keeps the card header clean — only the exercise name and perf data visible.
-              -->
               <app-exercise-overflow-menu
                 [canMoveUp]="!first"
                 [canMoveDown]="!last"
                 (action)="onOverflowAction(exercise.id, $event)"
               />
             </div>
+
+            <!-- ── Collapsible body ───────────────────────────────── -->
+            @if (!isCollapsed(exercise.id)) {
 
             <!-- ── Column headers ─────────────────────────────────── -->
             <div class="grid grid-cols-[2rem_1fr_1fr_2.75rem] gap-x-2 border-b border-zinc-800/60 px-3 py-1.5">
@@ -366,6 +379,7 @@
                 >Remove last</button>
               }
             </div>
+            } <!-- end @if (!isCollapsed) -->
 
           </article>
         }
