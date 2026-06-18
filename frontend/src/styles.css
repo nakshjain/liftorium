@@ -916,9 +916,9 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .lft-logo-sm { height: 52px; width: auto; max-width: 260px; }
-.lft-logo-md { height: 40px; width: auto; max-width: 220px; } /* mobile default */
+.lft-logo-md { height: 34px; width: auto; max-width: 185px; } /* mobile default */
 .lft-logo-lg { height: 72px; width: auto; max-width: 360px; }
 
 @media (min-width: 640px) {
-  .lft-logo-md { height: 56px; max-width: 300px; } /* desktop upgrade */
+  .lft-logo-md { height: 47px; max-width: 250px; } /* desktop upgrade */
 }
