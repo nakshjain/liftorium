@@ -49,8 +49,23 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly showFinishConfirm = signal(false);
   private pendingFinishWorkout: LiveWorkout | null = null;
 
-  /** Set ID that just completed — drives the one-shot pop animation. */
+  /** Set IDs that just completed — drives the one-shot pop animation. */
   protected readonly justCompletedSetId = signal<string | null>(null);
+
+  /** Exercise IDs that are currently collapsed. */
+  protected readonly collapsedExerciseIds = signal<Set<string>>(new Set());
+
+  protected toggleCollapse(exerciseId: string): void {
+    this.collapsedExerciseIds.update((ids) => {
+      const next = new Set(ids);
+      next.has(exerciseId) ? next.delete(exerciseId) : next.add(exerciseId);
+      return next;
+    });
+  }
+
+  protected isCollapsed(exerciseId: string): boolean {
+    return this.collapsedExerciseIds().has(exerciseId);
+  }
 
   /**
    * When non-null the "+ Add Exercise" picker sheet is open.
