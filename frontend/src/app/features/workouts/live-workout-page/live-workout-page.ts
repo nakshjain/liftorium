@@ -21,6 +21,14 @@ type FinishedWorkoutSummary = {
   exercises: number;
   sets: number;
   volume: number;
+  durationMinutes: number;
+};
+
+/** A PR worth surfacing in the completion card. */
+type CompletionPr = {
+  exerciseName: string;
+  weight: number;
+  reps: number;
 };
 
 @Component({
@@ -49,14 +57,88 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly showFinishConfirm = signal(false);
   private pendingFinishWorkout: LiveWorkout | null = null;
 
-  /** Set IDs that just completed — drives the one-shot pop animation. */
   protected readonly justCompletedSetId = signal<string | null>(null);
 
-  /** Exercise IDs that are currently collapsed — includes manual + auto-collapsed. */
-  /** Exercise IDs the user has explicitly collapsed (overrides auto-expand). */
   private readonly manuallyCollapsed = signal<Set<string>>(new Set());
-  /** Exercise IDs the user has explicitly expanded (overrides auto-collapse). */
-  private readonly manuallyExpanded = signal<Set<string>>(new Set());
+  private readonly manuallyExpanded  = signal<Set<string>>(new Set());
+
+  // ── State-aware page title ───────────────────────────────────────────────
+
+  protected readonly pageTitle = computed(() => {
+    if (this.store.lastFinishedWorkout()) return 'Session Summary';
+    const active = this.store.activeWorkout();
+    if (active) return active.name || 'Live Workout';
+    // Pre-workout: use the selected day's label if it has exercises
+    const day = this.planStore.getDay(this.selectedDayIndex());
+    if (day && !day.rest && day.exercises.length > 0) return day.label || "Today's Workout";
+    return "Today's Workout";
+  });
+
+  // ── Pre-workout info ─────────────────────────────────────────────────────
+
+  /**
+   * Name + exercise count + estimated duration for the selected plan day.
+   * Duration: ~3 min per set, averaged across exercises. Rounded to nearest 5.
+   */
+  protected readonly preWorkoutInfo = computed(() => {
+    const day = this.planStore.getDay(this.selectedDayIndex());
+    if (!day || day.rest || day.exercises.length === 0) return null;
+    const totalSets = day.exercises.reduce((n, ex) => n + ex.sets.length, 0);
+    const rawMin = totalSets * 3;
+    const estMin = Math.max(5, Math.round(rawMin / 5) * 5);
+    return {
+      name:      day.label || null,
+      exercises: day.exercises.length,
+      estMin,
+    };
+  });
+
+  // ── Next workout (for post-completion plan card) ─────────────────────────
+
+  protected readonly nextWorkoutDay = computed(() => {
+    const p = this.planStore.plan();
+    if (!p) return null;
+    const todayIndex = this.selectedDayIndex();
+    for (let i = 1; i <= 7; i++) {
+      const idx = (todayIndex + i) % 7;
+      const day = p.days.find((d) => d.dayOfWeek === idx);
+      if (day && !day.rest && day.exercises.length > 0) return day;
+    }
+    return null;
+  });
+
+  // ── Completion PRs ───────────────────────────────────────────────────────
+
+  /**
+   * Detects new PRs achieved in the just-finished workout.
+   * A PR is detected when any completed set's weight exceeds the exercise's
+   * stored bestSet.weight (the pre-workout historical best).
+   * Returns at most 3 PRs to keep the completion card compact.
+   */
+  protected readonly completionPrs = computed((): CompletionPr[] => {
+    const workout = this.store.lastFinishedWorkout();
+    if (!workout) return [];
+    const prs: CompletionPr[] = [];
+    for (const ex of workout.exercises) {
+      const prSet = ex.sets
+        .filter((s) => s.completed)
+        .reduce<{ weight: number; reps: number } | null>((best, s) => {
+          if (!best || s.weight > best.weight || (s.weight === best.weight && s.reps > best.reps)) {
+            return { weight: s.weight, reps: s.reps };
+          }
+          return best;
+        }, null);
+      if (!prSet) continue;
+      // Only surface if this set beats the stored bestSet
+      const prev = ex.bestSet;
+      if (!prev || prSet.weight > prev.weight || (prSet.weight === prev.weight && prSet.reps > prev.reps)) {
+        prs.push({ exerciseName: ex.name, weight: prSet.weight, reps: prSet.reps });
+      }
+    }
+    return prs.slice(0, 3);
+  });
+
+  // ── Collapse logic ───────────────────────────────────────────────────────
 
   protected isFullyComplete(exerciseId: string): boolean {
     const ex = this.store.activeWorkout()?.exercises.find((e) => e.id === exerciseId);
@@ -66,49 +148,29 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
 
   protected readonly firstIncompleteExerciseId = computed(() => {
     const exercises = this.store.activeWorkout()?.exercises ?? [];
-    // An exercise counts as "active" only if it has at least one set and at least one incomplete set.
     return exercises.find((ex) => ex.sets.length > 0 && ex.sets.some((s) => !s.completed))?.id ?? null;
   });
 
-  /**
-   * Collapsed when:
-   *   - user manually collapsed it, OR
-   *   - it is fully complete AND the user has not manually expanded it
-   *     AND it is not the first incomplete exercise
-   * Expanded when:
-   *   - it is the first incomplete exercise (always open), OR
-   *   - user manually expanded it, OR
-   *   - it has incomplete sets and was not manually collapsed
-   */
   protected shouldCollapse(exerciseId: string): boolean {
-    // Manual collapse always wins — user explicitly closed it
     if (this.manuallyCollapsed().has(exerciseId)) return true;
-    // Manual expand always wins over auto-collapse
-    if (this.manuallyExpanded().has(exerciseId)) return false;
-    // Auto-pin the first incomplete exercise open (only if not manually collapsed above)
+    if (this.manuallyExpanded().has(exerciseId))  return false;
     if (exerciseId === this.firstIncompleteExerciseId()) return false;
-    // Auto-collapse when fully complete
     return this.isFullyComplete(exerciseId);
   }
 
   protected toggleCollapse(exerciseId: string): void {
-    const currentlyCollapsed = this.shouldCollapse(exerciseId);
-    if (currentlyCollapsed) {
-      // Expand: remove from manually-collapsed, add to manually-expanded
+    const collapsed = this.shouldCollapse(exerciseId);
+    if (collapsed) {
       this.manuallyCollapsed.update((s) => { const n = new Set(s); n.delete(exerciseId); return n; });
-      this.manuallyExpanded.update((s) => new Set(s).add(exerciseId));
+      this.manuallyExpanded.update((s)  => new Set(s).add(exerciseId));
     } else {
-      // Collapse: remove from manually-expanded, add to manually-collapsed
-      this.manuallyExpanded.update((s) => { const n = new Set(s); n.delete(exerciseId); return n; });
+      this.manuallyExpanded.update((s)  => { const n = new Set(s); n.delete(exerciseId); return n; });
       this.manuallyCollapsed.update((s) => new Set(s).add(exerciseId));
     }
   }
 
-  /**
-   * When non-null the "+ Add Exercise" picker sheet is open.
-   * If replacing, this holds the workoutExerciseId being replaced;
-   * if adding fresh, it is the empty string ''.
-   */
+  // ── Picker sheet ─────────────────────────────────────────────────────────
+
   protected readonly pickerTarget = signal<string | null>(null);
 
   protected readonly dayLabels = DAY_LABELS;
@@ -126,69 +188,31 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     () => new Set(this.store.activeWorkout()?.exercises.map((ex) => ex.exerciseId) ?? [])
   );
 
-  // ── Picker sheet ────────────────────────────────────────────────────────
-
-  /** Open the picker to add a fresh exercise. */
-  protected openAddExercise(): void {
-    this.pickerTarget.set('');
-  }
-
-  /** Open the picker to replace an existing exercise. */
-  protected openReplaceExercise(workoutExerciseId: string): void {
-    this.pickerTarget.set(workoutExerciseId);
-  }
-
-  protected closePicker(): void {
-    this.pickerTarget.set(null);
-  }
+  protected openAddExercise(): void    { this.pickerTarget.set(''); }
+  protected openReplaceExercise(id: string): void { this.pickerTarget.set(id); }
+  protected closePicker(): void        { this.pickerTarget.set(null); }
 
   protected onExercisePicked(exercise: CachedExercise): void {
     const target = this.pickerTarget();
     if (target === null) return;
-
     if (target === '') {
-      // Fresh add
-      this.store.addExerciseFromPicker(
-        exercise.id,
-        exercise.name,
-        exercise.primaryMuscles[0] ?? '',
-        exercise.equipment[0] ?? '',
-      );
+      this.store.addExerciseFromPicker(exercise.id, exercise.name, exercise.primaryMuscles[0] ?? '', exercise.equipment[0] ?? '');
     } else {
-      // Replace existing
-      this.store.replaceExercise(
-        target,
-        exercise.id,
-        exercise.name,
-        exercise.primaryMuscles[0] ?? '',
-        exercise.equipment[0] ?? '',
-      );
+      this.store.replaceExercise(target, exercise.id, exercise.name, exercise.primaryMuscles[0] ?? '', exercise.equipment[0] ?? '');
     }
     this.closePicker();
   }
 
-  // ── Overflow menu ────────────────────────────────────────────────────────
+  // ── Overflow menu ─────────────────────────────────────────────────────────
 
   protected onOverflowAction(workoutExerciseId: string, action: ExerciseOverflowAction): void {
     switch (action) {
-      case 'add-set':
-        this.store.addSet(workoutExerciseId);
-        break;
-      case 'remove-last-set':
-        this.store.removeSet(workoutExerciseId, this.lastSetId(workoutExerciseId));
-        break;
-      case 'replace':
-        this.openReplaceExercise(workoutExerciseId);
-        break;
-      case 'move-up':
-        this.store.moveExercise(workoutExerciseId, 'up');
-        break;
-      case 'move-down':
-        this.store.moveExercise(workoutExerciseId, 'down');
-        break;
-      case 'remove':
-        this.store.removeExercise(workoutExerciseId);
-        break;
+      case 'add-set':        this.store.addSet(workoutExerciseId); break;
+      case 'remove-last-set': this.store.removeSet(workoutExerciseId, this.lastSetId(workoutExerciseId)); break;
+      case 'replace':        this.openReplaceExercise(workoutExerciseId); break;
+      case 'move-up':        this.store.moveExercise(workoutExerciseId, 'up'); break;
+      case 'move-down':      this.store.moveExercise(workoutExerciseId, 'down'); break;
+      case 'remove':         this.store.removeExercise(workoutExerciseId); break;
     }
   }
 
@@ -197,10 +221,10 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     return ex?.sets.at(-1)?.id ?? '';
   }
 
-  // ── Timer / elapsed ──────────────────────────────────────────────────────
+  // ── Timer / elapsed ───────────────────────────────────────────────────────
 
   protected readonly elapsedTimeLabel = computed(() => this.formatTime(this.store.elapsedSeconds()));
-  protected readonly restTimerLabel = computed(() =>
+  protected readonly restTimerLabel   = computed(() =>
     this.store.restTimerActive() ? this.formatTime(this.store.restRemainingSeconds()) : null
   );
 
@@ -216,7 +240,7 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     return this.createFinishedSummary(workout);
   });
 
-  // ── Lifecycle ────────────────────────────────────────────────────────────
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   public ngOnInit(): void {
     this.timerId = window.setInterval(() => this.store.tick(), 1000);
@@ -227,51 +251,33 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     try {
       const raw = localStorage.getItem('liftorium_stale_workout_notification');
       if (!raw) return;
-      const notification = JSON.parse(raw) as { setCount: number; timestamp: number };
-      const ageHours = (Date.now() - notification.timestamp) / (1000 * 60 * 60);
-      if (ageHours < 24) {
-        this.toastService.info(`Yesterday's workout was auto-saved (${notification.setCount} sets).`);
+      const n = JSON.parse(raw) as { setCount: number; timestamp: number };
+      if ((Date.now() - n.timestamp) / 3_600_000 < 24) {
+        this.toastService.info(`Yesterday's workout was auto-saved (${n.setCount} sets).`);
       }
       localStorage.removeItem('liftorium_stale_workout_notification');
-    } catch {
-      // storage error — ignore
-    }
+    } catch { /* ignore */ }
   }
 
   public ngOnDestroy(): void {
-    if (this.timerId !== null) {
-      window.clearInterval(this.timerId);
-    }
+    if (this.timerId !== null) window.clearInterval(this.timerId);
   }
 
-  // ── Template helpers ─────────────────────────────────────────────────────
+  // ── Template helpers ──────────────────────────────────────────────────────
 
   protected inputValue(event: Event): string {
     return event.target instanceof HTMLInputElement ? event.target.value : '';
   }
 
   protected selectAll(event: FocusEvent): void {
-    if (event.target instanceof HTMLInputElement) {
-      event.target.select();
-    }
+    if (event.target instanceof HTMLInputElement) event.target.select();
   }
 
-  /**
-   * Per-row previous-session reference shown under the set number.
-   * Format: "80×8". Falls back to "–" when no history for that index.
-   */
-  protected previousSetLabel(
-    previousSets: readonly { reps: number; weight: number }[],
-    index: number,
-  ): string {
+  protected previousSetLabel(previousSets: readonly { reps: number; weight: number }[], index: number): string {
     const set = previousSets[index];
     return set ? `${set.weight}×${set.reps}` : '–';
   }
 
-  /**
-   * Exercise-level performance line shown in the card header.
-   * "Last: 80kg × 8 · Best: 100kg × 5" — collapses when best === last.
-   */
   protected exercisePerfLabel(
     previous: readonly { reps: number; weight: number }[],
     bestSet: { reps: number; weight: number } | null,
@@ -287,9 +293,9 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   }
 
   protected formatTime(totalSeconds: number): string {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
   }
 
   protected formatVolume(vol: number): string {
@@ -297,10 +303,6 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     return Math.round(vol).toString();
   }
 
-  /**
-   * Completes or uncompletes a set and fires the pop animation on completion.
-   * Rest timer is started automatically inside the store on completion.
-   */
   protected completeSet(workoutExerciseId: string, setId: string, currentlyCompleted: boolean): void {
     this.store.toggleSetComplete(workoutExerciseId, setId);
     if (!currentlyCompleted) {
@@ -311,36 +313,25 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ── Workout lifecycle ────────────────────────────────────────────────────
+  // ── Workout lifecycle ─────────────────────────────────────────────────────
 
   private createFinishedSummary(workout: LiveWorkout): FinishedWorkoutSummary {
+    const durationMs = workout.accumulatedMs;
     return {
       exercises: workout.exercises.length,
-      sets: workout.exercises.reduce(
-        (count, ex) => count + ex.sets.filter((s) => s.completed).length, 0
-      ),
+      sets: workout.exercises.reduce((c, ex) => c + ex.sets.filter((s) => s.completed).length, 0),
       volume: workout.exercises.reduce(
-        (total, ex) => total + ex.sets.reduce((t, s) => t + (s.completed ? s.reps * s.weight : 0), 0), 0
+        (t, ex) => t + ex.sets.reduce((st, s) => st + (s.completed ? s.reps * s.weight : 0), 0), 0
       ),
+      durationMinutes: Math.max(1, Math.round(durationMs / 60_000)),
     };
   }
 
-  protected onDayChange(value: string): void {
-    this.selectedDayIndex.set(parseInt(value, 10));
-  }
+  protected onDayChange(value: string): void { this.selectedDayIndex.set(parseInt(value, 10)); }
 
-  protected resetWorkout(): void {
-    this.showResetConfirm.set(true);
-  }
-
-  protected confirmReset(): void {
-    this.showResetConfirm.set(false);
-    this.store.resetWorkout();
-  }
-
-  protected cancelReset(): void {
-    this.showResetConfirm.set(false);
-  }
+  protected resetWorkout(): void  { this.showResetConfirm.set(true); }
+  protected confirmReset(): void  { this.showResetConfirm.set(false); this.store.resetWorkout(); }
+  protected cancelReset(): void   { this.showResetConfirm.set(false); }
 
   protected finishWorkout(): void {
     const workout = this.store.activeWorkout();
@@ -366,30 +357,23 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     this.store.finishWorkout();
 
     if (this.authService.status() === 'anonymous') {
-      const guestWorkout: GuestCompletedWorkout = {
-        id: finishedWorkout.id,
-        name: finishedWorkout.name,
-        startedAt: finishedWorkout.startedAt,
-        finishedAt: finishedWorkout.finishedAt!,
-        accumulatedMs: finishedWorkout.accumulatedMs,
-        exercises: finishedWorkout.exercises,
-        synced: false,
-        syncedAt: null,
-        createdLocally: new Date().toISOString(),
+      const gw: GuestCompletedWorkout = {
+        id: finishedWorkout.id, name: finishedWorkout.name,
+        startedAt: finishedWorkout.startedAt, finishedAt: finishedWorkout.finishedAt!,
+        accumulatedMs: finishedWorkout.accumulatedMs, exercises: finishedWorkout.exercises,
+        synced: false, syncedAt: null, createdLocally: new Date().toISOString(),
       };
-      this.guestStorage.saveCompletedWorkout(guestWorkout)
+      this.guestStorage.saveCompletedWorkout(gw)
         .then(() => this.toastService.success('Workout saved locally.'))
         .catch(() => this.toastService.error('Failed to save workout locally.'));
     } else {
       this.workoutService.save(finishedWorkout).subscribe({
-        next: () => this.toastService.success('Workout saved successfully!'),
+        next:  () => this.toastService.success('Workout saved successfully!'),
         error: () => this.toastService.error('Failed to save workout.', {
-          label: 'Retry',
-          handler: () => this.retrySaveWorkout(finishedWorkout),
+          label: 'Retry', handler: () => this.retrySaveWorkout(finishedWorkout),
         }),
       });
     }
-
     this.pendingFinishWorkout = null;
   }
 
@@ -400,34 +384,29 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
 
   protected finishConfirmDetails = computed(() => {
     if (!this.pendingFinishWorkout) return '';
-    const summary = this.createFinishedSummary(this.pendingFinishWorkout);
-    return `${summary.sets} sets logged · ${summary.volume} kg total volume`;
+    const s = this.createFinishedSummary(this.pendingFinishWorkout);
+    return `${s.sets} sets · ${this.formatVolume(s.volume)} kg`;
   });
 
   private captureWorkoutSnapshot(workout: LiveWorkout): LiveWorkout {
     const now = Date.now();
-    const finalAccumulated =
-      workout.resumedAt !== 0
-        ? workout.accumulatedMs + (now - workout.resumedAt)
-        : workout.accumulatedMs;
+    const finalAccumulated = workout.resumedAt !== 0
+      ? workout.accumulatedMs + (now - workout.resumedAt)
+      : workout.accumulatedMs;
     return { ...workout, finishedAt: now, resumedAt: 0, accumulatedMs: finalAccumulated };
   }
 
   private retrySaveWorkout(workout: LiveWorkout): void {
     this.workoutService.save(workout).subscribe({
-      next: () => this.toastService.success('Workout saved successfully!'),
+      next:  () => this.toastService.success('Workout saved successfully!'),
       error: () => this.toastService.error('Failed to save workout.', {
-        label: 'Retry',
-        handler: () => this.retrySaveWorkout(workout),
+        label: 'Retry', handler: () => this.retrySaveWorkout(workout),
       }),
     });
   }
 
   protected startFromPlan(): void {
-    if (this.store.paused()) {
-      this.store.resumeWorkout();
-      return;
-    }
+    if (this.store.paused()) { this.store.resumeWorkout(); return; }
     const day = this.selectedDay();
     if (day.exercises.length > 0) {
       this.store.startWorkoutFromPlan(day.exercises, day.label);
