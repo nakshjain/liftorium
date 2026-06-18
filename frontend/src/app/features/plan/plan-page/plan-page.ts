@@ -26,6 +26,37 @@ export class PlanPageComponent {
 
   protected readonly searchingDay = signal<number | null>(null);
 
+  // ── Drag-to-reorder state ────────────────────────────────────────────────
+  /** dayOfWeek index currently being dragged, or null when idle. */
+  protected readonly dragIndex = signal<number | null>(null);
+  /** dayOfWeek index the drag is currently hovering over. */
+  protected readonly dragOverIndex = signal<number | null>(null);
+
+  protected onDragStart(index: number): void {
+    this.dragIndex.set(index);
+  }
+
+  protected onDragOver(event: DragEvent, index: number): void {
+    event.preventDefault(); // allow drop
+    if (index !== this.dragOverIndex()) {
+      this.dragOverIndex.set(index);
+    }
+  }
+
+  protected onDrop(toIndex: number): void {
+    const from = this.dragIndex();
+    if (from !== null && from !== toIndex) {
+      this.store.reorderDay(from, toIndex);
+    }
+    this.dragIndex.set(null);
+    this.dragOverIndex.set(null);
+  }
+
+  protected onDragEnd(): void {
+    this.dragIndex.set(null);
+    this.dragOverIndex.set(null);
+  }
+
   // Confirmation dialog state
   protected readonly showRemoveExerciseConfirm = signal(false);
   protected readonly showResetConfirm = signal(false);
