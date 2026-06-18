@@ -171,13 +171,8 @@
             <div class="flex flex-col gap-1">
               <div class="flex items-end gap-1">
                 <span class="text-3xl font-black tabular-nums leading-none tracking-tight text-zinc-50">{{ weekTrainingDayCount() }}</span>
-                <span class="mb-0.5 text-sm font-semibold text-zinc-500">days</span>
+                <span class="mb-0.5 text-sm font-semibold text-zinc-500">days / week</span>
               </div>
-              @if (nextTrainingDay(); as next) {
-                <p class="truncate text-[11px] font-medium text-zinc-400">Next: {{ next.label || next.muscleGroups[0] || 'Training' }}</p>
-              } @else {
-                <p class="text-[11px] font-medium text-zinc-500">per week</p>
-              }
             </div>
           } @else {
             <!-- Empty state: no plan set -->

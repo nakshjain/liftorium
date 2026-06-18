@@ -191,6 +191,29 @@ export class PlanStore {
     this.afterMutation();
   }
 
+  /**
+   * Reorders two days by swapping their dayOfWeek values while keeping all
+   * content (label, muscleGroups, exercises, rest) in place.
+   * fromIndex / toIndex are positions in the rendered DAY_LABELS array (0 = Mon, 6 = Sun).
+   */
+  reorderDay(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    this.plan.update((p) => {
+      const days = [...p.days];
+      // Swap the dayOfWeek keys so the content stays but the slot moves
+      const fromDay = days.find((d) => d.dayOfWeek === fromIndex);
+      const toDay   = days.find((d) => d.dayOfWeek === toIndex);
+      if (!fromDay || !toDay) return p;
+      const updated = days.map((d) => {
+        if (d.dayOfWeek === fromIndex) return { ...toDay,   dayOfWeek: fromIndex };
+        if (d.dayOfWeek === toIndex)   return { ...fromDay, dayOfWeek: toIndex   };
+        return d;
+      });
+      return { ...p, days: updated };
+    });
+    this.afterMutation();
+  }
+
   moveExercise(dayOfWeek: number, exerciseIndex: number, direction: 'up' | 'down'): void {
     this.plan.update((p) => ({
       ...p,
