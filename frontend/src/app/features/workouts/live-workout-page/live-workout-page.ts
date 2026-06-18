@@ -53,55 +53,50 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected readonly justCompletedSetId = signal<string | null>(null);
 
   /** Exercise IDs that are currently collapsed — includes manual + auto-collapsed. */
-  protected readonly collapsedExerciseIds = signal<Set<string>>(new Set());
+  /** Exercise IDs the user has explicitly collapsed (overrides auto-expand). */
+  private readonly manuallyCollapsed = signal<Set<string>>(new Set());
+  /** Exercise IDs the user has explicitly expanded (overrides auto-collapse). */
+  private readonly manuallyExpanded = signal<Set<string>>(new Set());
 
-  /**
-   * Returns true when every set on this exercise is completed.
-   * Used to auto-collapse finished exercises and show the summary state.
-   */
   protected isFullyComplete(exerciseId: string): boolean {
     const ex = this.store.activeWorkout()?.exercises.find((e) => e.id === exerciseId);
     if (!ex || ex.sets.length === 0) return false;
     return ex.sets.every((s) => s.completed);
   }
 
-  /**
-   * Returns the ID of the first exercise that still has incomplete sets,
-   * or null if every exercise is fully complete.
-   * Used to auto-expand the active exercise.
-   */
   protected readonly firstIncompleteExerciseId = computed(() => {
     const exercises = this.store.activeWorkout()?.exercises ?? [];
-    const first = exercises.find((ex) => ex.sets.some((s) => !s.completed));
-    return first?.id ?? null;
+    return exercises.find((ex) => ex.sets.some((s) => !s.completed))?.id ?? null;
   });
 
   /**
-   * Whether this exercise should render as collapsed.
-   * Priority: auto-collapse when fully complete (unless user manually expanded),
-   * or manual collapse when user tapped the header.
-   * The first incomplete exercise is always treated as expanded.
+   * Collapsed when:
+   *   - user manually collapsed it, OR
+   *   - it is fully complete AND the user has not manually expanded it
+   *     AND it is not the first incomplete exercise
+   * Expanded when:
+   *   - it is the first incomplete exercise (always open), OR
+   *   - user manually expanded it, OR
+   *   - it has incomplete sets and was not manually collapsed
    */
   protected shouldCollapse(exerciseId: string): boolean {
-    // Always expand the current active exercise
     if (exerciseId === this.firstIncompleteExerciseId()) return false;
-    // User manually toggled — respect that
-    if (this.collapsedExerciseIds().has(exerciseId)) return true;
-    // Auto-collapse when fully complete
+    if (this.manuallyExpanded().has(exerciseId)) return false;
+    if (this.manuallyCollapsed().has(exerciseId)) return true;
     return this.isFullyComplete(exerciseId);
   }
 
   protected toggleCollapse(exerciseId: string): void {
-    this.collapsedExerciseIds.update((ids) => {
-      const next = new Set(ids);
-      // If currently showing (expanded), collapse it
-      if (!this.shouldCollapse(exerciseId)) {
-        next.add(exerciseId);
-      } else {
-        next.delete(exerciseId);
-      }
-      return next;
-    });
+    const currentlyCollapsed = this.shouldCollapse(exerciseId);
+    if (currentlyCollapsed) {
+      // Expand: remove from manually-collapsed, add to manually-expanded
+      this.manuallyCollapsed.update((s) => { const n = new Set(s); n.delete(exerciseId); return n; });
+      this.manuallyExpanded.update((s) => new Set(s).add(exerciseId));
+    } else {
+      // Collapse: remove from manually-expanded, add to manually-collapsed
+      this.manuallyExpanded.update((s) => { const n = new Set(s); n.delete(exerciseId); return n; });
+      this.manuallyCollapsed.update((s) => new Set(s).add(exerciseId));
+    }
   }
 
   /**
