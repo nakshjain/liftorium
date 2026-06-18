@@ -1,8 +1,10 @@
 <nav class="lft-nav">
   <div class="lft-nav-inner">
 
-    <!-- Wordmark -->
-    <a routerLink="/app" class="lft-wordmark">Liftorium</a>
+    <!-- Logo -->
+    <a routerLink="/app" class="lft-wordmark" aria-label="Liftorium — home">
+      <img src="home-page-logo.png" alt="Liftorium" class="lft-logo lft-logo-md" />
+    </a>
 
     <!-- Auth controls -->
     <div class="flex items-center gap-2">
@@ -11,7 +13,6 @@
 
         @case ('checking') {
           <div class="h-7 w-14 lft-skeleton rounded-lg" aria-hidden="true"></div>
-          <div class="h-7 w-18 lft-skeleton rounded-lg" aria-hidden="true"></div>
         }
 
         @case ('anonymous') {
@@ -19,30 +20,60 @@
             routerLink="/auth/login"
             class="px-3 py-1.5 text-sm font-medium text-zinc-400 transition hover:text-zinc-100"
           >Login</a>
-          <a
-            routerLink="/auth/signup"
-            class="lft-btn lft-btn-primary"
-            style="height:2rem; padding:0 0.875rem; font-size:0.8125rem;"
-          >Sign Up</a>
         }
 
         @case ('authenticated') {
-          <!-- Avatar -->
-          <div
-            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-400/15 ring-1 ring-teal-400/25"
-            aria-hidden="true"
-          >
-            <span class="text-[10px] font-bold leading-none text-teal-300">
-              {{ user()?.displayName?.charAt(0)?.toUpperCase() }}
-            </span>
-          </div>
+          <!-- Avatar button — opens dropdown menu -->
+          <div class="relative">
+            <button
+              type="button"
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-teal-400/15 ring-1 ring-teal-400/25 transition hover:ring-teal-400/50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
+              [attr.aria-expanded]="menuOpen()"
+              aria-haspopup="true"
+              aria-label="Account menu"
+              (click)="toggleMenu()"
+            >
+              <span class="text-[11px] font-bold leading-none text-teal-300">
+                {{ user()?.displayName?.charAt(0)?.toUpperCase() }}
+              </span>
+            </button>
 
-          <button
-            type="button"
-            class="lft-btn lft-btn-ghost"
-            style="height:2rem; padding:0 0.75rem; font-size:0.8125rem;"
-            (click)="onSignOut()"
-          >Sign Out</button>
+            <!-- Dropdown -->
+            @if (menuOpen()) {
+              <!-- Backdrop to close on outside click -->
+              <div
+                class="fixed inset-0 z-40"
+                aria-hidden="true"
+                (click)="closeMenu()"
+              ></div>
+
+              <div
+                class="absolute right-0 top-full z-50 mt-2 w-44 overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900 shadow-xl shadow-black/40"
+                role="menu"
+              >
+                <!-- User info -->
+                <div class="border-b border-zinc-800 px-3.5 py-3">
+                  <p class="truncate text-[11px] font-semibold text-zinc-300">{{ user()?.displayName }}</p>
+                  <p class="truncate text-[10px] text-zinc-600">{{ user()?.email }}</p>
+                </div>
+
+                <!-- Actions -->
+                <div class="py-1">
+                  <button
+                    type="button"
+                    class="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm font-medium text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-100"
+                    role="menuitem"
+                    (click)="onSignOut()"
+                  >
+                    <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9" />
+                    </svg>
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
         }
 
       }

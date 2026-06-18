@@ -4,67 +4,57 @@
   </div>
 } @else {
 
-<main class="min-h-dvh bg-zinc-950 pb-32 text-zinc-50">
+<main class="min-h-dvh bg-zinc-950 pb-28 text-zinc-50">
 
-  <!-- ── Shared top nav ──────────────────────────────────────────────── -->
+  <!-- ── Nav ────────────────────────────────────────────────────────── -->
   <app-nav-bar />
 
-  <div class="mx-auto w-full max-w-3xl px-4 pt-4 sm:px-6">
-
-    <!-- ── Page header ────────────────────────────────────────────────── -->
-    <header class="anim-enter lft-page-header">
-      <h1 class="lft-page-title">Training Hub</h1>
-    </header>
+  <div class="mx-auto w-full max-w-3xl px-4 pt-3 sm:px-6">
 
     <!-- ── Context strip ──────────────────────────────────────────────── -->
-    <!-- Greeting + streak in one scannable line — no card needed -->
-    <div class="anim-enter mt-4 flex items-center justify-between gap-2">
-
-      <!-- Left: greeting -->
+    <div class="anim-enter flex items-start justify-between gap-2">
       <div class="min-w-0">
         @if (authService.status() === 'authenticated') {
-          <div class="flex items-center gap-2.5">
-            <div class="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-400/15 ring-1 ring-teal-400/25">
-              <span class="text-[11px] font-bold leading-none text-teal-300">{{ authService.user()?.displayName?.charAt(0)?.toUpperCase() }}</span>
-            </div>
-            <span class="truncate text-sm font-semibold text-zinc-200">{{ greetingLine() }}</span>
-          </div>
+          <!-- Line 1: greeting -->
+          <p class="text-base font-bold text-zinc-100">{{ greetingLine() }}</p>
+          <!-- Line 2: streak or next training day -->
+          @if (stats()?.streak) {
+            <p class="mt-0.5 text-sm font-medium text-zinc-500">
+              🔥 {{ stats()!.streak }}-day streak
+            </p>
+          } @else if (nextTrainingDay(); as next) {
+            <p class="mt-0.5 text-sm font-medium text-zinc-500">
+              {{ next.label || next.muscleGroups[0] || 'Training' }} next
+            </p>
+          } @else {
+            <p class="mt-0.5 text-sm font-medium text-zinc-600">Ready to train</p>
+          }
         } @else {
-          <span class="text-sm font-semibold text-zinc-400">Good {{ timeOfDay() }}</span>
+          <p class="text-sm font-semibold text-zinc-400">Track lifts. Beat PRs. Build strength.</p>
         }
       </div>
-
-      <!-- Right: streak badge (authenticated only) -->
-      @if (authService.status() === 'authenticated' && stats()?.streak) {
-        <div class="flex shrink-0 items-center gap-1.5 rounded-full border border-teal-400/20 bg-teal-400/10 px-3 py-1">
-          <span class="h-1.5 w-1.5 rounded-full bg-teal-400"></span>
-          <span class="text-xs font-semibold tabular-nums text-teal-300">{{ stats()!.streak }}-day streak</span>
-        </div>
-      }
     </div>
 
     <!-- ── PRIMARY: Start / Resume workout ──────────────────────────── -->
-    <!-- Full-width hero action card. Tier-1 hierarchy. -->
     <a
-      class="db-hero-card anim-enter-1 group relative mt-5 flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-teal-400/20 bg-teal-400/[0.07] px-5 py-6 hover:border-teal-400/35 hover:bg-teal-400/[0.10]"
+      class="db-hero-card anim-enter-1 group relative mt-3 flex items-center justify-between gap-4 overflow-hidden rounded-2xl border border-teal-400/20 bg-teal-400/[0.07] px-5 py-5 hover:border-teal-400/35 hover:bg-teal-400/[0.10]"
       routerLink="/app/workout"
     >
-      <!-- Ambient glow blob -->
       <div class="pointer-events-none absolute -left-8 -top-8 h-32 w-32 rounded-full bg-teal-500/12 blur-3xl" aria-hidden="true"></div>
       <div class="pointer-events-none absolute -bottom-4 right-8 h-20 w-20 rounded-full bg-teal-400/8 blur-2xl" aria-hidden="true"></div>
 
       <div class="relative min-w-0 flex-1">
         @if (activeWorkout(); as w) {
-          <!-- Active workout state -->
-          <div class="mb-2 flex items-center gap-2">
+          <div class="mb-1.5 flex items-center gap-2">
             <span class="relative flex h-2 w-2 shrink-0">
               <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-400 opacity-60"></span>
               <span class="relative inline-flex h-2 w-2 rounded-full bg-teal-400"></span>
             </span>
             <span class="text-[10px] font-bold uppercase tracking-[0.15em] text-teal-400/70">In progress</span>
           </div>
-          <p class="text-[1.6rem] font-black leading-tight tracking-tight text-zinc-50">{{ w.name }}</p>
-          <div class="mt-2 flex items-center gap-2 text-sm">
+          <p class="text-[1.5rem] font-black leading-tight tracking-tight text-zinc-50">Continue</p>
+          <p class="mt-1 text-sm font-semibold text-zinc-300">{{ w.name }}</p>
+          <div class="mt-1 flex items-center gap-2 text-sm">
             @if (elapsedLabel()) {
               <span class="font-bold tabular-nums text-teal-300">{{ elapsedLabel() }}</span>
               <span class="text-zinc-700">·</span>
@@ -72,13 +62,24 @@
             <span class="text-zinc-400">{{ completedSetCount() }} set{{ completedSetCount() !== 1 ? 's' : '' }}</span>
           </div>
         } @else {
-          <!-- Idle state -->
-          <p class="text-[1.6rem] font-black leading-tight tracking-tight text-zinc-50">Start Workout</p>
-          <p class="mt-1.5 text-sm text-zinc-500">Log sets, reps and weight in real time.</p>
+          @if (todayPlanDay() && !todayPlanDay()!.rest) {
+            <p class="text-[1.5rem] font-black leading-tight tracking-tight text-zinc-50">
+              Start {{ todayPlanDay()!.label || todayPlanDay()!.muscleGroups[0] || 'Workout' }}
+            </p>
+            <p class="mt-0.5 text-[11px] text-zinc-500">
+              {{ todayPlanDay()!.exercises.length }} exercise{{ todayPlanDay()!.exercises.length !== 1 ? 's' : '' }}
+            </p>
+          } @else {
+            <p class="text-[1.5rem] font-black leading-tight tracking-tight text-zinc-50">Start Workout</p>
+            @if (lastWorkoutName()) {
+              <p class="mt-1 text-[11px] text-zinc-500">Last: {{ lastWorkoutName() }}</p>
+            } @else {
+              <p class="mt-1 text-sm text-zinc-500">Log sets, reps and weight in real time.</p>
+            }
+          }
         }
       </div>
 
-      <!-- Arrow icon pill -->
       <div class="relative shrink-0 rounded-xl border border-teal-400/20 bg-teal-400/10 p-3 transition-all duration-200 group-hover:border-teal-400/40 group-hover:bg-teal-400/15">
         <svg class="h-5 w-5 text-teal-300" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
@@ -87,31 +88,28 @@
     </a>
 
     <!-- ── SECONDARY ROW: History + Plan ─────────────────────────────── -->
-    <!-- Equal-weight 2-col grid. Tier-2 hierarchy. -->
-    <div class="mt-3 grid grid-cols-2 gap-3 anim-enter-2">
+    <div class="mt-2.5 grid grid-cols-2 gap-2.5 anim-enter-2">
 
       <!-- HISTORY CARD -->
       @if (authService.status() === 'anonymous') {
         <button
           type="button"
-          class="db-stat-card group relative flex flex-col justify-between gap-3 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-4 text-left hover:border-zinc-700 hover:bg-zinc-900"
+          class="db-stat-card group relative flex flex-col justify-between gap-4 overflow-hidden rounded-2xl border border-zinc-800/70 bg-zinc-900/60 px-4 py-4 text-left hover:border-zinc-700/80 hover:bg-zinc-900"
           (click)="openAuthGate('Workout History')"
         >
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-semibold text-zinc-400">History</span>
-            <svg class="h-3.5 w-3.5 shrink-0 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-            </svg>
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <p class="text-xs font-semibold text-zinc-400">History</p>
+              <p class="mt-1 text-sm font-semibold leading-snug text-zinc-200">Every session, logged.</p>
+              <p class="mt-1 text-[11px] leading-snug text-zinc-500">Sets · weight · volume · dates</p>
+            </div>
+            <span class="mt-0.5 shrink-0 rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] font-semibold text-zinc-500">Lock</span>
           </div>
-          <!-- Empty state: locked -->
-          <div class="flex flex-col gap-1">
-            <span class="text-3xl font-black tabular-nums leading-none tracking-tight text-zinc-700">—</span>
-            <p class="text-[11px] font-medium text-zinc-600">Requires an account</p>
-          </div>
+          <p class="text-[11px] font-semibold text-teal-400/80">Sign in →</p>
         </button>
       } @else {
         <a
-          class="db-stat-card group relative flex flex-col justify-between gap-3 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-4 hover:border-zinc-700 hover:bg-zinc-900"
+          class="db-stat-card group relative flex flex-col justify-between gap-3 overflow-hidden rounded-2xl border border-zinc-800/70 bg-zinc-900/60 px-4 py-4 hover:border-zinc-700/80 hover:bg-zinc-900"
           routerLink="/app/workouts/history"
         >
           <div class="flex items-center justify-between gap-2">
@@ -126,10 +124,11 @@
                 <span class="text-3xl font-black tabular-nums leading-none tracking-tight text-zinc-50">{{ s.sessions }}</span>
                 <span class="mb-0.5 text-sm font-semibold text-zinc-500">sessions</span>
               </div>
-              <p class="text-[11px] font-medium text-zinc-500">this month</p>
+              @if (lastWorkoutName()) {
+                <p class="truncate text-[11px] font-medium text-zinc-500">{{ lastWorkoutName() }}</p>
+              }
             </div>
           } @else {
-            <!-- Loading skeleton -->
             <div class="flex flex-col gap-2">
               <div class="lft-skeleton h-7 w-12"></div>
               <div class="lft-skeleton h-3 w-16"></div>
@@ -142,23 +141,22 @@
       @if (authService.status() === 'anonymous') {
         <button
           type="button"
-          class="db-stat-card group relative flex flex-col justify-between gap-3 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-4 text-left hover:border-zinc-700 hover:bg-zinc-900"
+          class="db-stat-card group relative flex flex-col justify-between gap-4 overflow-hidden rounded-2xl border border-zinc-800/70 bg-zinc-900/60 px-4 py-4 text-left hover:border-zinc-700/80 hover:bg-zinc-900"
           (click)="openAuthGate('Training Plan')"
         >
-          <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-semibold text-zinc-400">Plan</span>
-            <svg class="h-3.5 w-3.5 shrink-0 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-            </svg>
+          <div class="flex items-start justify-between gap-2">
+            <div>
+              <p class="text-xs font-semibold text-zinc-400">Training Plan</p>
+              <p class="mt-1 text-sm font-semibold leading-snug text-zinc-200">Your training split.</p>
+              <p class="mt-1 text-[11px] leading-snug text-zinc-500">PPL · Upper/Lower · Custom</p>
+            </div>
+            <span class="mt-0.5 shrink-0 rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] font-semibold text-zinc-500">Lock</span>
           </div>
-          <div class="flex flex-col gap-1">
-            <span class="text-3xl font-black leading-none tracking-tight text-zinc-700">—</span>
-            <p class="text-[11px] font-medium text-zinc-600">Requires an account</p>
-          </div>
+          <p class="text-[11px] font-semibold text-teal-400/80">Sign in →</p>
         </button>
       } @else {
         <a
-          class="db-stat-card group relative flex flex-col justify-between gap-3 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-4 hover:border-zinc-700 hover:bg-zinc-900"
+          class="db-stat-card group relative flex flex-col justify-between gap-3 overflow-hidden rounded-2xl border border-zinc-800/70 bg-zinc-900/60 px-4 py-4 hover:border-zinc-700/80 hover:bg-zinc-900"
           routerLink="/app/plan"
         >
           <div class="flex items-center justify-between gap-2">
@@ -175,7 +173,6 @@
               </div>
             </div>
           } @else {
-            <!-- Empty state: no plan set -->
             <div class="flex flex-col gap-1">
               <span class="text-3xl font-black leading-none tracking-tight text-zinc-700">—</span>
               <p class="text-[11px] font-medium text-zinc-600">Set your split</p>
@@ -186,58 +183,46 @@
 
     </div><!-- /secondary row -->
 
-    <!-- ── WEEK RING + PROGRESS ────────────────────────────────────────── -->
-    <!-- Full-width tier-3 card. Authenticated users get week activity ring.
-         Anonymous users get a locked progress state with sign-in nudge. -->
-    <div class="mt-3 anim-enter-3">
+    <!-- ── PROGRESS ───────────────────────────────────────────────────── -->
+    <div class="mt-2.5 anim-enter-3">
 
       @if (authService.status() === 'anonymous') {
 
-        <!-- Locked progress card -->
+        <!-- Locked progress — clean zinc card, no teal competition with hero -->
         <button
           type="button"
-          class="db-stat-card group relative w-full overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-5 text-left hover:border-zinc-700 hover:bg-zinc-900"
+          class="db-stat-card group relative w-full overflow-hidden rounded-2xl border border-zinc-800/70 bg-zinc-900/60 px-5 py-4 text-left hover:border-zinc-700/80 hover:bg-zinc-900"
           (click)="openAuthGate('Progress & PRs')"
         >
-          <!-- Decorative barbell silhouette -->
-          <div class="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2 opacity-[0.04]" aria-hidden="true">
-            <svg class="h-24 w-24 text-zinc-200" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29l-1.43-1.43z"/>
-            </svg>
-          </div>
           <div class="flex items-center justify-between gap-4">
-            <div>
-              <p class="text-sm font-semibold text-zinc-400">Progress &amp; PRs</p>
-              <p class="mt-1 text-[11px] text-zinc-600">Strength gains, volume and PRs</p>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-bold text-zinc-200">Progress &amp; PRs</p>
+                <span class="rounded-full border border-zinc-700 px-2 py-0.5 text-[10px] font-semibold text-zinc-500">Lock</span>
+              </div>
+              <p class="mt-1 text-[11px] leading-relaxed text-zinc-500">
+                Beat your lifts · Track weekly volume · Streak history
+              </p>
             </div>
-            <div class="flex shrink-0 items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2">
-              <svg class="h-3.5 w-3.5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-              </svg>
-              <span class="text-xs font-semibold text-zinc-400">Sign in</span>
-            </div>
+            <p class="shrink-0 text-[11px] font-semibold text-teal-400/80">Sign in →</p>
           </div>
         </button>
 
       } @else {
 
-        <!-- Authenticated: progress overview card -->
+        <!-- Authenticated progress card -->
         <a
-          class="db-stat-card group relative flex items-center gap-5 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 px-5 py-5 hover:border-zinc-700 hover:bg-zinc-900"
+          class="db-stat-card group relative flex items-center gap-5 overflow-hidden rounded-2xl border border-zinc-800/70 bg-zinc-900/60 px-5 py-5 hover:border-zinc-700/80 hover:bg-zinc-900"
           routerLink="/app/progress"
         >
-          <!-- Decorative barbell silhouette -->
           <div class="pointer-events-none absolute -right-4 top-1/2 -translate-y-1/2 opacity-[0.04]" aria-hidden="true">
             <svg class="h-24 w-24 text-zinc-200" viewBox="0 0 24 24" fill="currentColor">
               <path d="M20.57 14.86L22 13.43 20.57 12 17 15.57 8.43 7 12 3.43 10.57 2 9.14 3.43 7.71 2 5.57 4.14 4.14 2.71 2.71 4.14l1.43 1.43L2 7.71l1.43 1.43L2 10.57 3.43 12 7 8.43 15.57 17 12 20.57 13.43 22l1.43-1.43L16.29 22l2.14-2.14 1.43 1.43 1.43-1.43-1.43-1.43L22 16.29l-1.43-1.43z"/>
             </svg>
           </div>
-          <!-- Week activity ring: 7 day dots -->
-          <div class="db-week-ring shrink-0" aria-label="This week's activity" role="img">
+          <div class="db-week-ring shrink-0" aria-label="Sessions this month" role="img">
             <svg viewBox="0 0 48 48" class="h-14 w-14 -rotate-90" aria-hidden="true">
-              <!-- Track -->
               <circle cx="24" cy="24" r="19" fill="none" stroke-width="4" class="text-zinc-800" stroke="currentColor"/>
-              <!-- Progress arc — driven by sessions/target -->
               <circle
                 cx="24" cy="24" r="19"
                 fill="none" stroke-width="4"
@@ -248,9 +233,9 @@
                 [attr.stroke-dashoffset]="0"
               />
             </svg>
-            <!-- Sessions count overlay -->
-            <div class="db-week-ring__label">
+            <div class="db-week-ring__label flex-col gap-0">
               <span class="text-sm font-black tabular-nums leading-none text-zinc-50">{{ stats()?.sessions ?? '—' }}</span>
+              <span class="mt-0.5 text-[8px] font-semibold uppercase tracking-wide leading-none text-zinc-600">sessions</span>
             </div>
           </div>
 
@@ -268,7 +253,6 @@
                 <p class="mt-1 text-[11px] text-zinc-600">Log a session to start your record</p>
               }
             } @else {
-              <!-- Loading skeleton -->
               <div class="space-y-2">
                 <div class="lft-skeleton h-6 w-20"></div>
                 <div class="lft-skeleton h-3 w-28"></div>
@@ -286,66 +270,36 @@
         </a>
 
       }
-    </div><!-- /progress section -->
+    </div><!-- /progress -->
 
-    <!-- ── TERTIARY ROW: Exercises + quick-access ───────────────────── -->
-    <!-- Lean action row — exercises always accessible, no lock. Tier-4. -->
-    <div class="mt-3 grid grid-cols-3 gap-3 anim-enter-4">
-
-      <!-- Exercises -->
+    <!-- ── EXERCISE DATABASE — full-width value prop ─────────────────── -->
+    <!-- Promoted from tertiary half-card to its own tier. 800+ is a real differentiator. -->
+    <div class="mt-2.5 anim-enter-4">
       <a
-        class="db-stat-card group col-span-2 flex items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-4 py-4 hover:border-zinc-700 hover:bg-zinc-900"
+        class="db-stat-card group flex items-center justify-between gap-4 rounded-2xl border border-zinc-800/70 bg-zinc-900/60 px-4 py-4 hover:border-zinc-700/80 hover:bg-zinc-900"
         routerLink="/app/exercises"
       >
         <div class="min-w-0">
-          <p class="text-xs font-semibold text-zinc-400">Exercises</p>
-          <div class="mt-1.5 flex items-end gap-1">
-            <span class="text-2xl font-black tabular-nums leading-none tracking-tight text-zinc-50">300</span>
-            <span class="mb-0.5 text-sm font-bold text-zinc-500">+</span>
+          <div class="flex items-baseline gap-1.5">
+            <span class="text-2xl font-black tabular-nums leading-none tracking-tight text-zinc-50">800+</span>
+            <span class="text-sm font-semibold text-zinc-400">exercises</span>
           </div>
+          <p class="mt-1 text-[11px] text-zinc-500">Muscle group · equipment · movement type</p>
         </div>
-        <svg class="h-4 w-4 shrink-0 text-zinc-700 transition-colors group-hover:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-        </svg>
+        <div class="flex shrink-0 items-center gap-2">
+          <span class="text-[11px] font-semibold text-zinc-500 transition-colors group-hover:text-zinc-300">Browse Library →</span>
+        </div>
       </a>
+    </div><!-- /exercises -->
 
-      <!-- Today's plan pill — compact glanceable -->
-      @if (authService.status() === 'authenticated' && todayPlanLabel()) {
-        <a
-          class="db-stat-card group flex flex-col justify-center gap-1.5 rounded-2xl border border-zinc-800 bg-zinc-900/60 px-3 py-4 hover:border-zinc-700 hover:bg-zinc-900"
-          routerLink="/app/plan"
-        >
-          <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-600">Today</p>
-          <p class="line-clamp-2 text-xs font-semibold leading-snug text-zinc-300">{{ todayPlanLabel() }}</p>
-        </a>
-      } @else {
-        <!-- Placeholder: log workout history shortcut or guest lock -->
-        <div class="flex flex-col justify-center gap-1.5 rounded-2xl border border-zinc-800/50 bg-zinc-900/30 px-3 py-4">
-          <p class="text-[10px] font-semibold uppercase tracking-wider text-zinc-700">Today</p>
-          <p class="text-xs font-medium text-zinc-700">Rest day</p>
-        </div>
-      }
-
-    </div><!-- /tertiary row -->
-
-    <!-- ── GUEST SIGN-UP NUDGE ─────────────────────────────────────── -->
-    <!-- Only shown when anonymous. Bottom of the page — persistent but not pushy. -->
+    <!-- ── GUEST CTA — single, unambiguous conversion surface ─────────── -->
     @if (authService.status() === 'anonymous') {
-      <div class="mt-5 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 anim-enter-5">
-        <div class="px-5 py-5">
-          <p class="text-sm font-semibold text-zinc-200">Save your progress</p>
-          <p class="mt-1 text-xs leading-relaxed text-zinc-500">Create a free account to sync workouts across devices, track PRs and unlock history.</p>
-          <div class="mt-4 flex gap-2.5">
-            <a
-              routerLink="/auth/signup"
-              class="lft-btn lft-btn-primary flex-1 justify-center"
-            >Sign Up Free</a>
-            <a
-              routerLink="/auth/login"
-              class="lft-btn lft-btn-ghost flex-1 justify-center"
-            >Login</a>
-          </div>
-        </div>
+      <div class="mt-3 anim-enter-5">
+        <a
+          routerLink="/auth/signup"
+          class="lft-btn lft-btn-primary lft-btn-lg lft-btn-full"
+        >Create free account</a>
+        <p class="mt-2.5 text-center text-[11px] text-zinc-600">No credit card · Sync across devices · Free forever</p>
       </div>
     }
 
@@ -353,4 +307,3 @@
 </main>
 
 }
-

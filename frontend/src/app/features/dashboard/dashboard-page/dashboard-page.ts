@@ -66,6 +66,9 @@ export class DashboardPageComponent implements OnDestroy {
   // ── History stats ──────────────────────────────────────────────────────
   protected readonly stats = signal<WorkoutStats | null>(null);
 
+  /** Name of the most recent completed workout — shown in Start Workout idle state. */
+  protected readonly lastWorkoutName = signal<string | null>(null);
+
   // ── Plan ───────────────────────────────────────────────────────────────
   protected readonly plan = signal<WorkoutPlan | null>(null);
 
@@ -146,6 +149,10 @@ export class DashboardPageComponent implements OnDestroy {
       this.workoutService.getStats(currentMonth)
         .pipe(takeUntil(this.destroy$))
         .subscribe({ next: (s) => this.stats.set(s), error: () => {} });
+
+      this.workoutService.getHistory({ limit: 1, page: 1 })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({ next: (p) => this.lastWorkoutName.set(p.items[0]?.name ?? null), error: () => {} });
 
       this.planService.get()
         .pipe(takeUntil(this.destroy$))

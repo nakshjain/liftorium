@@ -678,12 +678,17 @@ input[type="number"]::-webkit-outer-spin-button {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  height: 3.25rem; /* 52px — tight, gym-appropriate */
+  height: 3.5rem; /* 56px mobile */
   margin: 0 auto;
   max-width: 48rem;
   padding: 0 1rem;
 }
-@media (min-width: 640px) { .lft-nav-inner { padding: 0 1.5rem; } }
+@media (min-width: 640px) {
+  .lft-nav-inner {
+    height: 4rem; /* 64px desktop */
+    padding: 0 1.5rem;
+  }
+}
 
 /* Wordmark — disciplined, all-caps, tight tracking */
 .lft-wordmark {
@@ -799,11 +804,99 @@ input[type="number"]::-webkit-outer-spin-button {
     background-color 120ms var(--ease-out),
     border-color 120ms var(--ease-out),
     color 120ms var(--ease-out),
+    box-shadow 120ms var(--ease-out),
     transform 80ms var(--ease-out);
 }
 .lft-set-done:active {
   transform: scale(0.92);
   transition-duration: 60ms;
+}
+
+/* ─── Completed set row ───────────────────────────────────────────────────── */
+/*
+  When a set is marked complete, the entire row gets a teal tint and the
+  inputs visually dim to indicate the set is locked/done.
+  The transition is intentionally fast — this needs to feel like confirmation,
+  not a slow animation.
+*/
+.lft-set-row-complete {
+  background: rgba(45, 212, 191, 0.06);
+  transition: background-color 150ms var(--ease-out);
+}
+.lft-set-row-complete .lft-set-input {
+  color: var(--lft-text-tertiary);
+  border-color: transparent;
+  background: transparent;
+}
+.lft-set-row-complete .lft-stepper-btn {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* ─── Set complete pop animation ─────────────────────────────────────────── */
+/*
+  Fires once when a set transitions to completed.
+  Uses a subtle scale pop — reads as "confirmed", not "bounced around".
+  Scale 1.08 is large enough to be perceptible, small enough to stay polished.
+*/
+@keyframes lft-set-complete-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.12); }
+  70%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+.lft-set-done-pop {
+  animation: lft-set-complete-pop 260ms var(--ease-spring) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lft-set-done-pop { animation: none; }
+  .lft-set-row-complete { transition: none; }
+}
+
+/* ─── Exercise overflow menu items ───────────────────────────────────────── */
+/*
+  Menu items inside the ⋮ dropdown.
+  Icon + label layout, fast press feedback, danger variant for Remove.
+*/
+.lft-overflow-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--lft-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 100ms var(--ease-out), color 100ms var(--ease-out);
+}
+.lft-overflow-item:hover { background: var(--lft-surface-hover); color: var(--lft-text-primary); }
+.lft-overflow-item:active { background: var(--lft-surface-hover); }
+.lft-overflow-item-danger { color: var(--lft-danger); }
+.lft-overflow-item-danger:hover { background: var(--lft-danger-dim); color: var(--lft-danger); }
+
+/* ─── Rest timer banner ───────────────────────────────────────────────────── */
+/*
+  Appears below the stat strip immediately after a set is completed.
+  Slides in from above, stands out with teal surface.
+  Contains: countdown + Skip + +30s — all reachable with one thumb.
+*/
+.lft-rest-banner {
+  overflow: hidden;
+  animation: lft-rest-in 220ms var(--ease-spring) both;
+}
+@keyframes lft-rest-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.99); max-height: 0; }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    max-height: 5rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lft-rest-banner { animation: none; }
+  .lft-overflow-item { transition: none; }
 }
 /*
   Legacy .btn-auth class — kept for auth form backward compatibility.
@@ -890,4 +983,30 @@ input[type="number"]::-webkit-outer-spin-button {
     transform: none;
   }
   .lft-chip:active { transform: none; }
+}
+
+/* ─── Logo utility classes ──────────────────────────────────────────────── */
+/*
+  home-page-logo.png has a wide horizontal layout (~4:1 aspect ratio).
+
+  lft-logo        — base: block, no select, preserve aspect ratio
+  lft-logo-sm     — desktop auth right header             (38px tall)
+  lft-logo-md     — navbar + mobile auth hero             (42px tall)
+  lft-logo-lg     — desktop auth left panel               (56px tall)
+*/
+.lft-logo {
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+  object-fit: contain;
+  object-position: left center;
+  image-rendering: -webkit-optimize-contrast;
+}
+
+.lft-logo-sm { height: 52px; width: auto; max-width: 260px; }
+.lft-logo-md { height: 34px; width: auto; max-width: 185px; } /* mobile default */
+.lft-logo-lg { height: 72px; width: auto; max-width: 360px; }
+
+@media (min-width: 640px) {
+  .lft-logo-md { height: 47px; max-width: 250px; } /* desktop upgrade */
 }
