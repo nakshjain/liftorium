@@ -52,19 +52,56 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   /** Set IDs that just completed — drives the one-shot pop animation. */
   protected readonly justCompletedSetId = signal<string | null>(null);
 
-  /** Exercise IDs that are currently collapsed. */
+  /** Exercise IDs that are currently collapsed — includes manual + auto-collapsed. */
   protected readonly collapsedExerciseIds = signal<Set<string>>(new Set());
+
+  /**
+   * Returns true when every set on this exercise is completed.
+   * Used to auto-collapse finished exercises and show the summary state.
+   */
+  protected isFullyComplete(exerciseId: string): boolean {
+    const ex = this.store.activeWorkout()?.exercises.find((e) => e.id === exerciseId);
+    if (!ex || ex.sets.length === 0) return false;
+    return ex.sets.every((s) => s.completed);
+  }
+
+  /**
+   * Returns the ID of the first exercise that still has incomplete sets,
+   * or null if every exercise is fully complete.
+   * Used to auto-expand the active exercise.
+   */
+  protected readonly firstIncompleteExerciseId = computed(() => {
+    const exercises = this.store.activeWorkout()?.exercises ?? [];
+    const first = exercises.find((ex) => ex.sets.some((s) => !s.completed));
+    return first?.id ?? null;
+  });
+
+  /**
+   * Whether this exercise should render as collapsed.
+   * Priority: auto-collapse when fully complete (unless user manually expanded),
+   * or manual collapse when user tapped the header.
+   * The first incomplete exercise is always treated as expanded.
+   */
+  protected shouldCollapse(exerciseId: string): boolean {
+    // Always expand the current active exercise
+    if (exerciseId === this.firstIncompleteExerciseId()) return false;
+    // User manually toggled — respect that
+    if (this.collapsedExerciseIds().has(exerciseId)) return true;
+    // Auto-collapse when fully complete
+    return this.isFullyComplete(exerciseId);
+  }
 
   protected toggleCollapse(exerciseId: string): void {
     this.collapsedExerciseIds.update((ids) => {
       const next = new Set(ids);
-      next.has(exerciseId) ? next.delete(exerciseId) : next.add(exerciseId);
+      // If currently showing (expanded), collapse it
+      if (!this.shouldCollapse(exerciseId)) {
+        next.add(exerciseId);
+      } else {
+        next.delete(exerciseId);
+      }
       return next;
     });
-  }
-
-  protected isCollapsed(exerciseId: string): boolean {
-    return this.collapsedExerciseIds().has(exerciseId);
   }
 
   /**

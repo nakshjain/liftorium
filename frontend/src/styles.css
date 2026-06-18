@@ -814,13 +814,12 @@ input[type="number"]::-webkit-outer-spin-button {
 
 /* ─── Completed set row ───────────────────────────────────────────────────── */
 /*
-  When a set is marked complete, the entire row gets a teal tint and the
-  inputs visually dim to indicate the set is locked/done.
-  The transition is intentionally fast — this needs to feel like confirmation,
-  not a slow animation.
+  Subtle tint — checkmark is the primary indicator, not the background.
+  rgba(45,212,191,0.035) is just enough to show something changed without
+  drawing the eye away from incomplete rows.
 */
 .lft-set-row-complete {
-  background: rgba(45, 212, 191, 0.06);
+  background: rgba(45, 212, 191, 0.035);
   transition: background-color 150ms var(--ease-out);
 }
 .lft-set-row-complete .lft-set-input {
