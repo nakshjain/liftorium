@@ -1,7 +1,7 @@
-<main class="min-h-dvh bg-zinc-950 pb-16 text-zinc-50">
-  <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
+<main class="lft-page">
+  <div class="lft-container">
 
-    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <!-- ── Sticky header ──────────────────────────────────────────────────── -->
     <header class="lft-page-header">
       <div class="flex items-center justify-between gap-3">
         <div>
@@ -10,168 +10,82 @@
         </div>
       </div>
 
-      <div class="mt-3">
-        <app-exercise-search-input
-          [pending]="searching()"
-          (queryChange)="onQueryChange($event)"
-        />
+      <!-- Search + filter button row -->
+      <div class="mt-3 flex items-center gap-2">
+        <div class="min-w-0 flex-1">
+          <app-exercise-search-input
+            [pending]="searching()"
+            (queryChange)="onQueryChange($event)"
+          />
+        </div>
+
+        <!-- Filter entry button -->
+        <button
+          type="button"
+          class="lft-filter-btn shrink-0"
+          [class.lft-filter-btn-active]="hasActiveFilters()"
+          (click)="openSheet()"
+          aria-label="Open filters"
+        >
+          <!-- Funnel icon -->
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/>
+          </svg>
+          <span class="text-sm font-semibold">Filters</span>
+          @if (activeFilterCount() > 0) {
+            <span class="lft-filter-badge">{{ activeFilterCount() }}</span>
+          }
+        </button>
       </div>
+
+      <!-- Result count -->
       @if (resultCount() !== null) {
-        <p class="mt-1.5 text-[11px] font-medium text-zinc-500">{{ resultCount() }} exercise{{ resultCount() === 1 ? '' : 's' }}</p>
+        <p class="mt-1.5 text-[11px] font-medium text-zinc-500">
+          {{ resultCount() }} exercise{{ resultCount() === 1 ? '' : 's' }}
+        </p>
+      }
+
+      <!-- Active filter chips -->
+      @if (activeChips().length > 0) {
+        <div class="no-scrollbar mt-2 flex items-center gap-1.5 overflow-x-auto pb-0.5" role="list" aria-label="Active filters">
+          @for (chip of activeChips(); track chip.key) {
+            <button
+              type="button"
+              class="lft-active-chip"
+              (click)="removeChip(chip.key)"
+              [attr.aria-label]="'Remove ' + chip.label + ' filter'"
+              role="listitem"
+            >
+              {{ chip.label }}
+              <svg class="ml-1 h-3 w-3 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            </button>
+          }
+          <button
+            type="button"
+            class="shrink-0 text-[11px] font-semibold text-zinc-500 transition hover:text-rose-400"
+            (click)="clearFilters()"
+          >Clear all</button>
+        </div>
       }
     </header>
 
-    <!-- ── Filters ────────────────────────────────────────────────── -->
-    <section class="mt-4 space-y-2">
-
-      <!-- Muscle quick-picks -->
-      <div class="no-scrollbar relative flex items-center gap-2 overflow-x-auto pb-1">
-        <span class="lft-section-label shrink-0">Muscle</span>
-        @for (group of muscleGroups; track group.label) {
-          <button
-            class="lft-chip shrink-0"
-            [class.lft-chip-active]="hasGroupSelected(group.muscles)"
-            type="button"
-            (click)="onMuscleFilter(group.muscles[0])"
-          >{{ group.label }}</button>
-        }
-
-        @if (showMuscleGroupTooltip()) {
-          <div class="absolute left-0 top-full z-30 mt-2 w-72 rounded-2xl border border-teal-400/25 bg-zinc-900 p-4 shadow-xl">
-            <div class="flex items-start gap-3">
-              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-400">
-                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm font-semibold text-zinc-50">Quick muscle targeting</p>
-                <p class="mt-1 text-xs leading-relaxed text-zinc-400">Tap Upper, Lower, or Core for fast filtering. Need a specific muscle? Use "All muscles" below.</p>
-              </div>
-            </div>
-            <button class="mt-3 text-xs font-semibold text-teal-400 hover:text-teal-300" type="button" (click)="dismissTooltip('muscleGroup')">Got it</button>
-          </div>
-        }
-      </div>
-
-      <!-- Expand all muscles -->
-      <button
-        class="text-xs font-medium text-zinc-500 transition hover:text-teal-300"
-        type="button"
-        (click)="toggleAdvancedMuscles()"
-      >{{ showAdvancedMuscles() ? '− Hide all muscles' : '+ All muscles' }}</button>
-
-      @if (showAdvancedMuscles()) {
-        <div class="flex flex-wrap gap-2 rounded-2xl border border-zinc-800 bg-zinc-900/40 p-3">
-          @for (group of muscleGroups; track group.label) {
-            @for (muscle of group.muscles; track muscle) {
-              <button
-                class="lft-chip"
-                [class.lft-chip-active]="filters().muscle === muscle"
-                type="button"
-                (click)="onMuscleFilter(muscle)"
-              >{{ muscle }}</button>
-            }
-          }
-        </div>
-      }
-
-      <!-- Type filter -->
-      <div class="relative flex items-center gap-2">
-        <span class="lft-section-label shrink-0">Type</span>
-        <div class="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1">
-          @for (type of exerciseTypes; track type.value) {
-            <button
-              class="lft-chip shrink-0"
-              [class.lft-chip-active]="filters().exerciseType === type.value"
-              type="button"
-              (click)="onTypeFilter(filters().exerciseType === type.value ? '' : type.value)"
-            >{{ type.label }}</button>
-          }
-        </div>
-
-        @if (showExerciseTypeTooltip()) {
-          <div class="absolute left-0 top-full z-30 mt-2 w-80 rounded-2xl border border-teal-400/25 bg-zinc-900 p-4 shadow-xl">
-            <div class="flex items-start gap-3">
-              <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-400">
-                <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-                </svg>
-              </div>
-              <div class="flex-1">
-                <p class="text-sm font-semibold text-zinc-50">Exercise types</p>
-                <ul class="mt-2 space-y-1 text-xs text-zinc-400">
-                  <li><span class="font-semibold text-zinc-300">Strength:</span> Weights &amp; bodyweight</li>
-                  <li><span class="font-semibold text-zinc-300">Cardio:</span> Aerobic conditioning</li>
-                  <li><span class="font-semibold text-zinc-300">Stretching:</span> Flexibility &amp; mobility</li>
-                  <li><span class="font-semibold text-zinc-300">Plyometrics:</span> Explosive power</li>
-                </ul>
-              </div>
-            </div>
-            <button class="mt-3 text-xs font-semibold text-teal-400 hover:text-teal-300" type="button" (click)="dismissTooltip('exerciseType')">Got it</button>
-          </div>
-        }
-      </div>
-
-      <!-- Level filter -->
-      <div class="no-scrollbar flex items-center gap-2 overflow-x-auto pb-1">
-        <span class="lft-section-label shrink-0">Level</span>
-        @for (lvl of levels; track lvl.value) {
-          <button
-            class="lft-chip shrink-0"
-            [class.lft-chip-active]="filters().level === lvl.value"
-            type="button"
-            (click)="onLevelFilter(filters().level === lvl.value ? '' : lvl.value)"
-          >{{ lvl.label }}</button>
-        }
-      </div>
-
-      <!-- Active filter summary -->
-      @if (hasActiveFilters()) {
-        <div class="relative flex items-center justify-between gap-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 px-3 py-2">
-          <p class="text-xs text-zinc-400">
-            Showing
-            @if (filters().muscle) { {{ filters().muscle }} }
-            @if (filters().muscle && (filters().exerciseType || filters().level)) { <span class="text-zinc-600">·</span> }
-            @if (filters().exerciseType) { {{ filters().exerciseType }} }
-            @if (filters().exerciseType && filters().level) { <span class="text-zinc-600">·</span> }
-            @if (filters().level) { {{ filters().level }} }
-          </p>
-          <button class="shrink-0 text-xs font-semibold text-rose-400 transition hover:text-rose-300" type="button" (click)="clearFilters()">
-            Clear
-          </button>
-
-          @if (showFilterLogicTooltip()) {
-            <div class="absolute left-0 top-full z-30 mt-2 w-72 rounded-2xl border border-teal-400/25 bg-zinc-900 p-4 shadow-xl">
-              <div class="flex items-start gap-3">
-                <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-teal-400/15 text-teal-400">
-                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18" />
-                  </svg>
-                </div>
-                <div class="flex-1">
-                  <p class="text-sm font-semibold text-zinc-50">AND filtering</p>
-                  <p class="mt-1 text-xs leading-relaxed text-zinc-400">"Chest · Strength" shows only exercises matching both — Chest AND Strength.</p>
-                </div>
-              </div>
-              <button class="mt-3 text-xs font-semibold text-teal-400 hover:text-teal-300" type="button" (click)="dismissTooltip('filterLogic')">Got it</button>
-            </div>
-          }
-        </div>
-      }
-    </section>
-
-    <!-- ── Exercise list ───────────────────────────────────────────── -->
-    <section class="mt-5">
+    <!-- ── Exercise list ───────────────────────────────────────────────────── -->
+    <section class="mt-4" aria-label="Exercise results">
       @if (loading()) {
-        <div class="space-y-2">
-          @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+        <div class="space-y-2" aria-busy="true" aria-label="Loading exercises">
+          @for (i of [1,2,3,4,5,6,7,8]; track i) {
             <div class="lft-skeleton h-[72px] rounded-2xl"></div>
           }
         </div>
 
       } @else if (error()) {
-        <div class="lft-card rounded-2xl px-5 py-6 text-center" role="alert" style="border-color:rgba(251,113,133,0.20); background:rgba(251,113,133,0.05);">
+        <div
+          class="lft-card rounded-2xl px-5 py-6 text-center"
+          role="alert"
+          style="border-color:rgba(251,113,133,0.20); background:rgba(251,113,133,0.05);"
+        >
           <p class="text-sm font-semibold text-rose-300">{{ error() }}</p>
           <div class="mt-4 flex items-center justify-center gap-3">
             <button class="lft-btn lft-btn-ghost" type="button" (click)="retryLoad()">Retry</button>
@@ -186,6 +100,7 @@
           <p class="lft-empty-title">No exercises found</p>
           @if (hasActiveFilters() || filters().query) {
             <p class="lft-empty-body">Try different filters or search terms.</p>
+            <button class="lft-btn lft-btn-ghost mt-4" type="button" (click)="clearFilters()">Clear filters</button>
           } @else {
             <p class="lft-empty-body">The catalog is empty.</p>
           }
@@ -228,11 +143,224 @@
               type="button"
               [disabled]="loadingMore()"
               (click)="loadMore()"
-            >{{ loadingMore() ? 'Loading…' : 'Load more' }}</button>
+            >
+              @if (loadingMore()) {
+                <span class="lft-btn-content is-loading">Loading…</span>
+              } @else {
+                Load more
+              }
+            </button>
           </div>
         }
       }
     </section>
 
-  </div>
+  </div><!-- /lft-container -->
 </main>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FILTER BOTTOM SHEET
+     Full-height mobile drawer. Backdrop click closes the sheet.
+     Draft state is applied only on "Apply Filters".
+     ═══════════════════════════════════════════════════════════════════════════ -->
+@if (sheetOpen()) {
+  <!-- Backdrop -->
+  <div
+    class="lft-sheet-backdrop"
+    (click)="closeSheet()"
+    aria-hidden="true"
+  ></div>
+
+  <!-- Sheet panel -->
+  <div
+    class="lft-sheet"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Filter exercises"
+  >
+    <!-- Drag handle -->
+    <div class="flex justify-center pt-3 pb-1" aria-hidden="true">
+      <div class="h-1 w-10 rounded-full bg-zinc-700"></div>
+    </div>
+
+    <!-- Sheet header -->
+    <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-800">
+      <h2 class="text-base font-bold text-zinc-50">Filters</h2>
+      <button
+        type="button"
+        class="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
+        (click)="closeSheet()"
+        aria-label="Close filters"
+      >
+        <svg class="h-4.5 w-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Scrollable filter content -->
+    <div class="flex-1 overflow-y-auto px-5 py-4 space-y-6">
+
+      <!-- ── Muscle Groups ─────────────────────────────────────────────── -->
+      <section>
+        <p class="lft-sheet-section-label">Muscle Group</p>
+
+        @if (draft().muscle) {
+          <div class="mb-3 flex items-center gap-2">
+            <span class="lft-active-chip">
+              {{ draft().muscle }}
+              <button
+                type="button"
+                class="ml-1"
+                (click)="draftToggleMuscle(draft().muscle)"
+                [attr.aria-label]="'Remove ' + draft().muscle"
+              >
+                <svg class="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true">
+                  <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </span>
+          </div>
+        }
+
+        <div class="space-y-2">
+          @for (cat of muscleCategories; track cat.key) {
+            <!-- Category accordion trigger -->
+            <div class="rounded-2xl border border-zinc-800 overflow-hidden">
+              <button
+                type="button"
+                class="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-zinc-800/50"
+                [class.bg-zinc-800\/30]="expandedMuscleCategory() === cat.key"
+                (click)="toggleMuscleCategory(cat.key)"
+                [attr.aria-expanded]="expandedMuscleCategory() === cat.key"
+              >
+                <div class="flex items-center gap-2.5">
+                  <span class="text-sm font-semibold text-zinc-100">{{ cat.label }}</span>
+                  @if (hasMuscleInCategory(cat.muscles)) {
+                    <span class="h-1.5 w-1.5 rounded-full bg-teal-400" aria-label="Active"></span>
+                  }
+                </div>
+                <svg
+                  class="h-4 w-4 text-zinc-500 transition-transform duration-200"
+                  [class.rotate-180]="expandedMuscleCategory() === cat.key"
+                  viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"
+                >
+                  <path d="M6 9l6 6 6-6"/>
+                </svg>
+              </button>
+
+              @if (expandedMuscleCategory() === cat.key) {
+                <div class="flex flex-wrap gap-2 px-4 pb-4 pt-1 border-t border-zinc-800/60">
+                  @for (muscle of cat.muscles; track muscle) {
+                    <button
+                      type="button"
+                      class="lft-chip"
+                      [class.lft-chip-active]="draft().muscle === muscle"
+                      (click)="draftToggleMuscle(muscle)"
+                    >{{ muscle }}</button>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- ── Exercise Type ──────────────────────────────────────────────── -->
+      <section>
+        <p class="lft-sheet-section-label">Exercise Type</p>
+        <div class="flex flex-wrap gap-2">
+          @for (type of exerciseTypes; track type.value) {
+            <button
+              type="button"
+              class="lft-chip"
+              [class.lft-chip-active]="draft().exerciseType === type.value"
+              (click)="draftToggleType(type.value)"
+            >{{ type.label }}</button>
+          }
+        </div>
+      </section>
+
+      <!-- ── Equipment ──────────────────────────────────────────────────── -->
+      <section>
+        <p class="lft-sheet-section-label">Equipment</p>
+        <div class="flex flex-wrap gap-2">
+          @for (eq of equipmentOptions; track eq) {
+            <button
+              type="button"
+              class="lft-chip"
+              [class.lft-chip-active]="draft().equipment === eq"
+              (click)="draftToggleEquipment(eq)"
+            >{{ eq }}</button>
+          }
+        </div>
+      </section>
+
+      <!-- ── Difficulty Level ───────────────────────────────────────────── -->
+      <section>
+        <p class="lft-sheet-section-label">Difficulty Level</p>
+        <div class="flex flex-wrap gap-2">
+          @for (lvl of levels; track lvl.value) {
+            <button
+              type="button"
+              class="lft-chip"
+              [class.lft-chip-active]="draft().level === lvl.value"
+              (click)="draftToggleLevel(lvl.value)"
+            >{{ lvl.label }}</button>
+          }
+        </div>
+      </section>
+
+      <!-- ── Mechanic ───────────────────────────────────────────────────── -->
+      <section>
+        <p class="lft-sheet-section-label">Mechanic</p>
+        <div class="flex flex-wrap gap-2">
+          @for (m of mechanicOptions; track m) {
+            <button
+              type="button"
+              class="lft-chip"
+              [class.lft-chip-active]="draft().mechanic === m"
+              (click)="draftToggleMechanic(m)"
+            >{{ m }}</button>
+          }
+        </div>
+      </section>
+
+      <!-- ── Force Type ─────────────────────────────────────────────────── -->
+      <section>
+        <p class="lft-sheet-section-label">Force Type</p>
+        <div class="flex flex-wrap gap-2">
+          @for (f of forceOptions; track f) {
+            <button
+              type="button"
+              class="lft-chip"
+              [class.lft-chip-active]="draft().force === f"
+              (click)="draftToggleForce(f)"
+            >{{ f }}</button>
+          }
+        </div>
+      </section>
+
+    </div><!-- /scrollable content -->
+
+    <!-- Sheet footer — sticky action bar -->
+    <div class="border-t border-zinc-800 px-5 py-4 flex items-center gap-3">
+      <button
+        type="button"
+        class="lft-btn lft-btn-ghost flex-1"
+        (click)="clearSheet()"
+      >Clear</button>
+      <button
+        type="button"
+        class="lft-btn lft-btn-primary flex-1"
+        (click)="applySheet()"
+      >
+        @if (draftFilterCount() > 0) {
+          Apply ({{ draftFilterCount() }})
+        } @else {
+          Apply Filters
+        }
+      </button>
+    </div>
+  </div><!-- /sheet panel -->
+}

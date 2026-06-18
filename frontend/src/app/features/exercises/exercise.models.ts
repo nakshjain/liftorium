@@ -42,6 +42,8 @@ export type ListExercisesParams = {
   equipment?: string;
   exerciseType?: ExerciseType;
   level?: string;
+  mechanic?: string;
+  force?: string;
 };
 
 export type SearchExercisesParams = {
