@@ -114,7 +114,7 @@ export class LiveWorkoutStore {
   addExerciseFromPicker(id: string, name: string, target: string, equipment: string): void {
     this.workout.update((workout) => {
       if (!workout || workout.exercises.some((ex) => ex.exerciseId === id)) return workout;
-      const option: ExerciseOption = { id, name, target, equipment, previous: [] };
+      const option: ExerciseOption = { id, name, target, equipment, previous: [], bestSet: null };
       const updated = { ...workout, exercises: [...workout.exercises, this.createWorkoutExercise(option)] };
       this.persist(updated);
       return updated;
@@ -248,6 +248,7 @@ export class LiveWorkoutStore {
       target: '',
       equipment: '',
       previous: [],
+      bestSet: null,
       sets: pe.sets.map((s, i) => this.createWorkoutSet(i + 1, { reps: s.reps, weight: 20 })),
     }));
 
@@ -282,6 +283,7 @@ export class LiveWorkoutStore {
       target: option.target,
       equipment: option.equipment,
       previous: option.previous,
+      bestSet: option.bestSet ?? null,
       sets: [this.createWorkoutSet(1, option.previous[0])],
     };
   }

@@ -804,11 +804,55 @@ input[type="number"]::-webkit-outer-spin-button {
     background-color 120ms var(--ease-out),
     border-color 120ms var(--ease-out),
     color 120ms var(--ease-out),
+    box-shadow 120ms var(--ease-out),
     transform 80ms var(--ease-out);
 }
 .lft-set-done:active {
   transform: scale(0.92);
   transition-duration: 60ms;
+}
+
+/* ─── Completed set row ───────────────────────────────────────────────────── */
+/*
+  When a set is marked complete, the entire row gets a teal tint and the
+  inputs visually dim to indicate the set is locked/done.
+  The transition is intentionally fast — this needs to feel like confirmation,
+  not a slow animation.
+*/
+.lft-set-row-complete {
+  background: rgba(45, 212, 191, 0.06);
+  transition: background-color 150ms var(--ease-out);
+}
+.lft-set-row-complete .lft-set-input {
+  color: var(--lft-text-tertiary);
+  border-color: transparent;
+  background: transparent;
+}
+.lft-set-row-complete .lft-stepper-btn {
+  opacity: 0.25;
+  pointer-events: none;
+}
+
+/* ─── Set complete pop animation ─────────────────────────────────────────── */
+/*
+  Fires once when a set transitions to completed.
+  Uses a subtle scale pop — reads as "confirmed", not "bounced around".
+  Scale 1.08 is large enough to be perceptible, small enough to stay polished.
+*/
+@keyframes lft-set-complete-pop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.12); }
+  70%  { transform: scale(0.96); }
+  100% { transform: scale(1); }
+}
+
+.lft-set-done-pop {
+  animation: lft-set-complete-pop 260ms var(--ease-spring) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lft-set-done-pop { animation: none; }
+  .lft-set-row-complete { transition: none; }
 }
 /*
   Legacy .btn-auth class — kept for auth form backward compatibility.
