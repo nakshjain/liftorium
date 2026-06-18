@@ -50,16 +50,14 @@
           <!-- Tier 1: Weight PR — teal accent, dominant -->
           <div class="rounded-2xl border border-teal-400/25 bg-teal-400/5 p-4">
             <p class="lft-section-label text-teal-400/70">Weight PR</p>
-            <p class="mt-2 text-2xl font-black tabular-nums text-teal-300">
-              @if (d.weightPr > 0) { {{ d.weightPr }}kg } @else { — }
-            </p>
+            <p class="mt-2 text-2xl font-black tabular-nums text-teal-300">{{ formatWeightPr(d.weightPr) }}</p>
           </div>
 
           <!-- Tier 2: Rep PR -->
           <div class="lft-card rounded-2xl p-4">
             <p class="lft-section-label">Rep PR</p>
             @if (d.repPr.weight > 0) {
-              <p class="mt-2 text-lg font-black tabular-nums leading-tight text-zinc-200">{{ d.repPr.weight }}kg</p>
+              <p class="mt-2 text-lg font-black tabular-nums leading-tight text-zinc-200">{{ formatRepPrWeight(d.repPr.weight) }}</p>
               <p class="text-xs font-medium text-zinc-500">× {{ d.repPr.reps }}</p>
             } @else {
               <p class="mt-2 text-2xl font-black text-zinc-700">—</p>
@@ -69,9 +67,7 @@
           <!-- Tier 3: Est. 1RM — subordinate -->
           <div class="rounded-2xl border border-zinc-800/50 bg-zinc-900/30 p-4">
             <p class="lft-section-label">Est. 1RM</p>
-            <p class="mt-2 text-xl font-black tabular-nums text-zinc-400">
-              @if (d.estimatedOneRepMaxPr > 0) { {{ d.estimatedOneRepMaxPr.toFixed(1) }}kg } @else { — }
-            </p>
+            <p class="mt-2 text-xl font-black tabular-nums text-zinc-400">{{ formatE1rm(d.estimatedOneRepMaxPr) }}</p>
           </div>
 
         </div>

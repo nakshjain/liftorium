@@ -11,6 +11,9 @@ import {
   PrType,
   ProgressOverview,
 } from '../progress.models';
+import { UserSettingsStore } from '../../settings/settings.store';
+import { formatWeight, formatWeightCompact } from '../../../shared/utils/weight.utils';
+import type { WeightUnit } from '../../settings/settings.models';
 
 type Tab = 'exercises' | 'prs';
 
@@ -21,6 +24,9 @@ type Tab = 'exercises' | 'prs';
 })
 export class ProgressPageComponent implements OnInit {
   private readonly progressService = inject(ProgressService);
+  private readonly settingsStore = inject(UserSettingsStore);
+
+  protected readonly weightUnit = this.settingsStore.weightUnit;
 
   protected readonly activeTab = signal<Tab>('exercises');
   protected readonly overview = signal<ProgressOverview | null>(null);
@@ -110,36 +116,35 @@ export class ProgressPageComponent implements OnInit {
   }
 
   protected formatWeight(kg: number): string {
-    return kg > 0 ? `${kg}kg` : '—';
+    return formatWeight(kg, this.settingsStore.weightUnit());
   }
 
-  protected formatRepPr(weight: number, reps: number): string {
-    return weight > 0 ? `${weight}kg × ${reps}` : '—';
+  protected formatRepPr(weightKg: number, reps: number): string {
+    return weightKg > 0 ? `${formatWeightCompact(weightKg, this.settingsStore.weightUnit())} × ${reps}` : '—';
   }
 
-  /** Format a PR event as a "prev → new" transition string. */
   protected formatPrTransition(event: PrEvent): string {
+    const unit: WeightUnit = this.settingsStore.weightUnit();
     const prev = event.previousValue;
     const next = event.newValue;
 
     switch (event.prType) {
       case 'WEIGHT':
         return prev != null && next != null
-          ? `${prev}kg → ${next}kg`
-          : `${next ?? '—'}kg`;
+          ? `${formatWeightCompact(prev, unit)} → ${formatWeightCompact(next, unit)}`
+          : `${next != null ? formatWeightCompact(next, unit) : '—'}`;
 
       case 'REPS': {
-        // Render with weight context: "20kg × 10 → 25kg × 12"
         const prevStr = prev != null
-          ? `${event.prevRepWeight != null ? event.prevRepWeight + 'kg × ' : ''}${prev}`
+          ? `${event.prevRepWeight != null ? formatWeightCompact(event.prevRepWeight, unit) + ' × ' : ''}${prev}`
           : null;
-        const nextStr = `${event.newRepWeight != null ? event.newRepWeight + 'kg × ' : ''}${next ?? '—'}`;
+        const nextStr = `${event.newRepWeight != null ? formatWeightCompact(event.newRepWeight, unit) + ' × ' : ''}${next ?? '—'}`;
         return prevStr ? `${prevStr} → ${nextStr}` : nextStr;
       }
 
       case 'ESTIMATED_ONE_REP_MAX': {
-        const prevE = prev != null ? `${(prev).toFixed(1)}kg` : null;
-        const nextE = `${(next ?? 0).toFixed(1)}kg`;
+        const prevE = prev != null ? formatWeightCompact(prev, unit) : null;
+        const nextE = next != null ? formatWeightCompact(next, unit) : '—';
         return prevE ? `${prevE} → ${nextE}` : nextE;
       }
     }

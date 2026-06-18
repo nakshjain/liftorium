@@ -11,10 +11,10 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { NavBarComponent } from '../../../shared/ui/nav-bar/nav-bar';
 import { SettingsService } from '../settings.service';
+import { UserSettingsStore } from '../settings.store';
 import type {
   AppTheme,
   DistanceUnit,
-  UpdateSettingsRequest,
   UserSettings,
   WeightUnit,
 } from '../settings.models';
@@ -28,6 +28,7 @@ type Section = 'account' | 'workout' | 'appearance' | 'security' | 'data';
 })
 export class SettingsPageComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
+  private readonly settingsStore = inject(UserSettingsStore);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
   private readonly router = inject(Router);
@@ -41,7 +42,6 @@ export class SettingsPageComponent implements OnInit {
   protected readonly accountSaving = signal(false);
   protected readonly passwordSaving = signal(false);
   protected readonly deleting = signal(false);
-  protected readonly settings = signal<UserSettings | null>(null);
 
   // ── Account form ─────────────────────────────────────────────────────
   protected displayName = '';
@@ -69,14 +69,20 @@ export class SettingsPageComponent implements OnInit {
   protected readonly canDelete = computed(() => this.deleteConfirmText === 'DELETE');
 
   ngOnInit(): void {
+    // Seed from store cache immediately — no flicker even before API returns
+    const cached = this.settingsStore.settings();
+    if (cached) {
+      this.populateForms(cached);
+      this.loading.set(false);
+    }
+
     this.settingsService.getSettings().subscribe({
       next: (s) => {
-        this.settings.set(s);
         this.populateForms(s);
         this.loading.set(false);
       },
       error: () => {
-        this.toastService.error('Failed to load settings');
+        if (!cached) this.toastService.error('Failed to load settings');
         this.loading.set(false);
       },
     });
@@ -123,43 +129,26 @@ export class SettingsPageComponent implements OnInit {
   // ── Workout prefs ─────────────────────────────────────────────────────
 
   protected saveWorkoutPrefs(): void {
-    const request: UpdateSettingsRequest = {
+    this.saving.set(true);
+    // Optimistic — store.update() applies immediately then persists to API
+    this.settingsStore.update({
       units: { weight: this.weightUnit, distance: this.distanceUnit },
       workout: {
         defaultRestSeconds: Number(this.defaultRestSeconds),
         autoStartRestTimer: this.autoStartRestTimer,
       },
-    };
-    this.saving.set(true);
-    this.settingsService.updateSettings(request).subscribe({
-      next: (s) => {
-        this.settings.set(s);
-        this.toastService.success('Workout preferences saved');
-        this.saving.set(false);
-      },
-      error: (err) => {
-        this.toastService.error(err?.error?.error?.message ?? 'Failed to save preferences');
-        this.saving.set(false);
-      },
     });
+    this.toastService.success('Workout preferences saved');
+    this.saving.set(false);
   }
 
   // ── Appearance ────────────────────────────────────────────────────────
 
   protected saveAppearance(): void {
-    const request: UpdateSettingsRequest = { appearance: { theme: this.theme } };
     this.saving.set(true);
-    this.settingsService.updateSettings(request).subscribe({
-      next: (s) => {
-        this.settings.set(s);
-        this.toastService.success('Appearance saved');
-        this.saving.set(false);
-      },
-      error: (err) => {
-        this.toastService.error(err?.error?.error?.message ?? 'Failed to save appearance');
-        this.saving.set(false);
-      },
-    });
+    this.settingsStore.update({ appearance: { theme: this.theme } });
+    this.toastService.success('Appearance saved');
+    this.saving.set(false);
   }
 
   // ── Security ──────────────────────────────────────────────────────────

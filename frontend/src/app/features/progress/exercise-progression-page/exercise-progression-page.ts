@@ -14,6 +14,9 @@ import {
   PrEvent,
   PrType,
 } from '../progress.models';
+import { UserSettingsStore } from '../../settings/settings.store';
+import { formatWeightCompact, toDisplayWeight } from '../../../shared/utils/weight.utils';
+import type { WeightUnit } from '../../settings/settings.models';
 
 type TooltipState = {
   visible: boolean;
@@ -32,6 +35,9 @@ type TooltipState = {
 export class ExerciseProgressionPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly progressService = inject(ProgressService);
+  private readonly settingsStore = inject(UserSettingsStore);
+
+  protected readonly weightUnit = this.settingsStore.weightUnit;
 
   protected readonly detail = signal<ExerciseProgressDetail | null>(null);
   protected readonly history = signal<ExerciseProgressHistoryEntry[]>([]);
@@ -135,7 +141,7 @@ export class ExerciseProgressionPageComponent implements OnInit {
       y: screenY,
       flipped,
       date: this.formatTooltipDate(closest.date),
-      value: `${closest.weight}kg`,
+      value: formatWeightCompact(closest.weight, this.settingsStore.weightUnit()),
     });
   }
 
@@ -143,8 +149,24 @@ export class ExerciseProgressionPageComponent implements OnInit {
     this.tooltip.update((t) => ({ ...t, visible: false }));
   }
 
-  protected formatPrType(type: PrType): string {
-    switch (type) {
+  /** Display the weight PR in the user's preferred unit. */
+  protected formatWeightPr(kg: number): string {
+    return kg > 0 ? formatWeightCompact(kg, this.settingsStore.weightUnit()) : '—';
+  }
+
+  /** Display the rep PR weight context in the user's preferred unit. */
+  protected formatRepPrWeight(kg: number): string {
+    return formatWeightCompact(kg, this.settingsStore.weightUnit());
+  }
+
+  /** Display the e1RM in the user's preferred unit, 1 decimal place. */
+  protected formatE1rm(kg: number): string {
+    if (kg <= 0) return '—';
+    const display = toDisplayWeight(kg, this.settingsStore.weightUnit());
+    return `${display % 1 === 0 ? display : display.toFixed(1)}${this.settingsStore.weightUnit()}`;
+  }
+
+  protected formatPrType(type: PrType): string {    switch (type) {
       case 'WEIGHT': return 'Weight';
       case 'REPS': return 'Reps';
       case 'ESTIMATED_ONE_REP_MAX': return 'e1RM';
@@ -158,27 +180,27 @@ export class ExerciseProgressionPageComponent implements OnInit {
    * e1RM:   "54.3kg → 60.2kg"
    */
   protected formatPrTransition(event: PrEvent): string {
+    const unit: WeightUnit = this.settingsStore.weightUnit();
     const prev = event.previousValue;
     const next = event.newValue;
 
     switch (event.prType) {
       case 'WEIGHT':
         return prev != null && next != null
-          ? `${prev}kg → ${next}kg`
-          : `${next ?? '—'}kg`;
+          ? `${formatWeightCompact(prev, unit)} → ${formatWeightCompact(next, unit)}`
+          : `${next != null ? formatWeightCompact(next, unit) : '—'}`;
 
       case 'REPS': {
-        // Include weight context so the rep PR is unambiguous
         const prevStr = prev != null
-          ? `${event.prevRepWeight != null ? event.prevRepWeight + 'kg × ' : ''}${prev}`
+          ? `${event.prevRepWeight != null ? formatWeightCompact(event.prevRepWeight, unit) + ' × ' : ''}${prev}`
           : null;
-        const nextStr = `${event.newRepWeight != null ? event.newRepWeight + 'kg × ' : ''}${next ?? '—'}`;
+        const nextStr = `${event.newRepWeight != null ? formatWeightCompact(event.newRepWeight, unit) + ' × ' : ''}${next ?? '—'}`;
         return prevStr ? `${prevStr} → ${nextStr}` : nextStr;
       }
 
       case 'ESTIMATED_ONE_REP_MAX': {
-        const prevE = prev != null ? `${(prev).toFixed(1)}kg` : null;
-        const nextE = `${(next ?? 0).toFixed(1)}kg`;
+        const prevE = prev != null ? formatWeightCompact(prev, unit) : null;
+        const nextE = next != null ? formatWeightCompact(next, unit) : '—';
         return prevE ? `${prevE} → ${nextE}` : nextE;
       }
     }
@@ -235,11 +257,13 @@ export class ExerciseProgressionPageComponent implements OnInit {
 
     const w = this.CHART_W - this.CHART_PAD_X * 2;
     const h = this.CHART_H - this.CHART_PAD_Y * 2;
+    const unit = this.settingsStore.weightUnit();
 
     return entries.map((entry, i) => ({
       svgX: this.CHART_PAD_X + (i / (entries.length - 1)) * w,
       svgY: this.CHART_PAD_Y + h - ((entry.bestWeight - minVal) / range) * h,
-      weight: entry.bestWeight,
+      // Store in display unit so tooltip shows the correct value
+      weight: toDisplayWeight(entry.bestWeight, unit),
       date: entry.performedAt,
     }));
   }
@@ -247,13 +271,13 @@ export class ExerciseProgressionPageComponent implements OnInit {
   private buildStartLabel(): string {
     const entries = this.history();
     if (!entries.length) return '';
-    return `${entries[0].bestWeight}kg`;
+    return formatWeightCompact(entries[0].bestWeight, this.settingsStore.weightUnit());
   }
 
   private buildEndLabel(): string {
     const entries = this.history();
     if (!entries.length) return '';
-    return `${entries[entries.length - 1].bestWeight}kg`;
+    return formatWeightCompact(entries[entries.length - 1].bestWeight, this.settingsStore.weightUnit());
   }
 
   private buildStartDateLabel(): string {
@@ -288,20 +312,25 @@ export class ExerciseProgressionPageComponent implements OnInit {
     const d = this.detail();
     if (!d || d.weightPr <= 0) return null;
 
-    // Use backend first/current values when available, else fall back to history
+    const unit: WeightUnit = this.settingsStore.weightUnit();
     const entries = this.history();
-    const firstWeight = d.firstWeightPr
+    const firstWeightKg = d.firstWeightPr
       ?? (entries.length > 0 ? entries[0].bestWeight : null);
 
-    if (firstWeight == null) return null;
+    if (firstWeightKg == null) return null;
 
-    const diff = d.weightPr - firstWeight;
-    const pct = firstWeight > 0 ? (diff / firstWeight) * 100 : 0;
+    const diff = d.weightPr - firstWeightKg;
+    const pct = firstWeightKg > 0 ? (diff / firstWeightKg) * 100 : 0;
+
+    // Convert display values for the unit label
+    const firstDisplay = toDisplayWeight(firstWeightKg, unit);
+    const nowDisplay   = toDisplayWeight(d.weightPr, unit);
+    const diffDisplay  = nowDisplay - firstDisplay;
 
     return {
-      started: `${firstWeight}kg`,
-      now: `${d.weightPr}kg`,
-      deltaKg: `${diff >= 0 ? '+' : ''}${diff % 1 === 0 ? diff : diff.toFixed(1)}kg`,
+      started:  formatWeightCompact(firstWeightKg, unit),
+      now:      formatWeightCompact(d.weightPr, unit),
+      deltaKg:  `${diffDisplay >= 0 ? '+' : ''}${diffDisplay % 1 === 0 ? diffDisplay : diffDisplay.toFixed(1)}${unit}`,
       deltaPct: `${diff >= 0 ? '+' : ''}${pct.toFixed(0)}%`,
       positive: diff >= 0,
     };

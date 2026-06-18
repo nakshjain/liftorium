@@ -5,6 +5,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { WorkoutService } from '../workout.service';
 import { HistoryInsights, WorkoutDto, WorkoutStats } from '../workout-history.models';
 import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
+import { UserSettingsStore } from '../../settings/settings.store';
+import { toDisplayWeight } from '../../../shared/utils/weight.utils';
 
 /** One cell in the consistency heatmap. */
 export type HeatmapDay = {
@@ -23,6 +25,9 @@ export type HeatmapDay = {
 })
 export class WorkoutHistoryPageComponent implements OnInit, OnDestroy {
   private readonly workoutService = inject(WorkoutService);
+  private readonly settingsStore = inject(UserSettingsStore);
+
+  protected readonly weightUnit = this.settingsStore.weightUnit;
 
   /** Cancels in-flight history/stats requests when the month changes or the component destroys. */
   private readonly cancelLoad$ = new Subject<void>();
@@ -306,6 +311,11 @@ export class WorkoutHistoryPageComponent implements OnInit, OnDestroy {
   protected formatVolume(vol: number): string {
     if (vol >= 1000) return (vol / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
     return Math.round(vol).toString();
+  }
+
+  /** Convert a stored-kg volume to the user's display unit before formatting. */
+  protected displayVolume(volKg: number): number {
+    return toDisplayWeight(volKg, this.settingsStore.weightUnit());
   }
 
   // ── Private ───────────────────────────────────────────────────────────

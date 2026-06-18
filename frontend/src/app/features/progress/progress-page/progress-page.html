@@ -48,7 +48,7 @@
 
         <div class="lft-card rounded-2xl p-3 text-center">
           @if (ov.strongestExercise) {
-            <p class="text-xl font-black tabular-nums text-teal-300">{{ ov.strongestExercise.weightPr }}kg</p>
+            <p class="text-xl font-black tabular-nums text-teal-300">{{ formatWeight(ov.strongestExercise.weightPr) }}</p>
             <p class="mt-0.5 truncate text-[11px] font-medium text-zinc-500" [title]="ov.strongestExercise.exerciseName">
               {{ ov.strongestExercise.exerciseName }}
             </p>
