@@ -678,12 +678,17 @@ input[type="number"]::-webkit-outer-spin-button {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  height: 3.25rem; /* 52px — tight, gym-appropriate */
+  height: 3.5rem; /* 56px mobile */
   margin: 0 auto;
   max-width: 48rem;
   padding: 0 1rem;
 }
-@media (min-width: 640px) { .lft-nav-inner { padding: 0 1.5rem; } }
+@media (min-width: 640px) {
+  .lft-nav-inner {
+    height: 4rem; /* 64px desktop */
+    padding: 0 1.5rem;
+  }
+}
 
 /* Wordmark — disciplined, all-caps, tight tracking */
 .lft-wordmark {
@@ -911,5 +916,9 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .lft-logo-sm { height: 52px; width: auto; max-width: 260px; }
-.lft-logo-md { height: 60px; width: auto; max-width: 300px; }
+.lft-logo-md { height: 40px; width: auto; max-width: 220px; } /* mobile default */
 .lft-logo-lg { height: 72px; width: auto; max-width: 360px; }
+
+@media (min-width: 640px) {
+  .lft-logo-md { height: 56px; max-width: 300px; } /* desktop upgrade */
+}
