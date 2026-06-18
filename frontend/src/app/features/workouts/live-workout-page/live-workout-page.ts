@@ -16,6 +16,8 @@ import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/t
 import { AuthService } from '../../../core/auth/auth.service';
 import { GuestWorkoutStorageService } from '../guest-workout-storage.service';
 import type { GuestCompletedWorkout } from '../guest-workout.models';
+import { formatWeightCompact } from '../../../shared/utils/weight.utils';
+import type { WeightUnit } from '../../settings/settings.models';
 
 type FinishedWorkoutSummary = {
   exercises: number;
@@ -282,12 +284,13 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     previous: readonly { reps: number; weight: number }[],
     bestSet: { reps: number; weight: number } | null,
   ): string | null {
+    const unit: WeightUnit = this.store.weightUnit();
     const lastSet = previous[0] ?? null;
     if (!lastSet && !bestSet) return null;
     const parts: string[] = [];
-    if (lastSet) parts.push(`Last: ${lastSet.weight}kg × ${lastSet.reps}`);
+    if (lastSet) parts.push(`Last: ${formatWeightCompact(lastSet.weight, unit)} × ${lastSet.reps}`);
     if (bestSet && (!lastSet || bestSet.weight !== lastSet.weight || bestSet.reps !== lastSet.reps)) {
-      parts.push(`Best: ${bestSet.weight}kg × ${bestSet.reps}`);
+      parts.push(`Best: ${formatWeightCompact(bestSet.weight, unit)} × ${bestSet.reps}`);
     }
     return parts.join('  ·  ');
   }
@@ -385,7 +388,7 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected finishConfirmDetails = computed(() => {
     if (!this.pendingFinishWorkout) return '';
     const s = this.createFinishedSummary(this.pendingFinishWorkout);
-    return `${s.sets} sets · ${this.formatVolume(s.volume)} kg`;
+    return `${s.sets} sets · ${this.formatVolume(s.volume)} ${this.store.weightUnit()}`;
   });
 
   private captureWorkoutSnapshot(workout: LiveWorkout): LiveWorkout {

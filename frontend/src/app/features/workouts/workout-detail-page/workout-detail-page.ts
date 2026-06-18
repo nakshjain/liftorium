@@ -3,6 +3,8 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { WorkoutService } from '../workout.service';
 import { WorkoutDto } from '../workout-history.models';
+import { UserSettingsStore } from '../../settings/settings.store';
+import { formatWeight, toDisplayWeight } from '../../../shared/utils/weight.utils';
 
 @Component({
   selector: 'app-workout-detail-page',
@@ -12,6 +14,9 @@ import { WorkoutDto } from '../workout-history.models';
 export class WorkoutDetailPageComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly workoutService = inject(WorkoutService);
+  private readonly settingsStore = inject(UserSettingsStore);
+
+  protected readonly weightUnit = this.settingsStore.weightUnit;
 
   protected readonly workout = signal<WorkoutDto | null>(null);
   protected readonly loading = signal(true);
@@ -65,7 +70,12 @@ export class WorkoutDetailPageComponent implements OnInit {
     return `${m}m`;
   }
 
-  protected formatWeight(weight: number): string {
-    return weight % 1 === 0 ? weight.toString() : weight.toFixed(1);
+  protected formatWeight(kg: number): string {
+    return formatWeight(kg, this.settingsStore.weightUnit());
+  }
+
+  /** Volume in display units (convert from kg). */
+  protected displayVolume(kg: number): number {
+    return toDisplayWeight(kg, this.settingsStore.weightUnit());
   }
 }

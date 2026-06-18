@@ -11,6 +11,8 @@ import { PlanService } from '../../plan/plan.service';
 import { WorkoutPlan } from '../../plan/plan.models';
 import { ProgressService } from '../../progress/progress.service';
 import { ProgressOverview } from '../../progress/progress.models';
+import { UserSettingsStore } from '../../settings/settings.store';
+import { formatWeightCompact } from '../../../shared/utils/weight.utils';
 
 @Component({
   selector: 'app-dashboard-page',
@@ -24,6 +26,14 @@ export class DashboardPageComponent implements OnDestroy {
   private readonly workoutService = inject(WorkoutService);
   private readonly planService = inject(PlanService);
   private readonly progressService = inject(ProgressService);
+  private readonly settingsStore = inject(UserSettingsStore);
+
+  protected readonly weightUnit = this.settingsStore.weightUnit;
+
+  /** Format a stored-kg weight for compact display using the user's unit. */
+  protected formatPrWeight(kg: number): string {
+    return formatWeightCompact(kg, this.settingsStore.weightUnit());
+  }
 
   private readonly destroy$ = new Subject<void>();
 

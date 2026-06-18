@@ -2,12 +2,20 @@ import { Injectable, computed, inject, signal } from '@angular/core';
 import { PlanExercise } from '../plan/plan.models';
 import { GuestWorkoutStorageService } from './guest-workout-storage.service';
 import { ExerciseOption, LiveWorkout, PreviousSet, WorkoutExercise, WorkoutSet } from './live-workout.models';
+import { UserSettingsStore } from '../settings/settings.store';
+import { defaultWeight, weightStep } from '../../shared/utils/weight.utils';
 
 const DEFAULT_REST_SECONDS = 90;
 
 @Injectable({ providedIn: 'root' })
 export class LiveWorkoutStore {
   private readonly guestStorage = inject(GuestWorkoutStorageService);
+  private readonly settingsStore = inject(UserSettingsStore);
+
+  /** Exposed so templates and the page component can read the current unit. */
+  readonly weightUnit = this.settingsStore.weightUnit;
+  /** Step used by the ±2.5 / ±5 weight stepper buttons. */
+  readonly weightStepSize = computed(() => weightStep(this.weightUnit()));
 
   private readonly workout = signal<LiveWorkout | null>(null);
   private readonly finishedWorkout = signal<LiveWorkout | null>(null);
@@ -276,7 +284,7 @@ export class LiveWorkoutStore {
       equipment: '',
       previous: [],
       bestSet: null,
-      sets: pe.sets.map((s, i) => this.createWorkoutSet(i + 1, { reps: s.reps, weight: 20 })),
+      sets: pe.sets.map((s, i) => this.createWorkoutSet(i + 1, { reps: s.reps, weight: defaultWeight(this.weightUnit()) })),
     }));
 
     const workout: LiveWorkout = {
@@ -320,7 +328,7 @@ export class LiveWorkoutStore {
       id: crypto.randomUUID(),
       order,
       reps: previousSet?.reps ?? 8,
-      weight: previousSet?.weight ?? 20,
+      weight: previousSet?.weight ?? defaultWeight(this.weightUnit()),
       completed: false,
       completedAt: null,
     };

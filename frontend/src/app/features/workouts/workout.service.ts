@@ -5,6 +5,8 @@ import { API_BASE_URL } from '../../core/api/api.config';
 import { ApiSuccessResponse } from '../../core/api/api-response';
 import { LiveWorkout } from './live-workout.models';
 import { HistoryInsights, PaginatedWorkouts, WorkoutDto, WorkoutStats } from './workout-history.models';
+import { UserSettingsStore } from '../settings/settings.store';
+import { toStorageKg } from '../../shared/utils/weight.utils';
 
 /** Shape of the workout resource returned by POST /workouts and related write endpoints. */
 interface SaveWorkoutResponse {
@@ -16,6 +18,7 @@ interface SaveWorkoutResponse {
 export class WorkoutService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = inject(API_BASE_URL);
+  private readonly settingsStore = inject(UserSettingsStore);
 
   getHistory(params: { page?: number; limit?: number; month?: string } = {}): Observable<PaginatedWorkouts> {
     let httpParams = new HttpParams();
@@ -84,7 +87,8 @@ export class WorkoutService {
                           `${this.baseUrl}/workouts/${workoutId}/exercises/${workoutExerciseId}/sets`,
                           {
                             reps: set.reps,
-                            weight: set.weight,
+                            // Convert display-unit weight to kg before sending to API
+                            weight: toStorageKg(set.weight, this.settingsStore.weightUnit()),
                             completedAt: set.completedAt,
                           },
                         ),

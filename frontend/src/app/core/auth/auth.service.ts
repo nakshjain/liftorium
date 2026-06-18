@@ -1,5 +1,5 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, Injector, signal } from '@angular/core';
 import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { API_BASE_URL } from '../api/api.config';
 import type { ApiSuccessResponse } from '../api/api-response';
@@ -27,6 +27,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly tokenStorage = inject(TokenStorageService);
   private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly injector = inject(Injector);
 
   private readonly userSignal = signal<AuthUser | null>(null);
   private readonly accessTokenSignal = signal<string | null>(this.tokenStorage.getAccessToken());
@@ -166,6 +167,17 @@ export class AuthService {
     this.accessTokenSignal.set(null);
     this.userSignal.set(null);
     this.statusSignal.set('anonymous');
+    import('../../features/settings/settings.store').then(({ UserSettingsStore }) => {
+      this.injector.get(UserSettingsStore).clear();
+    });
+  }
+
+  /** Merges partial user data into the current user signal (e.g. after a display name update). */
+  public patchUser(patch: Partial<AuthUser>): void {
+    const current = this.userSignal();
+    if (current) {
+      this.userSignal.set({ ...current, ...patch });
+    }
   }
 
   private applySession(session: AuthSessionData): AuthUser {
@@ -173,6 +185,10 @@ export class AuthService {
     this.accessTokenSignal.set(session.accessToken);
     this.userSignal.set(session.user);
     this.statusSignal.set('authenticated');
+    // Lazy-load to avoid circular dependency (SettingsStore → SettingsService → AuthInterceptor → AuthService)
+    import('../../features/settings/settings.store').then(({ UserSettingsStore }) => {
+      this.injector.get(UserSettingsStore).load();
+    });
     return session.user;
   }
 
