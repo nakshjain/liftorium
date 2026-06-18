@@ -437,3 +437,35 @@ Use this file for short, dated progress entries.
 - No API routes changed — refinement only.
 - Existing `exercise_progress_history` documents in MongoDB will have `bestWeight`/`performedAt` as null on old records (created before this change). The unique index on `(userId, exerciseId, workoutId)` is preserved so re-evaluation is safe.
 - `firstWeightPr` and `firstEstimatedOneRepMax` are `null` on existing `exercise_progress` documents until the next PR is recorded — this is safe; frontend should handle `null` as "data not yet available".
+
+## 2026-06-19 - User Settings Feature
+
+### Completed
+
+- Created `UserSettings` MongoDB entity (`user_settings` collection) with unique index on `userId` and three nested value objects: `UnitsSettings`, `WorkoutSettings`, `AppearanceSettings`.
+- Created `UserSettingsRepository` with `findByUserId`, `existsByUserId`, `deleteByUserId`.
+- Created `UserSettingsDtos` — `UserSettingsDto`, `UpdateSettingsRequest` (with `@Valid` nested records and `@Pattern` validation), `UpdateAccountRequest`, `ChangePasswordRequest`.
+- Created `UserSettingsService` — `getOrCreate`, `update`, `createDefaults`, `updateAccount`, `changePassword`, `deleteAccount`.
+- Created `UserSettingsController` with five endpoints:
+  - `GET /api/v1/settings`
+  - `PUT /api/v1/settings`
+  - `PUT /api/v1/settings/account`
+  - `PUT /api/v1/settings/security/password`
+  - `DELETE /api/v1/settings/account`
+- Wired `createDefaults` into `AuthService` — called after `userRepository.save()` in both `register()` and `verifyRegistration()`.
+- Added frontend `settings.models.ts`, `settings.service.ts`, `SettingsPageComponent` (5-section tab UI: Account, Workout, Appearance, Security, Data & Privacy).
+- Added `patchUser()` to `AuthService` so display name updates reflect in the nav bar immediately.
+- Added `/app/settings` lazy-loaded route with `authGuard`.
+- Added Settings link to NavBar account dropdown.
+- Added API docs at `docs/api/settings.md` and architecture notes at `docs/architecture/user-settings.md`.
+
+### Verification
+
+- All backend endpoints are covered by `anyRequest().authenticated()` in `SecurityConfig` — no additional security config required.
+- Default settings are created idempotently: `createDefaults` in `AuthService` is the primary path; `getOrCreate` in the service is a safety net for accounts that predate this feature.
+
+### Notes
+
+- Email is intentionally read-only in account settings (no endpoint to change it).
+- Extensibility hooks are documented: add new top-level sections to `UserSettings` entity + DTOs + frontend models + page tabs.
+- Future additions: notification settings, dashboard preferences, analytics preferences.

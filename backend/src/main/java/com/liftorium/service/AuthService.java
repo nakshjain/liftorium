@@ -13,11 +13,13 @@ import com.liftorium.entity.PasswordResetRequest;
 import com.liftorium.entity.PendingRegistration;
 import com.liftorium.entity.RefreshToken;
 import com.liftorium.entity.User;
+import com.liftorium.entity.UserSettings;
 import com.liftorium.exception.AppException;
 import com.liftorium.repository.PasswordResetRequestRepository;
 import com.liftorium.repository.PendingRegistrationRepository;
 import com.liftorium.repository.RefreshTokenRepository;
 import com.liftorium.repository.UserRepository;
+import com.liftorium.repository.UserSettingsRepository;
 import io.jsonwebtoken.Claims;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -40,6 +42,7 @@ public class AuthService {
   private final RefreshTokenRepository refreshTokenRepository;
   private final PendingRegistrationRepository pendingRegistrationRepository;
   private final PasswordResetRequestRepository passwordResetRequestRepository;
+  private final UserSettingsRepository userSettingsRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final OtpService otpService;
@@ -117,6 +120,9 @@ public class AuthService {
     User savedUser = userRepository.save(user);
     log.info("User created successfully via OTP verification. User ID: {}, Email: {}", savedUser.getId(), email);
 
+    userSettingsRepository.save(UserSettings.createDefaults(savedUser.getId()));
+    log.debug("Default settings created for userId={}", savedUser.getId());
+
     pendingRegistrationRepository.deleteByEmail(email);
     log.debug("Pending registration cleaned up for email: {}", email);
 
@@ -136,7 +142,10 @@ public class AuthService {
         .passwordHash(passwordEncoder.encode(input.password()))
         .build();
 
-    return createSession(userRepository.save(user));
+    User savedUser = userRepository.save(user);
+    userSettingsRepository.save(UserSettings.createDefaults(savedUser.getId()));
+
+    return createSession(savedUser);
   }
 
   public AuthSession login(LoginRequest input) {

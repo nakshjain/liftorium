@@ -168,6 +168,14 @@ export class AuthService {
     this.statusSignal.set('anonymous');
   }
 
+  /** Merges partial user data into the current user signal (e.g. after a display name update). */
+  public patchUser(patch: Partial<AuthUser>): void {
+    const current = this.userSignal();
+    if (current) {
+      this.userSignal.set({ ...current, ...patch });
+    }
+  }
+
   private applySession(session: AuthSessionData): AuthUser {
     this.tokenStorage.setAccessToken(session.accessToken);
     this.accessTokenSignal.set(session.accessToken);

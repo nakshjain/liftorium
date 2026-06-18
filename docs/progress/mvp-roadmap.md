@@ -10,6 +10,7 @@
 | 4 | Workout history | Not Started | Completed workout list and detail pages |
 | 5 | Progress analytics | Not Started | Volume and trend summaries |
 | 6 | PR tracking | Not Started | Personal records by exercise |
+| — | User Settings | Complete | Dedicated `user_settings` collection; Account, Workout Prefs, Appearance, Security, Data & Privacy sections |
 
 ## MVP Definition
 

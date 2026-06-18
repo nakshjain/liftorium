@@ -52,6 +52,13 @@ export const routes: Routes = [
       import('./features/progress/progress.routes').then((m) => m.progressRoutes)
   },
   {
+    path: 'app/settings',
+    canActivate: [authGuard],
+    data: { feature: 'Settings' },
+    loadComponent: () =>
+      import('./features/settings/settings-page/settings-page').then((m) => m.SettingsPageComponent)
+  },
+  {
     path: 'app',
     // No authGuard — Dashboard is the public default
     loadComponent: () =>
