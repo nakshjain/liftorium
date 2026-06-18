@@ -52,19 +52,56 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   /** Set IDs that just completed — drives the one-shot pop animation. */
   protected readonly justCompletedSetId = signal<string | null>(null);
 
-  /** Exercise IDs that are currently collapsed. */
-  protected readonly collapsedExerciseIds = signal<Set<string>>(new Set());
+  /** Exercise IDs that are currently collapsed — includes manual + auto-collapsed. */
+  /** Exercise IDs the user has explicitly collapsed (overrides auto-expand). */
+  private readonly manuallyCollapsed = signal<Set<string>>(new Set());
+  /** Exercise IDs the user has explicitly expanded (overrides auto-collapse). */
+  private readonly manuallyExpanded = signal<Set<string>>(new Set());
 
-  protected toggleCollapse(exerciseId: string): void {
-    this.collapsedExerciseIds.update((ids) => {
-      const next = new Set(ids);
-      next.has(exerciseId) ? next.delete(exerciseId) : next.add(exerciseId);
-      return next;
-    });
+  protected isFullyComplete(exerciseId: string): boolean {
+    const ex = this.store.activeWorkout()?.exercises.find((e) => e.id === exerciseId);
+    if (!ex || ex.sets.length === 0) return false;
+    return ex.sets.every((s) => s.completed);
   }
 
-  protected isCollapsed(exerciseId: string): boolean {
-    return this.collapsedExerciseIds().has(exerciseId);
+  protected readonly firstIncompleteExerciseId = computed(() => {
+    const exercises = this.store.activeWorkout()?.exercises ?? [];
+    // An exercise counts as "active" only if it has at least one set and at least one incomplete set.
+    return exercises.find((ex) => ex.sets.length > 0 && ex.sets.some((s) => !s.completed))?.id ?? null;
+  });
+
+  /**
+   * Collapsed when:
+   *   - user manually collapsed it, OR
+   *   - it is fully complete AND the user has not manually expanded it
+   *     AND it is not the first incomplete exercise
+   * Expanded when:
+   *   - it is the first incomplete exercise (always open), OR
+   *   - user manually expanded it, OR
+   *   - it has incomplete sets and was not manually collapsed
+   */
+  protected shouldCollapse(exerciseId: string): boolean {
+    // Manual collapse always wins — user explicitly closed it
+    if (this.manuallyCollapsed().has(exerciseId)) return true;
+    // Manual expand always wins over auto-collapse
+    if (this.manuallyExpanded().has(exerciseId)) return false;
+    // Auto-pin the first incomplete exercise open (only if not manually collapsed above)
+    if (exerciseId === this.firstIncompleteExerciseId()) return false;
+    // Auto-collapse when fully complete
+    return this.isFullyComplete(exerciseId);
+  }
+
+  protected toggleCollapse(exerciseId: string): void {
+    const currentlyCollapsed = this.shouldCollapse(exerciseId);
+    if (currentlyCollapsed) {
+      // Expand: remove from manually-collapsed, add to manually-expanded
+      this.manuallyCollapsed.update((s) => { const n = new Set(s); n.delete(exerciseId); return n; });
+      this.manuallyExpanded.update((s) => new Set(s).add(exerciseId));
+    } else {
+      // Collapse: remove from manually-expanded, add to manually-collapsed
+      this.manuallyExpanded.update((s) => { const n = new Set(s); n.delete(exerciseId); return n; });
+      this.manuallyCollapsed.update((s) => new Set(s).add(exerciseId));
+    }
   }
 
   /**
@@ -134,6 +171,12 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
 
   protected onOverflowAction(workoutExerciseId: string, action: ExerciseOverflowAction): void {
     switch (action) {
+      case 'add-set':
+        this.store.addSet(workoutExerciseId);
+        break;
+      case 'remove-last-set':
+        this.store.removeSet(workoutExerciseId, this.lastSetId(workoutExerciseId));
+        break;
       case 'replace':
         this.openReplaceExercise(workoutExerciseId);
         break;
@@ -147,6 +190,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
         this.store.removeExercise(workoutExerciseId);
         break;
     }
+  }
+
+  private lastSetId(workoutExerciseId: string): string {
+    const ex = this.store.activeWorkout()?.exercises.find((e) => e.id === workoutExerciseId);
+    return ex?.sets.at(-1)?.id ?? '';
   }
 
   // ── Timer / elapsed ──────────────────────────────────────────────────────

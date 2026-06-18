@@ -9,6 +9,8 @@ import {
 } from '@angular/core';
 
 export type ExerciseOverflowAction =
+  | 'add-set'
+  | 'remove-last-set'
   | 'replace'
   | 'move-up'
   | 'move-down'
@@ -28,7 +30,6 @@ export type ExerciseOverflowAction =
         [attr.aria-haspopup]="'menu'"
         (click)="toggle($event)"
       >
-        <!-- Vertical ellipsis (⋮) -->
         <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           <circle cx="8" cy="3"  r="1.4"/>
           <circle cx="8" cy="8"  r="1.4"/>
@@ -39,24 +40,43 @@ export type ExerciseOverflowAction =
       <!-- Dropdown panel -->
       @if (open()) {
         <div
-          class="absolute right-0 top-full z-50 mt-1 w-44 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl"
+          class="absolute right-0 top-full z-50 mt-1 w-48 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 shadow-2xl"
           role="menu"
           aria-orientation="vertical"
         >
+          <!-- Set actions -->
+          <button class="lft-overflow-item" type="button" role="menuitem" (click)="emit('add-set')">
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M8 3v10M3 8h10"/>
+            </svg>
+            Add set
+          </button>
+
           <button
             class="lft-overflow-item"
+            [class.opacity-30]="!canRemoveSet"
+            [class.pointer-events-none]="!canRemoveSet"
             type="button"
             role="menuitem"
-            (click)="emit('replace')"
+            [attr.aria-disabled]="!canRemoveSet"
+            (click)="emit('remove-last-set')"
           >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M3 8h10"/>
+            </svg>
+            Remove last set
+          </button>
+
+          <div class="mx-3 border-t border-zinc-800"></div>
+
+          <!-- Exercise actions -->
+          <button class="lft-overflow-item" type="button" role="menuitem" (click)="emit('replace')">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M1 8a7 7 0 1 0 14 0A7 7 0 0 0 1 8z"/>
               <path d="M8 5v6M5 8l3-3 3 3"/>
             </svg>
             Replace exercise
           </button>
-
-          <div class="mx-3 border-t border-zinc-800"></div>
 
           <button
             class="lft-overflow-item"
@@ -105,14 +125,14 @@ export type ExerciseOverflowAction =
       }
     </div>
   `,
-  styles: [`
-    :host { display: block; }
-  `],
+  styles: [`:host { display: block; }`],
 })
 export class ExerciseOverflowMenuComponent {
-  /** Whether this exercise is the first in the list (disables Move Up). */
+  /** True when the exercise has more than one set — enables "Remove last set". */
+  @Input() canRemoveSet = false;
+  /** True when this is not the first exercise in the list. */
   @Input() canMoveUp = true;
-  /** Whether this exercise is the last in the list (disables Move Down). */
+  /** True when this is not the last exercise in the list. */
   @Input() canMoveDown = true;
 
   @Output() action = new EventEmitter<ExerciseOverflowAction>();
@@ -131,7 +151,6 @@ export class ExerciseOverflowMenuComponent {
     this.action.emit(action);
   }
 
-  /** Close when clicking outside this component. */
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event): void {
     if (this.open() && !this.el.nativeElement.contains(event.target)) {
@@ -139,7 +158,6 @@ export class ExerciseOverflowMenuComponent {
     }
   }
 
-  /** Close on Escape. */
   @HostListener('document:keydown.escape')
   onEscape(): void {
     this.open.set(false);
