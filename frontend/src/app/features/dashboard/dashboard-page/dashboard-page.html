@@ -52,8 +52,9 @@
             </span>
             <span class="text-[10px] font-bold uppercase tracking-[0.15em] text-teal-400/70">In progress</span>
           </div>
-          <p class="text-[1.5rem] font-black leading-tight tracking-tight text-zinc-50">{{ w.name }}</p>
-          <div class="mt-1.5 flex items-center gap-2 text-sm">
+          <p class="text-[1.5rem] font-black leading-tight tracking-tight text-zinc-50">Continue</p>
+          <p class="mt-1 text-sm font-semibold text-zinc-300">{{ w.name }}</p>
+          <div class="mt-1 flex items-center gap-2 text-sm">
             @if (elapsedLabel()) {
               <span class="font-bold tabular-nums text-teal-300">{{ elapsedLabel() }}</span>
               <span class="text-zinc-700">·</span>
@@ -61,18 +62,20 @@
             <span class="text-zinc-400">{{ completedSetCount() }} set{{ completedSetCount() !== 1 ? 's' : '' }}</span>
           </div>
         } @else {
-          <p class="text-[1.5rem] font-black leading-tight tracking-tight text-zinc-50">Start Workout</p>
           @if (todayPlanDay() && !todayPlanDay()!.rest) {
-            <p class="mt-1 text-sm font-semibold text-zinc-300">
-              {{ todayPlanDay()!.label || todayPlanDay()!.muscleGroups[0] || 'Today' }}
+            <p class="text-[1.5rem] font-black leading-tight tracking-tight text-zinc-50">
+              Start {{ todayPlanDay()!.label || todayPlanDay()!.muscleGroups[0] || 'Workout' }}
             </p>
             <p class="mt-0.5 text-[11px] text-zinc-500">
               {{ todayPlanDay()!.exercises.length }} exercise{{ todayPlanDay()!.exercises.length !== 1 ? 's' : '' }}
             </p>
-          } @else if (lastWorkoutName()) {
-            <p class="mt-1 text-sm text-zinc-500">Last: {{ lastWorkoutName() }}</p>
           } @else {
-            <p class="mt-1 text-sm text-zinc-500">Log sets, reps and weight in real time.</p>
+            <p class="text-[1.5rem] font-black leading-tight tracking-tight text-zinc-50">Start Workout</p>
+            @if (lastWorkoutName()) {
+              <p class="mt-1 text-[11px] text-zinc-500">Last: {{ lastWorkoutName() }}</p>
+            } @else {
+              <p class="mt-1 text-sm text-zinc-500">Log sets, reps and weight in real time.</p>
+            }
           }
         }
       </div>
@@ -121,7 +124,9 @@
                 <span class="text-3xl font-black tabular-nums leading-none tracking-tight text-zinc-50">{{ s.sessions }}</span>
                 <span class="mb-0.5 text-sm font-semibold text-zinc-500">sessions</span>
               </div>
-              <p class="text-[11px] font-medium text-zinc-500">this month</p>
+              @if (lastWorkoutName()) {
+                <p class="truncate text-[11px] font-medium text-zinc-500">{{ lastWorkoutName() }}</p>
+              }
             </div>
           } @else {
             <div class="flex flex-col gap-2">
