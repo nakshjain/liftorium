@@ -114,7 +114,7 @@ export class LiveWorkoutStore {
   addExerciseFromPicker(id: string, name: string, target: string, equipment: string): void {
     this.workout.update((workout) => {
       if (!workout || workout.exercises.some((ex) => ex.exerciseId === id)) return workout;
-      const option: ExerciseOption = { id, name, target, equipment, previous: [] };
+      const option: ExerciseOption = { id, name, target, equipment, previous: [], bestSet: null };
       const updated = { ...workout, exercises: [...workout.exercises, this.createWorkoutExercise(option)] };
       this.persist(updated);
       return updated;
@@ -125,6 +125,33 @@ export class LiveWorkoutStore {
     this.workout.update((workout) => {
       if (!workout) return workout;
       const updated = { ...workout, exercises: workout.exercises.filter((ex) => ex.id !== workoutExerciseId) };
+      this.persist(updated);
+      return updated;
+    });
+  }
+
+  moveExercise(workoutExerciseId: string, direction: 'up' | 'down'): void {
+    this.workout.update((workout) => {
+      if (!workout) return workout;
+      const exercises = [...workout.exercises];
+      const idx = exercises.findIndex((ex) => ex.id === workoutExerciseId);
+      const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (idx === -1 || targetIdx < 0 || targetIdx >= exercises.length) return workout;
+      [exercises[idx], exercises[targetIdx]] = [exercises[targetIdx], exercises[idx]];
+      const updated = { ...workout, exercises };
+      this.persist(updated);
+      return updated;
+    });
+  }
+
+  replaceExercise(workoutExerciseId: string, id: string, name: string, target: string, equipment: string): void {
+    this.workout.update((workout) => {
+      if (!workout) return workout;
+      const option: ExerciseOption = { id, name, target, equipment, previous: [], bestSet: null };
+      const exercises = workout.exercises.map((ex) =>
+        ex.id === workoutExerciseId ? { ...this.createWorkoutExercise(option), id: ex.id } : ex
+      );
+      const updated = { ...workout, exercises };
       this.persist(updated);
       return updated;
     });
@@ -248,6 +275,7 @@ export class LiveWorkoutStore {
       target: '',
       equipment: '',
       previous: [],
+      bestSet: null,
       sets: pe.sets.map((s, i) => this.createWorkoutSet(i + 1, { reps: s.reps, weight: 20 })),
     }));
 
@@ -282,6 +310,7 @@ export class LiveWorkoutStore {
       target: option.target,
       equipment: option.equipment,
       previous: option.previous,
+      bestSet: option.bestSet ?? null,
       sets: [this.createWorkoutSet(1, option.previous[0])],
     };
   }

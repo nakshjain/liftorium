@@ -32,6 +32,7 @@ const arbWorkoutExercise: fc.Arbitrary<WorkoutExercise> = fc.record({
   target: fc.string({ minLength: 1, maxLength: 40 }),
   equipment: fc.string({ minLength: 1, maxLength: 40 }),
   previous: fc.array(fc.record({ reps: fc.integer({ min: 0, max: 999 }), weight: fc.float({ min: 0, max: 500, noNaN: true }) }), { maxLength: 5 }),
+  bestSet: fc.oneof(fc.constant(null), fc.record({ reps: fc.integer({ min: 0, max: 999 }), weight: fc.float({ min: 0, max: 500, noNaN: true }) })),
   sets: fc.array(arbWorkoutSet, { maxLength: 10 }),
 });
 

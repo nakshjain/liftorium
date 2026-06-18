@@ -36,6 +36,7 @@ function makeWorkout(): LiveWorkout {
         target: 'Legs',
         equipment: 'Barbell',
         previous: [],
+        bestSet: null,
         sets: [
           { id: 's1', order: 1, reps: 5, weight: 100, completed: true, completedAt: null },
         ],

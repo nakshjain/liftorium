@@ -13,6 +13,8 @@ export type ExerciseOption = {
   target: string;
   equipment: string;
   previous: PreviousSet[];
+  /** Best single set (heaviest weight × reps) across all history. */
+  bestSet?: PreviousSet | null;
 };
 
 export type PreviousSet = {
@@ -27,6 +29,8 @@ export type WorkoutExercise = {
   target: string;
   equipment: string;
   previous: PreviousSet[];
+  /** Best single set across all historical sessions for this exercise. */
+  bestSet: PreviousSet | null;
   sets: WorkoutSet[];
 };
 
