@@ -122,10 +122,12 @@ export class AuthGateModalComponent {
   private readonly router = inject(Router);
 
   protected onSignUp(): void {
+    this.dismissed.emit();
     void this.router.navigate(['/auth/signup']);
   }
 
   protected onLogin(): void {
+    this.dismissed.emit();
     void this.router.navigate(['/auth/login']);
   }
 
