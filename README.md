@@ -8,7 +8,7 @@ A workout tracking application built for real gym usage — fast, focused, and m
 
 Liftorium is a full-stack workout tracker built around one constraint: it has to be usable mid-set, with one hand, under a barbell.
 
-Most tracking apps optimise for data completeness over speed. Liftorium inverts that priority. The workflow minimises taps during a live session — logging a set should take seconds, not a navigation sequence. The exercise catalog is cached locally so the app works without a reliable gym connection.
+Most tracking apps optimise for data completeness over speed. Liftorium inverts that priority. The workflow minimises taps during a live session — logging a set should take seconds, not a navigation sequence. The exercise catalog is cached locally and the live workout page never makes backend calls during an active set, so logging stays responsive even in poor gym connectivity.
 
 Beyond live logging, Liftorium tracks progression automatically. When a workout is finished, the backend runs a PR evaluation engine that compares each exercise against your all-time bests and records personal records without any manual input.
 
@@ -21,35 +21,51 @@ Beyond live logging, Liftorium tracks progression automatically. When a workout 
 | Other apps require login before you can log anything | Guest mode — start tracking immediately, sync after signup |
 | Logging a set mid-workout requires too many taps | Signal-based live state, no round-trips during active sets |
 | Progress tracking requires manual note-keeping | Automatic PR detection on every finished workout |
-| Apps break in poor gym connectivity | Exercise catalog cached in IndexedDB, works offline |
+| Apps break in poor gym connectivity | Exercise catalog and workout plans cached locally; live set logging has no backend dependency |
 | One-size-fits-all set tracking | Four tracking types: weight/reps, reps-only, duration, cardio |
+
+---
+
+## Technical Highlights
+
+These engineering decisions distinguish Liftorium from a standard CRUD application:
+
+- **Local-first workout state** — `LiveWorkoutStore` manages the entire in-progress session in memory using Angular Signals. No backend calls occur during active set logging. State is persisted to IndexedDB between page loads.
+- **Guest-to-account sync** — unauthenticated users can log complete workouts. On login, a sync modal previews pending local workouts and bulk-uploads them via a single API call. Idempotency is enforced by `clientId`.
+- **Automatic PR evaluation engine** — `ProgressEvaluationService` runs once per finished workout. It reduces all sets to a session-best record (Phase 1) then compares against all-time bests (Phase 2), emitting typed `PrEvent` documents with previous and new values. Four tracking types are handled independently.
+- **Versioned exercise catalog cache** — the backend computes a SHA-1 catalog version from active exercise count and latest update time. The Angular `APP_INITIALIZER` hydrates from IndexedDB instantly on returning visits and re-downloads only when the version changes.
+- **Workout plan localStorage cache** — `PlanStore` reads from localStorage synchronously at construction, so the plan page renders without a network round-trip. The server response overwrites the local copy if available.
+- **Dual-token JWT with hash-stored refresh tokens** — refresh tokens are never stored raw. The server persists an HMAC-SHA256 hash keyed with a separate secret. Tokens are rotated on every use; the `tokenId` claim is cross-checked against the persisted record to prevent substitution attacks.
 
 ---
 
 ## Current Status
 
-**Active development. Core backend is production-ready. Frontend is partially connected.**
+**The MVP is feature-complete.** All core capabilities are implemented across both backend and frontend.
 
-### Complete
+### Implemented
 
-- Authentication — registration with OTP email verification, login, forgot password, JWT session management
-- Workout tracking — live session logging, rest timer, workout plans (backend + frontend)
-- Exercise catalog — paginated catalog with search and muscle/equipment filters (backend)
-- Progress engine — automatic PR detection and history snapshots on every finished workout (backend)
-- Offline guest mode — full workout logging before signup, synced to backend on login
-- User settings — weight unit, distance unit, rest timer defaults, theme
+- Authentication — OTP email verification, login, forgot password, JWT session management
+- Exercise catalog — browsable, searchable, filterable UI with detail pages and tracking types
+- Live workout logging — Signal-based, locally persisted; no backend calls during active set logging
+- Workout plans — multi-day planner with drag reorder, exercise picker, and plan templates
+- Workout history — monthly view with consistency heatmap, stats, search, and per-workout detail
+- Progress tracking — PR detection engine, exercise progression charts, PR event timeline
+- Guest workout persistence — full workout logging before signup, sync modal on login
+- User settings — units, rest timer, theme, display name, password change, account deletion
 
-### In Progress
+### Current Focus
 
-- Exercise catalog — frontend browsing and search UI
-- Workout history — completed workout list and detail views
+- Expanding automated test coverage — Vitest is configured and initial tests exist
+- Backend test setup — no backend tests implemented yet
 
-### Planned
+### Future Enhancements
 
-- Progress analytics — volume and trend summaries
-- PR tracking — personal records browser
+- DURATION and DISTANCE PR types in the progress frontend — backend detection and storage is complete; the progression chart and PR timeline filter do not yet visualise these types
+- Workout volume analytics with muscle group breakdown
+- Social or coach-facing features
 
-See the [MVP Roadmap](./docs/progress/mvp-roadmap.md) and [Open Tasks](./docs/progress/open-tasks.md) for full detail.
+See the [Open Tasks](./docs/progress/open-tasks.md) for the full active task list.
 
 ---
 
@@ -67,9 +83,10 @@ See the [MVP Roadmap](./docs/progress/mvp-roadmap.md) and [Open Tasks](./docs/pr
 ### Exercise Management
 
 - Publicly accessible exercise catalog — no login required
-- Search by name, target muscle group, and equipment
+- Full browsing UI with live search, filter sheet (muscle group, equipment, exercise type, level, mechanic, force), active filter chips, and load-more pagination
+- Exercise detail pages — muscles, equipment, instructions, add-to-workout and start-workout actions
 - Four tracking types per exercise: weight and reps, reps only, duration, cardio
-- Client-side catalog cache for offline access
+- Exercise catalog cached in IndexedDB — version-gated re-download; list browsing stays responsive without a live connection; detail pages require backend connectivity
 
 ### Workout Tracking
 
@@ -77,16 +94,26 @@ See the [MVP Roadmap](./docs/progress/mvp-roadmap.md) and [Open Tasks](./docs/pr
 - Add, remove, reorder, and replace exercises during a live session
 - Per-tracking-type set logging: weight, reps, duration, distance, speed, incline
 - Automatic rest timer after each completed set
-- Guest mode: full workout logging without an account
-- Guest workouts sync to your account automatically after login
-- Multi-day workout plans — create a plan and start a session directly from it
+- Guest mode: full workout logging without an account; workouts persisted locally until synced
+- Sync modal on login — previews pending offline workouts before uploading
+- Multi-day workout plans — create a plan with drag reorder and built-in templates, start a session directly from a plan day
+
+### Workout History
+
+- Monthly history browser with month navigation
+- Consistency heatmap — visual calendar of training days
+- Stats cards: sessions, total volume, total sets, training streak, month-over-month volume delta
+- Per-workout detail page — all exercises and sets with volume breakdown
+- Best-workout badge for the highest-volume session in a month
 
 ### Progress Tracking
 
-- Automatic PR detection on every finished workout
-- PR types: max weight, best rep set, estimated one-rep max, longest duration, longest distance
-- Full progression history per exercise
-- No manual input required
+- Automatic PR detection on every finished workout — no manual input required
+- PR types: max weight, best rep set, estimated one-rep max (Epley formula), longest duration, longest distance
+- Per-exercise progression chart — interactive SVG with Catmull-Rom smoothing, pointer tooltip, "Started → Now" weight summary
+- PR event timeline — filterable by PR type with previous → new value transitions (e.g. "35 kg → 47.5 kg")
+- Progress overview — total PRs recorded, exercises improved, strongest exercise, latest PR date
+- All progress data visible on both the progress page and the dashboard
 
 ### Platform
 
@@ -94,6 +121,7 @@ See the [MVP Roadmap](./docs/progress/mvp-roadmap.md) and [Open Tasks](./docs/pr
 - Configurable default rest time and auto-start rest timer
 - Dark theme by default
 - Mobile-first responsive layout
+- Account management — update display name, change password with current-password verification, delete account
 
 ---
 
@@ -105,8 +133,14 @@ See the [MVP Roadmap](./docs/progress/mvp-roadmap.md) and [Open Tasks](./docs/pr
 ### Workout Session
 ![Workout Session](docs/assets/workout-session.png)
 
-### Login
-![Login](docs/assets/login.png)
+### Exercise Catalog
+![Exercise Catalog](docs/assets/exercises.png)
+
+### Progress
+![Progress](docs/assets/progress.png)
+
+### Workout History
+![Workout History](docs/assets/workout-history.png)
 
 ---
 
@@ -117,7 +151,7 @@ See the [MVP Roadmap](./docs/progress/mvp-roadmap.md) and [Open Tasks](./docs/pr
 | Frontend | Angular 21, standalone components, lazy-loaded routes |
 | State management | Angular Signals |
 | Styling | TailwindCSS 4, mobile-first, dark theme |
-| Offline storage | IndexedDB via `idb`, localStorage fallback |
+| Local storage | IndexedDB via `idb` (exercise catalog, guest workouts), localStorage (plan, settings cache) |
 | Backend | Spring Boot 4, Java 21, Maven |
 | Database | MongoDB, Spring Data, TTL indexes |
 | Authentication | JWT — JJWT 0.12.6, stateless, dual-token |
@@ -205,16 +239,16 @@ All endpoints return a consistent envelope:
 { "success": false, "error": { "code": "...", "message": "..." } }
 ```
 
-| Area | Endpoints | Auth |
+| Area | Path | Auth |
 |---|---|---|
-| Auth | register, login, refresh, logout, forgot-password | Public / Cookie / JWT |
-| Exercises | catalog, search, filters | Public |
-| Workouts | CRUD, finish | JWT |
-| Workout plans | CRUD | JWT |
-| Progress | exercise progress, PR events | JWT |
-| History | workout history, insights | JWT |
-| Settings | get, update | JWT |
-| Sync | bulk guest workout upload | JWT |
+| Auth | `/auth/**` | Public / Cookie / JWT |
+| Exercises | `/exercises` — list, search, catalog-version, detail | Public |
+| Workouts | `/workouts` — start, active, history, stats, detail, finish | JWT |
+| Workout sync | `/workouts/sync` — bulk guest upload | JWT |
+| Workout plan | `/plan` — get, upsert; `/plan/templates` — template list | JWT |
+| Progress | `/progress/overview`, `/progress/exercises`, `/progress/prs` | JWT |
+| History | `/history/insights` | JWT |
+| Settings | `/settings` — get, update; `/settings/account`; `/settings/security/password` | JWT |
 
 See [API Documentation](./docs/api/README.md) for full endpoint reference and request/response contracts.
 
@@ -222,7 +256,24 @@ See [API Documentation](./docs/api/README.md) for full endpoint reference and re
 
 ## Testing
 
-No automated tests have been implemented yet. Test setup is tracked in [Open Tasks](./docs/progress/open-tasks.md).
+The frontend test suite uses **Vitest** with **fast-check** for property-based testing.
+
+Current coverage includes:
+
+- `LiveWorkoutStore` — state transitions, pause/resume, set mutations
+- `GuestWorkoutStorageService` — IndexedDB and localStorage paths, stale detection
+- `WorkoutSyncService` — sync payload construction, property tests on edge cases
+- `authGuard` — route protection logic
+- Core component smoke tests (`NavBar`, `AuthGateModal`, app shell)
+
+Run the frontend tests:
+
+```bash
+cd frontend
+npm test
+```
+
+Backend tests are not yet implemented. Tracking in [Open Tasks](./docs/progress/open-tasks.md).
 
 ---
 
@@ -264,7 +315,7 @@ mvn spring-boot:run
 | `REFRESH_TOKEN_TTL` | Refresh token lifetime | `30d` |
 | `BCRYPT_STRENGTH` | BCrypt cost factor | `10` |
 | `PORT` | Server port | `4000` |
-| `EXERCISE_SYNC_ON_STARTUP` | Sync exercise catalog from Wger on boot | `false` |
+| `EXERCISE_SYNC_ON_STARTUP` | Sync exercise catalog from the bundled provider on boot | `false` |
 
 Configuration: `backend/src/main/resources/application.properties`
 
