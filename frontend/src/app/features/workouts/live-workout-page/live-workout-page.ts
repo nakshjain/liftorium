@@ -308,7 +308,10 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     if (set.weight != null && set.reps != null) return `${set.weight}×${set.reps}`;
     if (set.reps != null) return `${set.reps} reps`;
     if (set.durationSeconds != null) return this.formatTime(set.durationSeconds);
-    if (set.distanceKm != null) return `${set.distanceKm}km`;
+    if (set.distanceKm != null) {
+      const unit = this.store.distanceUnit();
+      return `${toDisplayDistance(set.distanceKm, unit)}${unit}`;
+    }
     return '–';
   }
 
@@ -349,6 +352,17 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     }
 
     return parts.length > 0 ? parts.join('  ·  ') : null;
+  }
+
+  /**
+   * Converts a stored km value to the user's display unit for the distance input.
+   * Returns empty string for null so the input placeholder shows instead.
+   */
+  protected displayDistance(km: number | null): string {
+    if (km == null) return '';
+    const unit = this.store.distanceUnit();
+    const val = toDisplayDistance(km, unit);
+    return val % 1 === 0 ? val.toString() : val.toFixed(2);
   }
 
   /**
@@ -461,7 +475,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected finishConfirmDetails = computed(() => {
     if (!this.pendingFinishWorkout) return '';
     const s = this.createFinishedSummary(this.pendingFinishWorkout);
-    return `${s.sets} sets · ${this.formatVolume(s.volume)} ${this.store.weightUnit()}`;
+    if (s.volume > 0) {
+      return `${s.sets} sets · ${this.formatVolume(s.volume)} ${this.store.weightUnit()}`;
+    }
+    // CARDIO / DURATION workout — show duration instead of meaningless 0 volume
+    return `${s.sets} sets · ${s.durationMinutes}m`;
   });
 
   private captureWorkoutSnapshot(workout: LiveWorkout): LiveWorkout {

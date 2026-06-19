@@ -492,7 +492,7 @@
                         [class.border-transparent]="set.completed"
                         [class.bg-transparent]="set.completed"
                       >
-                        <input class="lft-set-input h-12 w-full border-0 text-sm" inputmode="decimal" type="number" min="0" placeholder="–" [value]="set.distanceKm ?? ''" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'distanceKm', inputValue($event))" [attr.aria-label]="'Distance in km for set ' + set.order"/>
+                        <input class="lft-set-input h-12 w-full border-0 text-sm" inputmode="decimal" type="number" min="0" placeholder="–" [value]="displayDistance(set.distanceKm)" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'distanceKm', inputValue($event))" [attr.aria-label]="'Distance in ' + store.distanceUnit() + ' for set ' + set.order"/>
                       </div>
                       <!-- Speed -->
                       <div
