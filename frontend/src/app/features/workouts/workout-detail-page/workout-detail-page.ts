@@ -1,4 +1,3 @@
-import { DecimalPipe } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { WorkoutService } from '../workout.service';
@@ -8,7 +7,7 @@ import { formatWeight, toDisplayWeight } from '../../../shared/utils/weight.util
 
 @Component({
   selector: 'app-workout-detail-page',
-  imports: [RouterLink, DecimalPipe],
+  imports: [RouterLink],
   templateUrl: './workout-detail-page.html',
 })
 export class WorkoutDetailPageComponent implements OnInit {
@@ -27,10 +26,28 @@ export class WorkoutDetailPageComponent implements OnInit {
     const w = this.workout();
     if (!w) return 0;
     return w.exercises.reduce(
-      (total, ex) => total + ex.sets.reduce((t, s) => t + s.reps * s.weight, 0),
+      (total, ex) => total + ex.sets.reduce((t, s) => t + (s.reps || 0) * (s.weight || 0), 0),
       0,
     );
   });
+
+  /** Total completed set count across all exercises. */
+  protected readonly totalSetCount = computed(() => {
+    const w = this.workout();
+    if (!w) return 0;
+    return w.exercises.reduce((total, ex) => total + ex.sets.length, 0);
+  });
+
+  /** Volume for a single exercise in stored kg. */
+  protected exerciseVolume(exercise: WorkoutDto['exercises'][number]): number {
+    return exercise.sets.reduce((t, s) => t + (s.reps || 0) * (s.weight || 0), 0);
+  }
+
+  /** Format a volume number: 1000+ becomes Xk, below stays as integer. */
+  protected formatVolume(vol: number): string {
+    if (vol >= 1000) return (vol / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return Math.round(vol).toString();
+  }
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('workoutId');
