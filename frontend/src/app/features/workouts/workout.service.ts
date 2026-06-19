@@ -86,9 +86,17 @@ export class WorkoutService {
                         this.http.post(
                           `${this.baseUrl}/workouts/${workoutId}/exercises/${workoutExerciseId}/sets`,
                           {
+                            // Strength
                             reps: set.reps,
                             // Convert display-unit weight to kg before sending to API
-                            weight: toStorageKg(set.weight, this.settingsStore.weightUnit()),
+                            weight: set.weight != null
+                              ? toStorageKg(set.weight, this.settingsStore.weightUnit())
+                              : null,
+                            // Duration / Cardio
+                            durationSeconds: set.durationSeconds,
+                            distanceKm: set.distanceKm,
+                            speed: set.speed,
+                            incline: set.incline,
                             completedAt: set.completedAt,
                           },
                         ),

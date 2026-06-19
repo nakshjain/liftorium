@@ -89,6 +89,10 @@ public class WorkoutSyncService {
           .order(i + 1)
           .reps(setRequest.reps())
           .weight(setRequest.weight())
+          .durationSeconds(setRequest.durationSeconds())
+          .distanceKm(setRequest.distanceKm())
+          .speed(setRequest.speed())
+          .incline(setRequest.incline())
           .completedAt(setRequest.completedAt() != null ? Instant.parse(setRequest.completedAt()) : null)
           .build());
     }

@@ -469,3 +469,26 @@ Use this file for short, dated progress entries.
 - Email is intentionally read-only in account settings (no endpoint to change it).
 - Extensibility hooks are documented: add new top-level sections to `UserSettings` entity + DTOs + frontend models + page tabs.
 - Future additions: notification settings, dashboard preferences, analytics preferences.
+
+## 2026-06-19 - Multi-Tracking-Type Support
+
+### Completed
+
+- Added `TrackingType` enum (`WEIGHT_REPS`, `REPS_ONLY`, `DURATION`, `CARDIO`) to backend.
+- Added `trackingType` field to `Exercise` entity (defaults to `WEIGHT_REPS` — zero-migration).
+- Refactored `WorkoutSet` entity: `reps`/`weight` are now nullable `Integer`/`Double`; added `durationSeconds`, `distanceKm`, `speed`, `incline`.
+- Added `WorkoutSetValidator` — tracking-type-aware validation injected into `WorkoutService.addSet`.
+- Updated all workout DTOs (`WorkoutSetDto`, `AddWorkoutSetRequest`, `SyncWorkoutSetRequest`) with new fields.
+- Updated `ExerciseDto` to include `trackingType`; `ExerciseService` defaults legacy documents to `WEIGHT_REPS`.
+- Rewrote `ProgressEvaluationService`: batch-resolves `TrackingType` per workout, applies type-specific PR logic.
+- Added `DURATION` and `DISTANCE` PR types to `PrType` enum.
+- Extended `ExerciseProgress` with `longestDurationSeconds` and `longestDistanceKm` PR fields.
+- Extended `ExerciseProgressHistory` with nullable `bestDurationSeconds` and `bestDistanceKm`.
+- Updated `ProgressDtos` and `ProgressService` mappers throughout.
+- Updated all frontend models: `TrackingType` type, `WorkoutSet` (nullable fields), `WorkoutExercise`, `ExerciseOption`, `PreviousSet`, `CachedExercise`.
+- Rewrote `LiveWorkoutStore` to be fully tracking-type-aware: type-specific set creation, `adjustDuration`, `setValue` handles all field types.
+- Updated `live-workout-page` HTML: dynamic column grid and input widgets per `TrackingType`.
+- Updated `workout.service.ts` and `workout-sync.service.ts` to send all new set fields.
+- Updated `catalog-sync.service.ts` to map `trackingType` into `CachedExercise`.
+- Updated `ExercisePickerComponent` handler to forward `trackingType` to the store.
+- Architecture decision document written at `docs/architecture/TRACKING_TYPES.md`.

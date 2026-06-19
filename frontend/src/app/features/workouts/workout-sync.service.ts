@@ -82,6 +82,10 @@ export class WorkoutSyncService {
               sets: ex.sets.filter(s => s.completed).map(s => ({
                 reps: s.reps,
                 weight: s.weight,
+                durationSeconds: s.durationSeconds,
+                distanceKm: s.distanceKm,
+                speed: s.speed,
+                incline: s.incline,
                 completedAt: s.completedAt ?? null,
               })),
             })),
