@@ -65,7 +65,11 @@ public class WorkoutPlanService {
     // Only persist templateId as a reference marker — never allow a user plan to use
     // a reserved template document ID (those docs have no userId and are queried separately)
     String templateId = input.templateId();
-    plan.setTemplateId(TEMPLATE_IDS.contains(templateId) ? templateId : null);
+    plan.setTemplateId(
+            templateId != null && TEMPLATE_IDS.contains(templateId)
+                    ? templateId
+                    : null
+    );
     return toDto(planRepository.save(plan));
   }
 
@@ -86,6 +90,7 @@ public class WorkoutPlanService {
   private List<PlanExercise> toExercises(List<PlanExerciseRequest> requests) {
     if (requests == null) return List.of();
     return requests.stream()
+        .filter(r -> r != null)
         .map(r -> PlanExercise.builder()
             .exerciseId(r.exerciseId())
             .exerciseName(r.exerciseName())
