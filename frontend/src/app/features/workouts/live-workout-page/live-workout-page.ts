@@ -18,6 +18,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { GuestWorkoutStorageService } from '../guest-workout-storage.service';
 import type { GuestCompletedWorkout } from '../guest-workout.models';
 import { formatWeightCompact } from '../../../shared/utils/weight.utils';
+import { toDisplayDistance } from '../../../shared/utils/distance.utils';
 import type { WeightUnit } from '../../settings/settings.models';
 
 type FinishedWorkoutSummary = {
@@ -322,7 +323,10 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
       }
     } else if (trackingType === 'CARDIO') {
       if (lastSet?.durationSeconds != null) {
-        const dist = lastSet.distanceKm != null ? ` · ${lastSet.distanceKm}km` : '';
+        const distUnit = this.store.distanceUnit();
+        const dist = lastSet.distanceKm != null
+          ? ` · ${toDisplayDistance(lastSet.distanceKm, distUnit)}${distUnit}`
+          : '';
         parts.push(`Last: ${this.formatTime(lastSet.durationSeconds)}${dist}`);
       }
     }

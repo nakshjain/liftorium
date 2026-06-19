@@ -21,6 +21,8 @@ export class LiveWorkoutStore {
 
   /** Exposed so templates and the page component can read the current unit. */
   readonly weightUnit = this.settingsStore.weightUnit;
+  /** Exposed so templates and the page component can read the current distance unit. */
+  readonly distanceUnit = this.settingsStore.distanceUnit;
   /** Step used by the ±2.5 / ±5 weight stepper buttons. */
   readonly weightStepSize = computed(() => weightStep(this.weightUnit()));
 
