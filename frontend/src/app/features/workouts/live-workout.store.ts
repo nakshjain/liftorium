@@ -1,7 +1,14 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { PlanExercise } from '../plan/plan.models';
 import { GuestWorkoutStorageService } from './guest-workout-storage.service';
-import { ExerciseOption, LiveWorkout, PreviousSet, WorkoutExercise, WorkoutSet } from './live-workout.models';
+import {
+  ExerciseOption,
+  LiveWorkout,
+  PreviousSet,
+  TrackingType,
+  WorkoutExercise,
+  WorkoutSet,
+} from './live-workout.models';
 import { UserSettingsStore } from '../settings/settings.store';
 import { defaultWeight, weightStep } from '../../shared/utils/weight.utils';
 
@@ -14,6 +21,8 @@ export class LiveWorkoutStore {
 
   /** Exposed so templates and the page component can read the current unit. */
   readonly weightUnit = this.settingsStore.weightUnit;
+  /** Exposed so templates and the page component can read the current distance unit. */
+  readonly distanceUnit = this.settingsStore.distanceUnit;
   /** Step used by the ±2.5 / ±5 weight stepper buttons. */
   readonly weightStepSize = computed(() => weightStep(this.weightUnit()));
 
@@ -49,23 +58,30 @@ export class LiveWorkoutStore {
       (count, ex) => count + ex.sets.filter((s) => s.completed).length, 0
     ) ?? 0
   );
+
+  /**
+   * Total volume — only meaningful for WEIGHT_REPS exercises.
+   * REPS_ONLY / DURATION / CARDIO sets contribute 0 to keep the display clean.
+   */
   readonly totalVolume = computed(
     () => this.workout()?.exercises.reduce(
       (total, ex) => total + ex.sets.reduce(
-        (t, s) => t + (s.completed ? s.reps * s.weight : 0), 0
-      ), 0
+        (t, s) => t + (s.completed && s.reps != null && s.weight != null
+          ? s.reps * s.weight
+          : 0),
+        0,
+      ),
+      0,
     ) ?? 0
   );
 
   constructor() {
-    // Hydrate from storage after bootstrap — fire-and-forget (non-blocking).
     this.hydrateFromStorage();
   }
 
   private async hydrateFromStorage(): Promise<void> {
     const workout = await this.guestStorage.loadActiveWorkout();
     if (workout) {
-      // Restore in paused state — user resumes explicitly.
       const accumulated = workout.resumedAt !== 0
         ? workout.accumulatedMs + (Date.now() - workout.resumedAt)
         : workout.accumulatedMs;
@@ -119,10 +135,24 @@ export class LiveWorkoutStore {
   }
 
   /** Add an exercise directly from the shared ExercisePickerComponent. */
-  addExerciseFromPicker(id: string, name: string, target: string, equipment: string): void {
+  addExerciseFromPicker(
+    id: string,
+    name: string,
+    target: string,
+    equipment: string,
+    trackingType: TrackingType,
+  ): void {
     this.workout.update((workout) => {
       if (!workout || workout.exercises.some((ex) => ex.exerciseId === id)) return workout;
-      const option: ExerciseOption = { id, name, target, equipment, previous: [], bestSet: null };
+      const option: ExerciseOption = {
+        id,
+        name,
+        target,
+        equipment,
+        trackingType,
+        previous: [],
+        bestSet: null,
+      };
       const updated = { ...workout, exercises: [...workout.exercises, this.createWorkoutExercise(option)] };
       this.persist(updated);
       return updated;
@@ -152,10 +182,17 @@ export class LiveWorkoutStore {
     });
   }
 
-  replaceExercise(workoutExerciseId: string, id: string, name: string, target: string, equipment: string): void {
+  replaceExercise(
+    workoutExerciseId: string,
+    id: string,
+    name: string,
+    target: string,
+    equipment: string,
+    trackingType: TrackingType,
+  ): void {
     this.workout.update((workout) => {
       if (!workout) return workout;
-      const option: ExerciseOption = { id, name, target, equipment, previous: [], bestSet: null };
+      const option: ExerciseOption = { id, name, target, equipment, trackingType, previous: [], bestSet: null };
       const exercises = workout.exercises.map((ex) =>
         ex.id === workoutExerciseId ? { ...this.createWorkoutExercise(option), id: ex.id } : ex
       );
@@ -170,10 +207,18 @@ export class LiveWorkoutStore {
       const updated = this.updateExercise(workout, workoutExerciseId, (exercise) => {
         const previousSet = exercise.sets.at(-1);
         const comparisonSet = exercise.previous[exercise.sets.length] ?? exercise.previous.at(-1);
-        const baseSet = previousSet ?? this.createWorkoutSet(1, comparisonSet);
+        const baseSet = previousSet ?? this.createWorkoutSet(1, exercise.trackingType, comparisonSet);
         return {
           ...exercise,
-          sets: [...exercise.sets, this.createWorkoutSet(exercise.sets.length + 1, { reps: baseSet.reps, weight: baseSet.weight })],
+          sets: [
+            ...exercise.sets,
+            this.createWorkoutSet(exercise.sets.length + 1, exercise.trackingType, {
+              reps: baseSet.reps,
+              weight: baseSet.weight,
+              durationSeconds: baseSet.durationSeconds,
+              distanceKm: baseSet.distanceKm,
+            }),
+          ],
         };
       });
       if (updated) this.persist(updated);
@@ -194,10 +239,17 @@ export class LiveWorkoutStore {
     });
   }
 
-  adjustSet(workoutExerciseId: string, setId: string, field: 'reps' | 'weight', amount: number): void {
+  /** Adjust a numeric field on a set by a delta. Only applies to strength fields. */
+  adjustSet(
+    workoutExerciseId: string,
+    setId: string,
+    field: 'reps' | 'weight',
+    amount: number,
+  ): void {
     this.workout.update((workout) => {
       const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => {
-        const next = Math.max(0, set[field] + amount);
+        const current = set[field] ?? 0;
+        const next = Math.max(0, current + amount);
         return { ...set, [field]: field === 'reps' ? Math.round(next) : Number(next.toFixed(1)) };
       });
       if (updated) this.persist(updated);
@@ -205,15 +257,37 @@ export class LiveWorkoutStore {
     });
   }
 
-  setValue(workoutExerciseId: string, setId: string, field: 'reps' | 'weight', value: string): void {
+  /** Adjust a duration field by a delta (seconds). */
+  adjustDuration(workoutExerciseId: string, setId: string, amount: number): void {
+    this.workout.update((workout) => {
+      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => {
+        const current = set.durationSeconds ?? 0;
+        return { ...set, durationSeconds: Math.max(0, current + amount) };
+      });
+      if (updated) this.persist(updated);
+      return updated;
+    });
+  }
+
+  setValue(
+    workoutExerciseId: string,
+    setId: string,
+    field: 'reps' | 'weight' | 'durationSeconds' | 'distanceKm' | 'speed' | 'incline',
+    value: string,
+  ): void {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return;
 
     this.workout.update((workout) => {
-      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => ({
-        ...set,
-        [field]: field === 'reps' ? Math.max(0, Math.round(parsed)) : Math.max(0, Number(parsed.toFixed(1))),
-      }));
+      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => {
+        if (field === 'reps') {
+          return { ...set, reps: Math.max(0, Math.round(parsed)) };
+        }
+        if (field === 'durationSeconds') {
+          return { ...set, durationSeconds: Math.max(0, Math.round(parsed)) };
+        }
+        return { ...set, [field]: Math.max(0, Number(parsed.toFixed(2))) };
+      });
       if (updated) this.persist(updated);
       return updated;
     });
@@ -276,15 +350,23 @@ export class LiveWorkoutStore {
     }
 
     const now = Date.now();
+    // Plan exercises don't carry trackingType yet — default to WEIGHT_REPS.
+    // The ExercisePicker path is the recommended entry point for non-weight exercises.
     const exercises: WorkoutExercise[] = planExercises.map((pe) => ({
       id: crypto.randomUUID(),
       exerciseId: pe.exerciseId,
       name: pe.exerciseName,
       target: '',
       equipment: '',
+      trackingType: 'WEIGHT_REPS' as TrackingType,
       previous: [],
       bestSet: null,
-      sets: pe.sets.map((s, i) => this.createWorkoutSet(i + 1, { reps: s.reps, weight: defaultWeight(this.weightUnit()) })),
+      sets: pe.sets.map((s, i) =>
+        this.createWorkoutSet(i + 1, 'WEIGHT_REPS', {
+          reps: s.reps,
+          weight: defaultWeight(this.weightUnit()),
+        })
+      ),
     }));
 
     const workout: LiveWorkout = {
@@ -299,6 +381,8 @@ export class LiveWorkoutStore {
     this.workout.set(workout);
     this.persist(workout);
   }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
 
   private persist(workout: LiveWorkout): void {
     this.guestStorage.saveActiveWorkout(workout).catch(() => {
@@ -317,21 +401,58 @@ export class LiveWorkoutStore {
       name: option.name,
       target: option.target,
       equipment: option.equipment,
+      trackingType: option.trackingType,
       previous: option.previous,
       bestSet: option.bestSet ?? null,
-      sets: [this.createWorkoutSet(1, option.previous[0])],
+      sets: [this.createWorkoutSet(1, option.trackingType, option.previous[0])],
     };
   }
 
-  private createWorkoutSet(order: number, previousSet?: PreviousSet): WorkoutSet {
-    return {
+  private createWorkoutSet(
+    order: number,
+    trackingType: TrackingType,
+    previousSet?: PreviousSet,
+  ): WorkoutSet {
+    const base: WorkoutSet = {
       id: crypto.randomUUID(),
       order,
-      reps: previousSet?.reps ?? 8,
-      weight: previousSet?.weight ?? defaultWeight(this.weightUnit()),
+      reps: null,
+      weight: null,
+      durationSeconds: null,
+      distanceKm: null,
+      speed: null,
+      incline: null,
       completed: false,
       completedAt: null,
     };
+
+    switch (trackingType) {
+      case 'WEIGHT_REPS':
+        return {
+          ...base,
+          reps: previousSet?.reps ?? 8,
+          weight: previousSet?.weight ?? defaultWeight(this.weightUnit()),
+        };
+
+      case 'REPS_ONLY':
+        return {
+          ...base,
+          reps: previousSet?.reps ?? 8,
+        };
+
+      case 'DURATION':
+        return {
+          ...base,
+          durationSeconds: previousSet?.durationSeconds ?? 30,
+        };
+
+      case 'CARDIO':
+        return {
+          ...base,
+          durationSeconds: previousSet?.durationSeconds ?? 300,  // 5 min default
+          distanceKm: previousSet?.distanceKm ?? null,
+        };
+    }
   }
 
   private updateExercise(
@@ -340,7 +461,12 @@ export class LiveWorkoutStore {
     update: (exercise: WorkoutExercise) => WorkoutExercise,
   ): LiveWorkout | null {
     if (!workout) return workout;
-    return { ...workout, exercises: workout.exercises.map((ex) => ex.id === workoutExerciseId ? update(ex) : ex) };
+    return {
+      ...workout,
+      exercises: workout.exercises.map((ex) =>
+        ex.id === workoutExerciseId ? update(ex) : ex
+      ),
+    };
   }
 
   private updateSet(
@@ -349,9 +475,9 @@ export class LiveWorkoutStore {
     setId: string,
     update: (set: WorkoutSet) => WorkoutSet,
   ): LiveWorkout | null {
-    return this.updateExercise(workout, workoutExerciseId, (ex) => ({
-      ...ex,
-      sets: ex.sets.map((s) => s.id === setId ? update(s) : s),
+    return this.updateExercise(workout, workoutExerciseId, (exercise) => ({
+      ...exercise,
+      sets: exercise.sets.map((s) => (s.id === setId ? update(s) : s)),
     }));
   }
 }

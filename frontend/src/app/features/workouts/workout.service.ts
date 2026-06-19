@@ -7,6 +7,7 @@ import { LiveWorkout } from './live-workout.models';
 import { HistoryInsights, PaginatedWorkouts, WorkoutDto, WorkoutStats } from './workout-history.models';
 import { UserSettingsStore } from '../settings/settings.store';
 import { toStorageKg } from '../../shared/utils/weight.utils';
+import { toStorageKm } from '../../shared/utils/distance.utils';
 
 /** Shape of the workout resource returned by POST /workouts and related write endpoints. */
 interface SaveWorkoutResponse {
@@ -86,9 +87,20 @@ export class WorkoutService {
                         this.http.post(
                           `${this.baseUrl}/workouts/${workoutId}/exercises/${workoutExerciseId}/sets`,
                           {
+                            // Strength
                             reps: set.reps,
                             // Convert display-unit weight to kg before sending to API
-                            weight: toStorageKg(set.weight, this.settingsStore.weightUnit()),
+                            weight: set.weight != null
+                              ? toStorageKg(set.weight, this.settingsStore.weightUnit())
+                              : null,
+                            // Duration / Cardio
+                            durationSeconds: set.durationSeconds,
+                            // Convert display-unit distance to km before sending to API
+                            distanceKm: set.distanceKm != null
+                              ? toStorageKm(set.distanceKm, this.settingsStore.distanceUnit())
+                              : null,
+                            speed: set.speed,
+                            incline: set.incline,
                             completedAt: set.completedAt,
                           },
                         ),

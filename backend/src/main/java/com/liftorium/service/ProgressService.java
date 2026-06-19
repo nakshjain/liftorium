@@ -201,6 +201,8 @@ public class ProgressService {
         ep.getWeightPr(),
         new RepPrDto(ep.getRepPrWeight(), ep.getRepPrReps()),
         roundToTwo(ep.getEstimatedOneRepMaxPr()),
+        ep.getLongestDurationSeconds(),
+        ep.getLongestDistanceKm(),
         ep.getTotalPrs(),
         sessions,
         ep.getLastImprovedAt() != null ? ep.getLastImprovedAt().toString() : null
@@ -218,6 +220,8 @@ public class ProgressService {
         new RepPrDto(ep.getRepPrWeight(), ep.getRepPrReps()),
         ep.getFirstEstimatedOneRepMax(),
         roundToTwo(ep.getEstimatedOneRepMaxPr()),
+        ep.getLongestDurationSeconds(),
+        ep.getLongestDistanceKm(),
         ep.getTotalPrs(),
         sessions,
         ep.getLastImprovedAt() != null ? ep.getLastImprovedAt().toString() : null
@@ -247,6 +251,8 @@ public class ProgressService {
         h.getBestSetWeight(),
         h.getBestSetReps(),
         h.getEstimatedOneRepMax(),
+        h.getBestDurationSeconds(),
+        h.getBestDistanceKm(),
         h.getPerformedAt().toString()
     );
   }
@@ -269,7 +275,7 @@ public class ProgressService {
     } catch (IllegalArgumentException e) {
       throw new AppException(
           "VALIDATION_ERROR",
-          "Invalid prType: must be one of WEIGHT, REPS, ESTIMATED_ONE_REP_MAX",
+          "Invalid prType: must be one of WEIGHT, REPS, ESTIMATED_ONE_REP_MAX, DURATION, DISTANCE",
           HttpStatus.UNPROCESSABLE_ENTITY
       );
     }

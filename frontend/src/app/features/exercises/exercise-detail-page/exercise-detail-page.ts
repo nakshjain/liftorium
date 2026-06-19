@@ -60,7 +60,7 @@ export class ExerciseDetailPageComponent implements OnInit {
     if (!ex || this.adding()) return;
 
     this.adding.set(true);
-    this.liveWorkoutStore.addExerciseFromPicker(ex.id, ex.name, ex.primaryMuscles[0] ?? '', ex.equipment[0] ?? '');
+    this.liveWorkoutStore.addExerciseFromPicker(ex.id, ex.name, ex.primaryMuscles[0] ?? '', ex.equipment[0] ?? '', ex.trackingType ?? 'WEIGHT_REPS');
     this.toastService.success(`${ex.name} added to workout`);
 
     setTimeout(() => {
@@ -78,7 +78,7 @@ export class ExerciseDetailPageComponent implements OnInit {
     if (!this.liveWorkoutStore.activeWorkout()) {
       this.liveWorkoutStore.startNewWorkout();
     }
-    this.liveWorkoutStore.addExerciseFromPicker(ex.id, ex.name, ex.primaryMuscles[0] ?? '', ex.equipment[0] ?? '');
+    this.liveWorkoutStore.addExerciseFromPicker(ex.id, ex.name, ex.primaryMuscles[0] ?? '', ex.equipment[0] ?? '', ex.trackingType ?? 'WEIGHT_REPS');
     this.toastService.success(`Started workout with ${ex.name}`);
 
     setTimeout(() => {

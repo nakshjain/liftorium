@@ -1,5 +1,5 @@
 import type { DBSchema } from 'idb';
-import type { ExerciseType } from '../exercise.models';
+import type { ExerciseType, TrackingType } from '../exercise.models';
 
 /**
  * A cached exercise record stored in IndexedDB.
@@ -15,6 +15,8 @@ export interface CachedExercise {
   secondaryMuscles: string[];
   equipment: string[];
   exerciseType: ExerciseType;
+  /** How sets are tracked for this exercise. Drives UI rendering and validation. */
+  trackingType: TrackingType;
   level: string | null;
   mechanic: string | null;
   slug: string;

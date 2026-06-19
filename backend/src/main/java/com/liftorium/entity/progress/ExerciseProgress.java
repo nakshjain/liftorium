@@ -81,6 +81,22 @@ public class ExerciseProgress {
    */
   private Double firstEstimatedOneRepMax;
 
+  // ── Duration PR ───────────────────────────────────────────────────────
+  /**
+   * Longest duration (in seconds) ever achieved for this exercise.
+   * Applies to DURATION and CARDIO tracking types.
+   */
+  @Builder.Default
+  private int longestDurationSeconds = 0;
+
+  // ── Cardio / Distance PR ──────────────────────────────────────────────
+  /**
+   * Longest distance (in km) ever covered for this exercise.
+   * Applies to CARDIO tracking type only.
+   */
+  @Builder.Default
+  private double longestDistanceKm = 0.0;
+
   // ── Counters ──────────────────────────────────────────────────────────
   /** Total number of PR events recorded for this exercise. */
   @Builder.Default

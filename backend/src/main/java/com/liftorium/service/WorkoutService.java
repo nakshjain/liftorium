@@ -10,6 +10,7 @@ import com.liftorium.dto.WorkoutDtos.WorkoutDto;
 import com.liftorium.dto.WorkoutDtos.WorkoutExerciseDto;
 import com.liftorium.dto.WorkoutDtos.WorkoutSetDto;
 import com.liftorium.entity.Exercise;
+import com.liftorium.entity.TrackingType;
 import com.liftorium.entity.Workout;
 import com.liftorium.entity.WorkoutExercise;
 import com.liftorium.entity.WorkoutSet;
@@ -17,7 +18,7 @@ import com.liftorium.entity.WorkoutStatus;
 import com.liftorium.exception.AppException;
 import com.liftorium.repository.ExerciseRepository;
 import com.liftorium.repository.WorkoutRepository;
-import com.liftorium.service.ProgressEvaluationService;
+import com.liftorium.validation.WorkoutSetValidator;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
@@ -25,6 +26,7 @@ import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,6 +42,7 @@ public class WorkoutService {
   private final WorkoutRepository workoutRepository;
   private final ExerciseRepository exerciseRepository;
   private final ProgressEvaluationService progressEvaluationService;
+  private final WorkoutSetValidator workoutSetValidator;
 
   public WorkoutDto start(String userId, StartWorkoutRequest input) {
     Workout workout = Workout.builder()
@@ -102,15 +105,40 @@ public class WorkoutService {
     return toDto(workoutRepository.save(workout));
   }
 
-  public WorkoutDto addSet(String userId, String workoutId, String workoutExerciseId, AddWorkoutSetRequest input) {
+  public WorkoutDto addSet(
+      String userId,
+      String workoutId,
+      String workoutExerciseId,
+      AddWorkoutSetRequest input
+  ) {
     Workout workout = findWorkoutForUser(userId, workoutId);
     ensureActive(workout);
     WorkoutExercise workoutExercise = findWorkoutExercise(workout, workoutExerciseId);
+
+    // Resolve the exercise's tracking type — defaults to WEIGHT_REPS for
+    // legacy exercises that pre-date this field.
+    TrackingType trackingType = exerciseRepository.findById(workoutExercise.getExerciseId())
+        .map(ex -> Objects.requireNonNullElse(ex.getTrackingType(), TrackingType.WEIGHT_REPS))
+        .orElse(TrackingType.WEIGHT_REPS);
+
+    workoutSetValidator.validate(
+        trackingType,
+        input.reps(),
+        input.weight(),
+        input.durationSeconds(),
+        input.distanceKm(),
+        input.speed(),
+        input.incline()
+    );
 
     workoutExercise.getSets().add(WorkoutSet.builder()
         .order(workoutExercise.getSets().size() + 1)
         .reps(input.reps())
         .weight(input.weight())
+        .durationSeconds(input.durationSeconds())
+        .distanceKm(input.distanceKm())
+        .speed(input.speed())
+        .incline(input.incline())
         .completedAt(parseInstantOrNow(input.completedAt()))
         .build());
 
@@ -158,6 +186,8 @@ public class WorkoutService {
 
     return toDto(saved);
   }
+
+  // ── Private helpers ───────────────────────────────────────────────────────
 
   private Workout findWorkoutForUser(String userId, String workoutId) {
     return workoutRepository.findByIdAndUserId(workoutId, userId)
@@ -216,6 +246,10 @@ public class WorkoutService {
         set.getOrder(),
         set.getReps(),
         set.getWeight(),
+        set.getDurationSeconds(),
+        set.getDistanceKm(),
+        set.getSpeed(),
+        set.getIncline(),
         toIso(set.getCompletedAt())
     );
   }
@@ -224,7 +258,6 @@ public class WorkoutService {
     if (value == null) {
       return Instant.now();
     }
-
     try {
       return Instant.parse(value);
     } catch (DateTimeParseException exception) {

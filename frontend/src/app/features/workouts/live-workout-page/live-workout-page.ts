@@ -1,7 +1,8 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { LiveWorkout } from '../live-workout.models';
+import { LiveWorkout, PreviousSet, TrackingType } from '../live-workout.models';
 import { CachedExercise } from '../../exercises/cache/exercise-cache.models';
 import { LiveWorkoutStore } from '../live-workout.store';
 import { PlanStore } from '../../plan/plan.store';
@@ -17,6 +18,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { GuestWorkoutStorageService } from '../guest-workout-storage.service';
 import type { GuestCompletedWorkout } from '../guest-workout.models';
 import { formatWeightCompact } from '../../../shared/utils/weight.utils';
+import { toDisplayDistance } from '../../../shared/utils/distance.utils';
 import type { WeightUnit } from '../../settings/settings.models';
 
 type FinishedWorkoutSummary = {
@@ -38,6 +40,7 @@ type CompletionPr = {
   imports: [
     RouterLink,
     FormsModule,
+    NgClass,
     ConfirmationDialogComponent,
     TrainingHubLinkComponent,
     ExercisePickerComponent,
@@ -122,18 +125,24 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     if (!workout) return [];
     const prs: CompletionPr[] = [];
     for (const ex of workout.exercises) {
+      // Only surface weight-based PRs on the completion card
+      if (ex.trackingType !== 'WEIGHT_REPS') continue;
       const prSet = ex.sets
-        .filter((s) => s.completed)
+        .filter((s) => s.completed && s.weight != null && s.reps != null)
         .reduce<{ weight: number; reps: number } | null>((best, s) => {
-          if (!best || s.weight > best.weight || (s.weight === best.weight && s.reps > best.reps)) {
-            return { weight: s.weight, reps: s.reps };
+          const w = s.weight!;
+          const r = s.reps!;
+          if (!best || w > best.weight || (w === best.weight && r > best.reps)) {
+            return { weight: w, reps: r };
           }
           return best;
         }, null);
       if (!prSet) continue;
       // Only surface if this set beats the stored bestSet
       const prev = ex.bestSet;
-      if (!prev || prSet.weight > prev.weight || (prSet.weight === prev.weight && prSet.reps > prev.reps)) {
+      const prevW = prev?.weight ?? null;
+      const prevR = prev?.reps ?? null;
+      if (!prev || prSet.weight > (prevW ?? 0) || (prSet.weight === prevW && prSet.reps > (prevR ?? 0))) {
         prs.push({ exerciseName: ex.name, weight: prSet.weight, reps: prSet.reps });
       }
     }
@@ -197,10 +206,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   protected onExercisePicked(exercise: CachedExercise): void {
     const target = this.pickerTarget();
     if (target === null) return;
+    const trackingType = exercise.trackingType ?? 'WEIGHT_REPS';
     if (target === '') {
-      this.store.addExerciseFromPicker(exercise.id, exercise.name, exercise.primaryMuscles[0] ?? '', exercise.equipment[0] ?? '');
+      this.store.addExerciseFromPicker(exercise.id, exercise.name, exercise.primaryMuscles[0] ?? '', exercise.equipment[0] ?? '', trackingType);
     } else {
-      this.store.replaceExercise(target, exercise.id, exercise.name, exercise.primaryMuscles[0] ?? '', exercise.equipment[0] ?? '');
+      this.store.replaceExercise(target, exercise.id, exercise.name, exercise.primaryMuscles[0] ?? '', exercise.equipment[0] ?? '', trackingType);
     }
     this.closePicker();
   }
@@ -275,24 +285,66 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     if (event.target instanceof HTMLInputElement) event.target.select();
   }
 
-  protected previousSetLabel(previousSets: readonly { reps: number; weight: number }[], index: number): string {
+  protected previousSetLabel(previousSets: readonly PreviousSet[], index: number): string {
     const set = previousSets[index];
-    return set ? `${set.weight}×${set.reps}` : '–';
+    if (!set) return '–';
+    if (set.weight != null && set.reps != null) return `${set.weight}×${set.reps}`;
+    if (set.reps != null) return `${set.reps} reps`;
+    if (set.durationSeconds != null) return this.formatTime(set.durationSeconds);
+    if (set.distanceKm != null) return `${set.distanceKm}km`;
+    return '–';
   }
 
   protected exercisePerfLabel(
-    previous: readonly { reps: number; weight: number }[],
-    bestSet: { reps: number; weight: number } | null,
+    previous: readonly PreviousSet[],
+    bestSet: PreviousSet | null,
+    trackingType: TrackingType,
   ): string | null {
     const unit: WeightUnit = this.store.weightUnit();
     const lastSet = previous[0] ?? null;
     if (!lastSet && !bestSet) return null;
     const parts: string[] = [];
-    if (lastSet) parts.push(`Last: ${formatWeightCompact(lastSet.weight, unit)} × ${lastSet.reps}`);
-    if (bestSet && (!lastSet || bestSet.weight !== lastSet.weight || bestSet.reps !== lastSet.reps)) {
-      parts.push(`Best: ${formatWeightCompact(bestSet.weight, unit)} × ${bestSet.reps}`);
+
+    if (trackingType === 'WEIGHT_REPS') {
+      if (lastSet?.weight != null && lastSet.reps != null) {
+        parts.push(`Last: ${formatWeightCompact(lastSet.weight, unit)} × ${lastSet.reps}`);
+      }
+      if (bestSet?.weight != null && bestSet.reps != null) {
+        const isDifferent = !lastSet || bestSet.weight !== lastSet.weight || bestSet.reps !== lastSet.reps;
+        if (isDifferent) parts.push(`Best: ${formatWeightCompact(bestSet.weight, unit)} × ${bestSet.reps}`);
+      }
+    } else if (trackingType === 'REPS_ONLY') {
+      if (lastSet?.reps != null) parts.push(`Last: ${lastSet.reps} reps`);
+      if (bestSet?.reps != null && bestSet.reps !== lastSet?.reps) parts.push(`Best: ${bestSet.reps} reps`);
+    } else if (trackingType === 'DURATION') {
+      if (lastSet?.durationSeconds != null) parts.push(`Last: ${this.formatTime(lastSet.durationSeconds)}`);
+      if (bestSet?.durationSeconds != null && bestSet.durationSeconds !== lastSet?.durationSeconds) {
+        parts.push(`Best: ${this.formatTime(bestSet.durationSeconds)}`);
+      }
+    } else if (trackingType === 'CARDIO') {
+      if (lastSet?.durationSeconds != null) {
+        const distUnit = this.store.distanceUnit();
+        const dist = lastSet.distanceKm != null
+          ? ` · ${toDisplayDistance(lastSet.distanceKm, distUnit)}${distUnit}`
+          : '';
+        parts.push(`Last: ${this.formatTime(lastSet.durationSeconds)}${dist}`);
+      }
     }
-    return parts.join('  ·  ');
+
+    return parts.length > 0 ? parts.join('  ·  ') : null;
+  }
+
+  /**
+   * Returns a Tailwind grid-cols class string based on tracking type.
+   * Used by both the column header row and each set row.
+   */
+  protected setGridCols(trackingType: TrackingType): string {
+    switch (trackingType) {
+      case 'WEIGHT_REPS': return 'grid-cols-[2rem_1fr_1fr_2.75rem]';
+      case 'REPS_ONLY':   return 'grid-cols-[2rem_1fr_2.75rem]';
+      case 'DURATION':    return 'grid-cols-[2rem_1fr_2.75rem]';
+      case 'CARDIO':      return 'grid-cols-[2rem_1fr_1fr_1fr_2.75rem]';
+    }
   }
 
   protected formatTime(totalSeconds: number): string {
@@ -324,7 +376,11 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
       exercises: workout.exercises.length,
       sets: workout.exercises.reduce((c, ex) => c + ex.sets.filter((s) => s.completed).length, 0),
       volume: workout.exercises.reduce(
-        (t, ex) => t + ex.sets.reduce((st, s) => st + (s.completed ? s.reps * s.weight : 0), 0), 0
+        (t, ex) => t + ex.sets.reduce(
+          (st, s) => st + (s.completed && s.reps != null && s.weight != null ? s.reps * s.weight : 0),
+          0,
+        ),
+        0,
       ),
       durationMinutes: Math.max(1, Math.round(durationMs / 60_000)),
     };

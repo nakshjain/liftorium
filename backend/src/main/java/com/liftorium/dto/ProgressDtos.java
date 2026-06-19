@@ -35,6 +35,8 @@ public final class ProgressDtos {
       double weightPr,
       RepPrDto repPr,
       double estimatedOneRepMaxPr,
+      int longestDurationSeconds,
+      double longestDistanceKm,
       int totalPrs,
       long totalSessions,
       String lastImprovedAt
@@ -66,6 +68,8 @@ public final class ProgressDtos {
       RepPrDto repPr,
       Double firstEstimatedOneRepMax,
       double estimatedOneRepMaxPr,
+      int longestDurationSeconds,
+      double longestDistanceKm,
       int totalPrs,
       long totalSessions,
       String lastImprovedAt
@@ -123,10 +127,12 @@ public final class ProgressDtos {
   public record ExerciseProgressHistoryEntryDto(
       String id,
       String workoutId,
-      double bestWeight,
-      double bestSetWeight,
+      Double bestWeight,
+      Double bestSetWeight,
       int bestSetReps,
       double estimatedOneRepMax,
+      Integer bestDurationSeconds,
+      Double bestDistanceKm,
       String performedAt
   ) {
   }

@@ -62,24 +62,39 @@ public class ExerciseProgressHistory {
 
   /**
    * Highest weight lifted for this exercise across all sets in the workout.
+   * Null for DURATION / CARDIO exercises.
    */
-  private double bestWeight;
+  private Double bestWeight;
 
   /**
    * Weight of the set that produced the highest estimated 1RM this session.
+   * Null for DURATION / CARDIO exercises.
    */
-  private double bestSetWeight;
+  private Double bestSetWeight;
 
   /**
    * Reps of the set that produced the highest estimated 1RM this session.
+   * Zero for DURATION / CARDIO exercises.
    */
   private int bestSetReps;
 
   /**
    * Estimated 1RM calculated from bestSetWeight/bestSetReps via Epley formula.
-   * Rounded to 2 decimal places.
+   * Zero for DURATION / CARDIO exercises.
    */
   private double estimatedOneRepMax;
+
+  /**
+   * Longest duration (seconds) achieved across all sets in this workout session.
+   * Null for WEIGHT_REPS / REPS_ONLY exercises.
+   */
+  private Integer bestDurationSeconds;
+
+  /**
+   * Longest distance (km) covered in any single set this session.
+   * Null for non-CARDIO exercises.
+   */
+  private Double bestDistanceKm;
 
   /** When the workout was performed (workout finishedAt). */
   @Indexed

@@ -6,10 +6,12 @@ import com.liftorium.dto.ExerciseDtos.ExerciseDto;
 import com.liftorium.dto.ExerciseDtos.ListExercisesQuery;
 import com.liftorium.dto.ExerciseDtos.SearchExercisesQuery;
 import com.liftorium.entity.Exercise;
+import com.liftorium.entity.TrackingType;
 import com.liftorium.exception.AppException;
 import com.liftorium.repository.ExerciseQueryRepository;
 import com.liftorium.repository.ExerciseRepository;
 import java.time.Instant;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -67,6 +69,7 @@ public class ExerciseService {
         exercise.getSecondaryMuscles(),
         exercise.getEquipment(),
         exercise.getExerciseType(),
+        Objects.requireNonNullElse(exercise.getTrackingType(), TrackingType.WEIGHT_REPS),
         exercise.getLevel(),
         exercise.getMechanic(),
         exercise.isActive(),

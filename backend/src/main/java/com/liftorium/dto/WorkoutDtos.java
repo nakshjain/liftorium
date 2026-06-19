@@ -17,8 +17,16 @@ public final class WorkoutDtos {
   public record WorkoutSetDto(
       String id,
       int order,
-      int reps,
-      double weight,
+      // ── Strength ────────────────────────────────────────────────────────
+      Integer reps,
+      Double weight,
+      // ── Duration / Cardio ────────────────────────────────────────────────
+      Integer durationSeconds,
+      // ── Cardio optional ─────────────────────────────────────────────────
+      Double distanceKm,
+      Double speed,
+      Double incline,
+      // ── Audit ────────────────────────────────────────────────────────────
       String completedAt
   ) {
   }
@@ -59,9 +67,26 @@ public final class WorkoutDtos {
   ) {
   }
 
+  /**
+   * Request body for POST /workouts/{id}/exercises/{exId}/sets.
+   *
+   * <p>Which fields are required depends on the exercise's TrackingType and is
+   * enforced by {@link com.liftorium.validation.WorkoutSetValidator} in the
+   * service layer — not by Jakarta annotations here — because the constraint
+   * depends on a separate entity (the Exercise) that isn't available at the
+   * bean-validation layer.
+   */
   public record AddWorkoutSetRequest(
-      @NotNull @Min(0) @Max(1000) Integer reps,
-      @NotNull @Min(0) @Max(2000) Double weight,
+      // ── Strength ──────────────────────────────────────────────────────────
+      @Min(0) @Max(1000) Integer reps,
+      @Min(0) @Max(2000) Double weight,
+      // ── Duration / Cardio ─────────────────────────────────────────────────
+      @Min(1) @Max(86400) Integer durationSeconds,
+      // ── Cardio optional ───────────────────────────────────────────────────
+      @Min(0) @Max(1000) Double distanceKm,
+      @Min(0) @Max(100)  Double speed,
+      @Min(0) @Max(100)  Double incline,
+      // ── Audit ─────────────────────────────────────────────────────────────
       String completedAt
   ) {
   }
@@ -98,9 +123,17 @@ public final class WorkoutDtos {
   ) {
   }
 
+  /**
+   * Per-set entry within a sync request.
+   * Same nullable semantics as {@link AddWorkoutSetRequest}.
+   */
   public record SyncWorkoutSetRequest(
-      @NotNull @Min(0) @Max(1000) Integer reps,
-      @NotNull @Min(0) @Max(2000) Double weight,
+      @Min(0) @Max(1000) Integer reps,
+      @Min(0) @Max(2000) Double weight,
+      @Min(1) @Max(86400) Integer durationSeconds,
+      @Min(0) @Max(1000) Double distanceKm,
+      @Min(0) @Max(100)  Double speed,
+      @Min(0) @Max(100)  Double incline,
       String completedAt
   ) {
   }

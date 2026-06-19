@@ -23,8 +23,12 @@ export type GuestWorkoutPayload = {
   exercises: {
     exerciseId: string;
     sets: {
-      reps: number;
-      weight: number;
+      reps: number | null;
+      weight: number | null;
+      durationSeconds: number | null;
+      distanceKm: number | null;
+      speed: number | null;
+      incline: number | null;
       completedAt: string | null;
     }[];
   }[];

@@ -360,7 +360,7 @@
                       {{ exercise.sets.length }}/{{ exercise.sets.length }} sets complete
                     </p>
                   } @else if (!collapsed) {
-                    @if (exercisePerfLabel(exercise.previous, exercise.bestSet); as perfLabel) {
+                    @if (exercisePerfLabel(exercise.previous, exercise.bestSet, exercise.trackingType); as perfLabel) {
                       <p class="mt-0.5 text-[11px] font-medium text-teal-400/80">{{ perfLabel }}</p>
                     } @else {
                       <p class="mt-0.5 text-[11px] text-zinc-600">No previous data</p>
@@ -381,10 +381,28 @@
             @if (!collapsed) {
 
             <!-- ── Column headers ─────────────────────────────────── -->
-            <div class="grid grid-cols-[2rem_1fr_1fr_2.75rem] gap-x-2 border-b border-zinc-800/60 px-3 py-1.5">
+            <div
+              class="grid gap-x-2 border-b border-zinc-800/60 px-3 py-1.5"
+              [ngClass]="setGridCols(exercise.trackingType)"
+            >
               <span class="lft-section-label">#</span>
-              <span class="lft-section-label">Weight ({{ store.weightUnit() }})</span>
-              <span class="lft-section-label">Reps</span>
+              @switch (exercise.trackingType) {
+                @case ('WEIGHT_REPS') {
+                  <span class="lft-section-label">Weight ({{ store.weightUnit() }})</span>
+                  <span class="lft-section-label">Reps</span>
+                }
+                @case ('REPS_ONLY') {
+                  <span class="lft-section-label">Reps</span>
+                }
+                @case ('DURATION') {
+                  <span class="lft-section-label">Duration (s)</span>
+                }
+                @case ('CARDIO') {
+                  <span class="lft-section-label">Duration (s)</span>
+                  <span class="lft-section-label">Dist ({{ store.distanceUnit() }})</span>
+                  <span class="lft-section-label">Speed</span>
+                }
+              }
               <span class="lft-section-label text-center">Done</span>
             </div>
 
@@ -392,7 +410,8 @@
             <div class="divide-y divide-zinc-800/60">
               @for (set of exercise.sets; track set.id) {
                 <div
-                  class="grid grid-cols-[2rem_1fr_1fr_2.75rem] items-center gap-x-2 px-3 py-2 transition-colors"
+                  class="grid items-center gap-x-2 px-3 py-2 transition-colors"
+                  [ngClass]="setGridCols(exercise.trackingType)"
                   [class.lft-set-row-complete]="set.completed"
                 >
                   <!-- Set number + previous reference -->
@@ -403,27 +422,89 @@
                     </span>
                   </div>
 
-                  <!-- Weight stepper -->
-                  <div
-                    class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
-                    [class.border-transparent]="set.completed"
-                    [class.bg-transparent]="set.completed"
-                  >
-                    <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', -store.weightStepSize())" [attr.aria-label]="'Decrease weight by ' + store.weightStepSize() + ' ' + store.weightUnit()">−</button>
-                    <input class="lft-set-input h-10 rounded-none border-0 text-sm" inputmode="decimal" type="number" [value]="set.weight" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'weight', inputValue($event))" [attr.aria-label]="'Weight for set ' + set.order + ' in ' + store.weightUnit()"/>
-                    <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', store.weightStepSize())" [attr.aria-label]="'Increase weight by ' + store.weightStepSize() + ' ' + store.weightUnit()">+</button>
-                  </div>
+                  @switch (exercise.trackingType) {
 
-                  <!-- Reps stepper -->
-                  <div
-                    class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
-                    [class.border-transparent]="set.completed"
-                    [class.bg-transparent]="set.completed"
-                  >
-                    <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)" aria-label="Decrease reps">−</button>
-                    <input class="lft-set-input h-10 rounded-none border-0 text-sm" inputmode="numeric" type="number" [value]="set.reps" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'reps', inputValue($event))" [attr.aria-label]="'Reps for set ' + set.order"/>
-                    <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)" aria-label="Increase reps">+</button>
-                  </div>
+                    <!-- ── WEIGHT_REPS ── -->
+                    @case ('WEIGHT_REPS') {
+                      <!-- Weight stepper -->
+                      <div
+                        class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
+                        [class.border-transparent]="set.completed"
+                        [class.bg-transparent]="set.completed"
+                      >
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', -store.weightStepSize())" [attr.aria-label]="'Decrease weight by ' + store.weightStepSize() + ' ' + store.weightUnit()">−</button>
+                        <input class="lft-set-input h-10 rounded-none border-0 text-sm" inputmode="decimal" type="number" [value]="set.weight" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'weight', inputValue($event))" [attr.aria-label]="'Weight for set ' + set.order + ' in ' + store.weightUnit()"/>
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'weight', store.weightStepSize())" [attr.aria-label]="'Increase weight by ' + store.weightStepSize() + ' ' + store.weightUnit()">+</button>
+                      </div>
+                      <!-- Reps stepper -->
+                      <div
+                        class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
+                        [class.border-transparent]="set.completed"
+                        [class.bg-transparent]="set.completed"
+                      >
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)" aria-label="Decrease reps">−</button>
+                        <input class="lft-set-input h-10 rounded-none border-0 text-sm" inputmode="numeric" type="number" [value]="set.reps" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'reps', inputValue($event))" [attr.aria-label]="'Reps for set ' + set.order"/>
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)" aria-label="Increase reps">+</button>
+                      </div>
+                    }
+
+                    <!-- ── REPS_ONLY ── -->
+                    @case ('REPS_ONLY') {
+                      <div
+                        class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
+                        [class.border-transparent]="set.completed"
+                        [class.bg-transparent]="set.completed"
+                      >
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', -1)" aria-label="Decrease reps">−</button>
+                        <input class="lft-set-input h-10 rounded-none border-0 text-sm" inputmode="numeric" type="number" [value]="set.reps" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'reps', inputValue($event))" [attr.aria-label]="'Reps for set ' + set.order"/>
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustSet(exercise.id, set.id, 'reps', 1)" aria-label="Increase reps">+</button>
+                      </div>
+                    }
+
+                    <!-- ── DURATION ── -->
+                    @case ('DURATION') {
+                      <div
+                        class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
+                        [class.border-transparent]="set.completed"
+                        [class.bg-transparent]="set.completed"
+                      >
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustDuration(exercise.id, set.id, -5)" aria-label="Decrease duration by 5s">−</button>
+                        <input class="lft-set-input h-10 rounded-none border-0 text-sm" inputmode="numeric" type="number" [value]="set.durationSeconds" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'durationSeconds', inputValue($event))" [attr.aria-label]="'Duration in seconds for set ' + set.order"/>
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustDuration(exercise.id, set.id, 5)" aria-label="Increase duration by 5s">+</button>
+                      </div>
+                    }
+
+                    <!-- ── CARDIO ── -->
+                    @case ('CARDIO') {
+                      <!-- Duration -->
+                      <div
+                        class="grid grid-cols-1 overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50 sm:grid-cols-[1.75rem_1fr_1.75rem]"
+                        [class.border-transparent]="set.completed"
+                        [class.bg-transparent]="set.completed"
+                      >
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustDuration(exercise.id, set.id, -30)" aria-label="Decrease duration by 30s">−</button>
+                        <input class="lft-set-input h-10 rounded-none border-0 text-sm" inputmode="numeric" type="number" [value]="set.durationSeconds" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'durationSeconds', inputValue($event))" [attr.aria-label]="'Duration in seconds for set ' + set.order"/>
+                        <button class="lft-stepper-btn hidden h-10 items-center justify-center text-sm font-bold text-zinc-400 hover:bg-zinc-800 active:bg-zinc-700 sm:flex" type="button" (click)="store.adjustDuration(exercise.id, set.id, 30)" aria-label="Increase duration by 30s">+</button>
+                      </div>
+                      <!-- Distance -->
+                      <div
+                        class="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50"
+                        [class.border-transparent]="set.completed"
+                        [class.bg-transparent]="set.completed"
+                      >
+                        <input class="lft-set-input h-10 w-full border-0 text-sm" inputmode="decimal" type="number" placeholder="–" [value]="set.distanceKm ?? ''" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'distanceKm', inputValue($event))" [attr.aria-label]="'Distance in km for set ' + set.order"/>
+                      </div>
+                      <!-- Speed -->
+                      <div
+                        class="overflow-hidden rounded-lg border border-zinc-800 bg-zinc-950 transition-colors focus-within:border-teal-400/50"
+                        [class.border-transparent]="set.completed"
+                        [class.bg-transparent]="set.completed"
+                      >
+                        <input class="lft-set-input h-10 w-full border-0 text-sm" inputmode="decimal" type="number" placeholder="–" [value]="set.speed ?? ''" (focus)="selectAll($event)" (input)="store.setValue(exercise.id, set.id, 'speed', inputValue($event))" [attr.aria-label]="'Speed km/h for set ' + set.order"/>
+                      </div>
+                    }
+
+                  }
 
                   <!-- Done toggle -->
                   <div class="flex items-center justify-center">

@@ -67,6 +67,7 @@ export class CatalogSyncService {
           secondaryMuscles: e.secondaryMuscles,
           equipment: e.equipment,
           exerciseType: e.exerciseType,
+          trackingType: e.trackingType ?? 'WEIGHT_REPS',
           level: e.level,
           mechanic: e.mechanic,
           slug: e.slug,

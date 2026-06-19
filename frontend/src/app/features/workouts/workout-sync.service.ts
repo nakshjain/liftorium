@@ -4,6 +4,9 @@ import { HttpClient } from '@angular/common/http';
 import { API_BASE_URL } from '../../core/api/api.config';
 import type { GuestWorkoutPayload, SyncBulkRequest, SyncPreview, SyncResult, SyncState } from './guest-workout.models';
 import { GuestWorkoutStorageService } from './guest-workout-storage.service';
+import { UserSettingsStore } from '../settings/settings.store';
+import { toStorageKg } from '../../shared/utils/weight.utils';
+import { toStorageKm } from '../../shared/utils/distance.utils';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +15,7 @@ export class WorkoutSyncService {
   private readonly guestStorage = inject(GuestWorkoutStorageService);
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly settingsStore = inject(UserSettingsStore);
 
   private readonly _syncState = signal<SyncState>('idle');
   private readonly _pendingCount = signal<number>(0);
@@ -81,7 +85,15 @@ export class WorkoutSyncService {
               exerciseId: ex.exerciseId,
               sets: ex.sets.filter(s => s.completed).map(s => ({
                 reps: s.reps,
-                weight: s.weight,
+                weight: s.weight != null
+                  ? toStorageKg(s.weight, this.settingsStore.weightUnit())
+                  : null,
+                durationSeconds: s.durationSeconds,
+                distanceKm: s.distanceKm != null
+                  ? toStorageKm(s.distanceKm, this.settingsStore.distanceUnit())
+                  : null,
+                speed: s.speed,
+                incline: s.incline,
                 completedAt: s.completedAt ?? null,
               })),
             })),

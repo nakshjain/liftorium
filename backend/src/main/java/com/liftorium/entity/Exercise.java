@@ -57,6 +57,14 @@ public class Exercise {
   @Builder.Default
   private ExerciseType exerciseType = ExerciseType.OTHER;
 
+  /**
+   * Determines which fields are required on a {@link WorkoutSet} for this exercise,
+   * and which PR analytics apply. Defaults to {@link TrackingType#WEIGHT_REPS} so
+   * all existing exercises keep working without a migration.
+   */
+  @Builder.Default
+  private TrackingType trackingType = TrackingType.WEIGHT_REPS;
+
   @Builder.Default
   private boolean active = true;
 

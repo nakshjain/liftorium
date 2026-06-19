@@ -1,6 +1,7 @@
 package com.liftorium.dto;
 
 import com.liftorium.entity.ExerciseType;
+import com.liftorium.entity.TrackingType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -20,6 +21,8 @@ public final class ExerciseDtos {
       List<String> secondaryMuscles,
       List<String> equipment,
       ExerciseType exerciseType,
+      /** How sets are tracked for this exercise. Drives UI and validation. */
+      TrackingType trackingType,
       String level,
       String mechanic,
       boolean active,
