@@ -365,6 +365,10 @@ class WorkoutSyncPropertyTest {
         SyncWorkoutSetRequest set = new SyncWorkoutSetRequest(
                 10,
                 50.0,
+                null,       // durationSeconds
+                null,       // distanceKm
+                null,       // speed
+                null,       // incline
                 "2024-01-15T10:30:00Z"
         );
         SyncWorkoutExerciseRequest exercise = new SyncWorkoutExerciseRequest(

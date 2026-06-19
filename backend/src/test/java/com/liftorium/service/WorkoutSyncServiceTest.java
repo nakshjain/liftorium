@@ -136,6 +136,10 @@ class WorkoutSyncServiceTest {
         SyncWorkoutSetRequest set = new SyncWorkoutSetRequest(
                 10,         // reps
                 50.0,       // weight (kg)
+                null,       // durationSeconds
+                null,       // distanceKm
+                null,       // speed
+                null,       // incline
                 "2024-01-15T10:30:00Z"
         );
         SyncWorkoutExerciseRequest exercise = new SyncWorkoutExerciseRequest(
