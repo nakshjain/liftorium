@@ -5,8 +5,7 @@
 
     <!-- Page header -->
     <div class="mb-6">
-      <h1 class="text-xl font-semibold text-zinc-100">Settings</h1>
-      <p class="mt-0.5 text-sm text-zinc-500">Manage your account and preferences</p>
+      <h1 class="lft-page-title">Settings</h1>
     </div>
 
     <!-- Skeleton while loading -->
@@ -19,21 +18,17 @@
     } @else {
 
       <!-- Section nav tabs -->
-      <div class="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-zinc-900 p-1" role="tablist">
-        @for (tab of [
-          { id: 'account',    label: 'Account'    },
-          { id: 'workout',    label: 'Workout'     },
-          { id: 'appearance', label: 'Appearance'  },
-          { id: 'security',   label: 'Security'    },
-          { id: 'data',       label: 'Data'        }
-        ]; track tab.id) {
+      <div class="mb-6 flex gap-1 overflow-x-auto rounded-xl bg-zinc-900 p-1" role="tablist" aria-label="Settings sections">
+        @for (tab of tabs; track tab.id) {
           <button
             type="button"
             role="tab"
+            [attr.id]="'tab-' + tab.id"
             [attr.aria-selected]="activeSection() === tab.id"
+            [attr.aria-controls]="'panel-' + tab.id"
             [class]="activeSection() === tab.id
               ? 'flex-1 rounded-lg bg-zinc-800 px-3 py-1.5 text-xs font-semibold text-zinc-100 transition'
-              : 'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-500 transition hover:text-zinc-300'"
+              : 'flex-1 rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-500 transition hover:bg-zinc-800/50 hover:text-zinc-300'"
             (click)="setSection(tab.id)"
           >{{ tab.label }}</button>
         }
@@ -41,59 +36,70 @@
 
       <!-- ── ACCOUNT ──────────────────────────────────────────────────── -->
       @if (activeSection() === 'account') {
-        <section aria-labelledby="account-heading" class="space-y-4">
-          <h2 id="account-heading" class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Account Settings</h2>
+        <section
+          id="panel-account"
+          role="tabpanel"
+          aria-labelledby="tab-account"
+          class="space-y-4"
+        >
+          <form (ngSubmit)="saveAccount()" #accountForm="ngForm" novalidate>
+            <div class="lft-card rounded-2xl p-5 space-y-5">
 
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 space-y-5">
+              <!-- Display name -->
+              <div class="space-y-1.5">
+                <label for="displayName" class="lft-label">Display Name</label>
+                <input
+                  id="displayName"
+                  type="text"
+                  name="displayName"
+                  maxlength="80"
+                  autocomplete="name"
+                  [(ngModel)]="displayName"
+                  (ngModelChange)="markDirty()"
+                  class="lft-input w-full"
+                  placeholder="Your name"
+                />
+              </div>
 
-            <!-- Display name -->
-            <div class="space-y-1.5">
-              <label for="displayName" class="block text-sm font-medium text-zinc-300">Display Name</label>
-              <input
-                id="displayName"
-                type="text"
-                name="displayName"
-                maxlength="80"
-                autocomplete="name"
-                [(ngModel)]="displayName"
-                class="lft-input w-full"
-                placeholder="Your name"
-              />
-            </div>
+              <!-- Email (read-only) -->
+              <div class="space-y-1.5">
+                <span class="lft-label">Email</span>
+                <div class="flex items-center gap-2 rounded-xl border border-zinc-700/50 bg-zinc-800/50 px-4 py-2.5">
+                  <span class="flex-1 truncate text-sm text-zinc-400">{{ user()?.email }}</span>
+                  <span
+                    class="shrink-0 rounded-md bg-zinc-700/60 px-2 py-0.5 text-[10px] font-medium text-zinc-500"
+                    title="Email cannot be changed"
+                  >Read-only</span>
+                </div>
+              </div>
 
-            <!-- Email (read-only) -->
-            <div class="space-y-1.5">
-              <label class="block text-sm font-medium text-zinc-300">Email</label>
-              <div class="flex items-center gap-2 rounded-xl border border-zinc-700/50 bg-zinc-800/50 px-4 py-2.5">
-                <span class="flex-1 truncate text-sm text-zinc-400">{{ user()?.email }}</span>
-                <span class="shrink-0 rounded-md bg-zinc-700/60 px-2 py-0.5 text-[10px] font-medium text-zinc-500">Read-only</span>
+              <div class="flex justify-end pt-1">
+                <button
+                  type="submit"
+                  class="lft-btn lft-btn-primary px-5"
+                  [disabled]="accountSaving() || !displayName.trim()"
+                >
+                  @if (accountSaving()) { Saving… } @else { Save Changes }
+                </button>
               </div>
             </div>
-
-            <div class="flex justify-end pt-1">
-              <button
-                type="button"
-                class="lft-btn-primary px-5 py-2 text-sm"
-                [disabled]="accountSaving() || !displayName.trim()"
-                (click)="saveAccount()"
-              >
-                @if (accountSaving()) { Saving… } @else { Save Changes }
-              </button>
-            </div>
-          </div>
+          </form>
         </section>
       }
 
       <!-- ── WORKOUT PREFERENCES ─────────────────────────────────────── -->
       @if (activeSection() === 'workout') {
-        <section aria-labelledby="workout-heading" class="space-y-4">
-          <h2 id="workout-heading" class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Workout Preferences</h2>
-
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 space-y-6">
+        <section
+          id="panel-workout"
+          role="tabpanel"
+          aria-labelledby="tab-workout"
+          class="space-y-4"
+        >
+          <div class="lft-card rounded-2xl p-5 space-y-6">
 
             <!-- Weight unit -->
             <div class="space-y-2">
-              <span class="block text-sm font-medium text-zinc-300">Weight Unit</span>
+              <span class="lft-label">Weight Unit</span>
               <div class="flex gap-2" role="radiogroup" aria-label="Weight unit">
                 @for (opt of [{value: 'kg', label: 'Kilograms (kg)'}, {value: 'lb', label: 'Pounds (lb)'}]; track opt.value) {
                   <button
@@ -111,7 +117,7 @@
 
             <!-- Distance unit -->
             <div class="space-y-2">
-              <span class="block text-sm font-medium text-zinc-300">Distance Unit</span>
+              <span class="lft-label">Distance Unit</span>
               <div class="flex gap-2" role="radiogroup" aria-label="Distance unit">
                 @for (opt of [{value: 'km', label: 'Kilometres (km)'}, {value: 'mi', label: 'Miles (mi)'}]; track opt.value) {
                   <button
@@ -129,9 +135,9 @@
 
             <!-- Default rest timer -->
             <div class="space-y-2">
-              <label for="restSeconds" class="block text-sm font-medium text-zinc-300">
+              <label for="restSeconds" class="lft-label">
                 Default Rest Timer
-                <span class="ml-2 text-xs font-normal text-zinc-500">{{ defaultRestSeconds }}s</span>
+                <span class="ml-2 normal-case font-normal text-zinc-500">{{ defaultRestSeconds }}s</span>
               </label>
               <input
                 id="restSeconds"
@@ -141,6 +147,7 @@
                 max="600"
                 step="15"
                 [(ngModel)]="defaultRestSeconds"
+                (ngModelChange)="markDirty()"
                 class="lft-range w-full"
                 aria-label="Default rest timer in seconds"
               />
@@ -152,54 +159,38 @@
             </div>
 
             <!-- Auto-start rest timer -->
-            <div class="flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-800/50 px-4 py-3.5">
+            <div class="flex min-h-[44px] items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-800/50 px-4 py-3">
               <div>
                 <p class="text-sm font-medium text-zinc-300">Auto-Start Rest Timer</p>
                 <p class="mt-0.5 text-xs text-zinc-600">Start the rest timer automatically after logging a set</p>
               </div>
+              <!-- Toggle — outer button provides the 44px tap target -->
               <button
                 type="button"
                 role="switch"
                 [attr.aria-checked]="autoStartRestTimer"
-                [class]="autoStartRestTimer
-                  ? 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-teal-500 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400'
-                  : 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent bg-zinc-700 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400'"
-                (click)="autoStartRestTimer = !autoStartRestTimer"
+                class="flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-teal-400"
+                (click)="autoStartRestTimer = !autoStartRestTimer; markDirty()"
               >
                 <span
-                  aria-hidden="true"
                   [class]="autoStartRestTimer
-                    ? 'pointer-events-none inline-block h-5 w-5 translate-x-5 rounded-full bg-white shadow transition-transform'
-                    : 'pointer-events-none inline-block h-5 w-5 translate-x-0 rounded-full bg-white shadow transition-transform'"
-                ></span>
+                    ? 'relative inline-flex h-6 w-11 rounded-full border-2 border-transparent bg-teal-500 transition-colors'
+                    : 'relative inline-flex h-6 w-11 rounded-full border-2 border-transparent bg-zinc-700 transition-colors'"
+                >
+                  <span
+                    aria-hidden="true"
+                    [class]="autoStartRestTimer
+                      ? 'pointer-events-none inline-block h-5 w-5 translate-x-5 rounded-full bg-white shadow transition-transform'
+                      : 'pointer-events-none inline-block h-5 w-5 translate-x-0 rounded-full bg-white shadow transition-transform'"
+                  ></span>
+                </span>
               </button>
             </div>
 
-            <div class="flex justify-end pt-1">
-              <button
-                type="button"
-                class="lft-btn-primary px-5 py-2 text-sm"
-                [disabled]="saving()"
-                (click)="saveWorkoutPrefs()"
-              >
-                @if (saving()) { Saving… } @else { Save Preferences }
-              </button>
-            </div>
-          </div>
-        </section>
-      }
-
-      <!-- ── APPEARANCE ──────────────────────────────────────────────── -->
-      @if (activeSection() === 'appearance') {
-        <section aria-labelledby="appearance-heading" class="space-y-4">
-          <h2 id="appearance-heading" class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Appearance</h2>
-
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 space-y-5">
+            <!-- Theme (merged from Appearance tab) -->
             <div class="space-y-2">
-              <span class="block text-sm font-medium text-zinc-300">Theme</span>
+              <span class="lft-label">Theme</span>
               <div class="grid grid-cols-2 gap-3" role="radiogroup" aria-label="App theme">
-
-                <!-- Dark -->
                 <button
                   type="button"
                   role="radio"
@@ -209,15 +200,12 @@
                     : 'flex flex-col items-center gap-2.5 rounded-xl border border-zinc-700 bg-zinc-800 p-4 transition hover:border-zinc-600'"
                   (click)="setTheme('dark')"
                 >
-                  <!-- Preview swatch -->
                   <div class="h-10 w-full rounded-lg bg-zinc-950 ring-1 ring-zinc-800 flex items-center justify-center gap-1">
                     <div class="h-2 w-2 rounded-full bg-teal-400"></div>
                     <div class="h-1 w-8 rounded bg-zinc-800"></div>
                   </div>
                   <span [class]="theme === 'dark' ? 'text-xs font-semibold text-teal-300' : 'text-xs font-medium text-zinc-400'">Dark</span>
                 </button>
-
-                <!-- System -->
                 <button
                   type="button"
                   role="radio"
@@ -227,7 +215,6 @@
                     : 'flex flex-col items-center gap-2.5 rounded-xl border border-zinc-700 bg-zinc-800 p-4 transition hover:border-zinc-600'"
                   (click)="setTheme('system')"
                 >
-                  <!-- Preview swatch (split) -->
                   <div class="h-10 w-full overflow-hidden rounded-lg ring-1 ring-zinc-700 flex">
                     <div class="flex flex-1 items-center justify-center bg-zinc-950">
                       <div class="h-1.5 w-6 rounded bg-zinc-800"></div>
@@ -238,19 +225,18 @@
                   </div>
                   <span [class]="theme === 'system' ? 'text-xs font-semibold text-teal-300' : 'text-xs font-medium text-zinc-400'">System</span>
                 </button>
-
               </div>
-              <p class="text-xs text-zinc-600 pt-1">System theme follows your device's light/dark setting.</p>
+              <p class="text-xs text-zinc-600 pt-1">System follows your device's light/dark preference.</p>
             </div>
 
             <div class="flex justify-end pt-1">
               <button
                 type="button"
-                class="lft-btn-primary px-5 py-2 text-sm"
+                class="lft-btn lft-btn-primary px-5"
                 [disabled]="saving()"
-                (click)="saveAppearance()"
+                (click)="saveWorkoutPrefs()"
               >
-                @if (saving()) { Saving… } @else { Save Appearance }
+                @if (saving()) { Saving… } @else { Save Preferences }
               </button>
             </div>
           </div>
@@ -259,125 +245,135 @@
 
       <!-- ── SECURITY ────────────────────────────────────────────────── -->
       @if (activeSection() === 'security') {
-        <section aria-labelledby="security-heading" class="space-y-4">
-          <h2 id="security-heading" class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Security</h2>
+        <section
+          id="panel-security"
+          role="tabpanel"
+          aria-labelledby="tab-security"
+          class="space-y-4"
+        >
+          <form (ngSubmit)="savePassword()" #passwordForm="ngForm" novalidate>
+            <div class="lft-card rounded-2xl p-5 space-y-5">
+              <p class="text-sm text-zinc-500">Your new password must be at least 8 characters.</p>
 
-          <div class="rounded-2xl border border-zinc-800 bg-zinc-900 p-5 space-y-5">
-            <p class="text-sm text-zinc-500">Change your password. Your new password must be at least 8 characters.</p>
+              <!-- Current password -->
+              <div class="space-y-1.5">
+                <label for="currentPassword" class="lft-label">Current Password</label>
+                <div class="relative">
+                  <input
+                    id="currentPassword"
+                    [type]="showCurrentPassword ? 'text' : 'password'"
+                    name="currentPassword"
+                    autocomplete="current-password"
+                    [(ngModel)]="currentPassword"
+                    (ngModelChange)="markDirty()"
+                    class="lft-input w-full pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition"
+                    [attr.aria-label]="showCurrentPassword ? 'Hide password' : 'Show password'"
+                    (click)="showCurrentPassword = !showCurrentPassword"
+                  >
+                    @if (showCurrentPassword) {
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                    } @else {
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                    }
+                  </button>
+                </div>
+              </div>
 
-            <!-- Current password -->
-            <div class="space-y-1.5">
-              <label for="currentPassword" class="block text-sm font-medium text-zinc-300">Current Password</label>
-              <div class="relative">
-                <input
-                  id="currentPassword"
-                  [type]="showCurrentPassword ? 'text' : 'password'"
-                  name="currentPassword"
-                  autocomplete="current-password"
-                  [(ngModel)]="currentPassword"
-                  class="lft-input w-full pr-10"
-                  placeholder="••••••••"
-                />
+              <!-- New password -->
+              <div class="space-y-1.5">
+                <label for="newPassword" class="lft-label">New Password</label>
+                <div class="relative">
+                  <input
+                    id="newPassword"
+                    [type]="showNewPassword ? 'text' : 'password'"
+                    name="newPassword"
+                    autocomplete="new-password"
+                    [(ngModel)]="newPassword"
+                    (ngModelChange)="markDirty()"
+                    class="lft-input w-full pr-10"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition"
+                    [attr.aria-label]="showNewPassword ? 'Hide password' : 'Show password'"
+                    (click)="showNewPassword = !showNewPassword"
+                  >
+                    @if (showNewPassword) {
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                    } @else {
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                    }
+                  </button>
+                </div>
+                @if (newPassword.length > 0 && newPassword.length < 8) {
+                  <p class="text-xs text-amber-400" role="alert">Password must be at least 8 characters</p>
+                }
+              </div>
+
+              <!-- Confirm password -->
+              <div class="space-y-1.5">
+                <label for="confirmPassword" class="lft-label">Confirm New Password</label>
+                <div class="relative">
+                  <input
+                    id="confirmPassword"
+                    [type]="showConfirmPassword ? 'text' : 'password'"
+                    name="confirmPassword"
+                    autocomplete="new-password"
+                    [(ngModel)]="confirmPassword"
+                    (ngModelChange)="markDirty()"
+                    class="lft-input w-full pr-10"
+                    [class.border-rose-500]="passwordMismatch"
+                    placeholder="••••••••"
+                  />
+                  <button
+                    type="button"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition"
+                    [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'"
+                    (click)="showConfirmPassword = !showConfirmPassword"
+                  >
+                    @if (showConfirmPassword) {
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
+                    } @else {
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                    }
+                  </button>
+                </div>
+                @if (passwordMismatch) {
+                  <p class="text-xs text-rose-400" role="alert">Passwords do not match</p>
+                }
+              </div>
+
+              <div class="flex justify-end pt-1">
                 <button
-                  type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition"
-                  [attr.aria-label]="showCurrentPassword ? 'Hide password' : 'Show password'"
-                  (click)="showCurrentPassword = !showCurrentPassword"
+                  type="submit"
+                  class="lft-btn lft-btn-primary px-5"
+                  [disabled]="passwordSaving() || !canChangePassword"
                 >
-                  @if (showCurrentPassword) {
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-                  } @else {
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  }
+                  @if (passwordSaving()) { Changing… } @else { Change Password }
                 </button>
               </div>
             </div>
-
-            <!-- New password -->
-            <div class="space-y-1.5">
-              <label for="newPassword" class="block text-sm font-medium text-zinc-300">New Password</label>
-              <div class="relative">
-                <input
-                  id="newPassword"
-                  [type]="showNewPassword ? 'text' : 'password'"
-                  name="newPassword"
-                  autocomplete="new-password"
-                  [(ngModel)]="newPassword"
-                  class="lft-input w-full pr-10"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition"
-                  [attr.aria-label]="showNewPassword ? 'Hide password' : 'Show password'"
-                  (click)="showNewPassword = !showNewPassword"
-                >
-                  @if (showNewPassword) {
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-                  } @else {
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  }
-                </button>
-              </div>
-              @if (newPassword.length > 0 && newPassword.length < 8) {
-                <p class="text-xs text-amber-400" role="alert">Password must be at least 8 characters</p>
-              }
-            </div>
-
-            <!-- Confirm password -->
-            <div class="space-y-1.5">
-              <label for="confirmPassword" class="block text-sm font-medium text-zinc-300">Confirm New Password</label>
-              <div class="relative">
-                <input
-                  id="confirmPassword"
-                  [type]="showConfirmPassword ? 'text' : 'password'"
-                  name="confirmPassword"
-                  autocomplete="new-password"
-                  [(ngModel)]="confirmPassword"
-                  class="lft-input w-full pr-10"
-                  [class.border-red-500]="passwordMismatch"
-                  placeholder="••••••••"
-                />
-                <button
-                  type="button"
-                  class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition"
-                  [attr.aria-label]="showConfirmPassword ? 'Hide password' : 'Show password'"
-                  (click)="showConfirmPassword = !showConfirmPassword"
-                >
-                  @if (showConfirmPassword) {
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
-                  } @else {
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  }
-                </button>
-              </div>
-              @if (passwordMismatch) {
-                <p class="text-xs text-red-400" role="alert">Passwords do not match</p>
-              }
-            </div>
-
-            <div class="flex justify-end pt-1">
-              <button
-                type="button"
-                class="lft-btn-primary px-5 py-2 text-sm"
-                [disabled]="passwordSaving() || !canChangePassword"
-                (click)="savePassword()"
-              >
-                @if (passwordSaving()) { Changing… } @else { Change Password }
-              </button>
-            </div>
-          </div>
+          </form>
         </section>
       }
 
       <!-- ── DATA & PRIVACY ──────────────────────────────────────────── -->
       @if (activeSection() === 'data') {
-        <section aria-labelledby="data-heading" class="space-y-4">
-          <h2 id="data-heading" class="text-sm font-semibold uppercase tracking-wider text-zinc-500">Data &amp; Privacy</h2>
-
-          <div class="rounded-2xl border border-red-900/40 bg-zinc-900 p-5 space-y-4">
+        <section
+          id="panel-data"
+          role="tabpanel"
+          aria-labelledby="tab-data"
+          class="space-y-4"
+        >
+          <div class="lft-card rounded-2xl border-rose-900/40 p-5 space-y-4">
             <div>
-              <h3 class="text-sm font-semibold text-red-400">Delete Account</h3>
+              <h3 class="text-sm font-semibold text-rose-400">Delete Account</h3>
               <p class="mt-1 text-sm text-zinc-500">
                 This will permanently delete your account, all workout history, progress data, and settings.
                 This action <strong class="text-zinc-300">cannot be undone</strong>.
@@ -385,8 +381,8 @@
             </div>
 
             <div class="space-y-1.5">
-              <label for="deleteConfirm" class="block text-sm font-medium text-zinc-400">
-                Type <span class="font-mono font-bold text-zinc-200">DELETE</span> to confirm
+              <label for="deleteConfirm" class="lft-label">
+                Type <span class="font-mono font-bold normal-case text-zinc-200">DELETE</span> to confirm
               </label>
               <input
                 id="deleteConfirm"
@@ -398,13 +394,13 @@
                 placeholder="DELETE"
                 aria-describedby="delete-hint"
               />
-              <p id="delete-hint" class="sr-only">Type DELETE in all caps to enable the delete button</p>
+              <p id="delete-hint" class="sr-only">Type the word DELETE in all caps to enable the delete button</p>
             </div>
 
             <div class="flex justify-end">
               <button
                 type="button"
-                class="rounded-xl bg-red-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-40"
+                class="lft-btn lft-btn-danger px-5"
                 [disabled]="deleting() || !canDelete()"
                 (click)="confirmDelete()"
               >
@@ -418,3 +414,14 @@
     }
   </div>
 </main>
+
+<!-- Unsaved-changes confirmation dialog -->
+<app-confirmation-dialog
+  [isOpen]="showDirtyConfirm()"
+  title="Unsaved changes"
+  message="You have unsaved changes. Leave this section anyway?"
+  confirmLabel="Leave"
+  cancelLabel="Stay"
+  (confirm)="confirmLeave()"
+  (cancel)="cancelLeave()"
+/>

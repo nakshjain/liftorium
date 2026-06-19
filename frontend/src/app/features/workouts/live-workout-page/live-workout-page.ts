@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgClass } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -63,6 +63,9 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
   private pendingFinishWorkout: LiveWorkout | null = null;
 
   protected readonly justCompletedSetId = signal<string | null>(null);
+
+  /** Reference to the picker sheet root element for focus management. */
+  @ViewChild('pickerSheet') private pickerSheetRef?: ElementRef<HTMLElement>;
 
   private readonly manuallyCollapsed = signal<Set<string>>(new Set());
   private readonly manuallyExpanded  = signal<Set<string>>(new Set());
@@ -199,9 +202,23 @@ export class LiveWorkoutPageComponent implements OnInit, OnDestroy {
     () => new Set(this.store.activeWorkout()?.exercises.map((ex) => ex.exerciseId) ?? [])
   );
 
-  protected openAddExercise(): void    { this.pickerTarget.set(''); }
-  protected openReplaceExercise(id: string): void { this.pickerTarget.set(id); }
+  protected openAddExercise(): void    { this.pickerTarget.set(''); this.focusPickerSheet(); }
+  protected openReplaceExercise(id: string): void { this.pickerTarget.set(id); this.focusPickerSheet(); }
   protected closePicker(): void        { this.pickerTarget.set(null); }
+
+  /** Move focus into the picker sheet after Angular has rendered it. */
+  private focusPickerSheet(): void {
+    // queueMicrotask fires after the current change-detection cycle completes,
+    // by which point @if(pickerTarget() !== null) will have rendered the sheet.
+    queueMicrotask(() => {
+      const sheet = this.pickerSheetRef?.nativeElement;
+      if (!sheet) return;
+      const first = sheet.querySelector<HTMLElement>(
+        'button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      );
+      (first ?? sheet).focus();
+    });
+  }
 
   protected onExercisePicked(exercise: CachedExercise): void {
     const target = this.pickerTarget();

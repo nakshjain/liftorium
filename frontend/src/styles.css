@@ -1195,3 +1195,65 @@ input[type="number"]::-webkit-outer-spin-button {
   color: var(--lft-text-tertiary);
   margin-bottom: 0.625rem;
 }
+
+/* ─── Range input ─────────────────────────────────────────────────────────── */
+/*
+  Styled range track and thumb for the rest timer slider.
+  Uses explicit vendor prefixes — range styling is not standardised.
+*/
+.lft-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 9999px;
+  background: var(--lft-surface-hover);
+  outline: none;
+  cursor: pointer;
+}
+/* Track fill — not natively supported cross-browser without JS;
+   use accent-color as a progressive enhancement */
+.lft-range {
+  accent-color: var(--lft-accent);
+}
+/* Thumb */
+.lft-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: var(--lft-accent);
+  cursor: pointer;
+  transition: transform 80ms var(--ease-out), box-shadow 120ms var(--ease-out);
+}
+.lft-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 9999px;
+  background: var(--lft-accent);
+  cursor: pointer;
+  transition: transform 80ms var(--ease-out), box-shadow 120ms var(--ease-out);
+}
+.lft-range:hover::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.18);
+}
+.lft-range:hover::-moz-range-thumb {
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.18);
+}
+.lft-range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px var(--lft-accent-ring);
+}
+.lft-range:focus-visible::-moz-range-thumb {
+  box-shadow: 0 0 0 3px var(--lft-accent-ring);
+}
+.lft-range:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+.lft-range:active::-moz-range-thumb {
+  transform: scale(1.15);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lft-range::-webkit-slider-thumb { transition: none; }
+  .lft-range::-moz-range-thumb { transition: none; }
+}

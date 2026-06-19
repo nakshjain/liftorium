@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
 import { NavBarComponent } from '../../../shared/ui/nav-bar/nav-bar';
+import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
 import { SettingsService } from '../settings.service';
 import { UserSettingsStore } from '../settings.store';
 import type {
@@ -19,11 +20,11 @@ import type {
   WeightUnit,
 } from '../settings.models';
 
-type Section = 'account' | 'workout' | 'appearance' | 'security' | 'data';
+type Section = 'account' | 'workout' | 'security' | 'data';
 
 @Component({
   selector: 'app-settings-page',
-  imports: [FormsModule, NavBarComponent],
+  imports: [FormsModule, NavBarComponent, ConfirmationDialogComponent],
   templateUrl: './settings-page.html',
 })
 export class SettingsPageComponent implements OnInit {
@@ -36,12 +37,55 @@ export class SettingsPageComponent implements OnInit {
   protected readonly user = this.authService.user;
   protected readonly activeSection = signal<Section>('account');
 
-  // ── Loading / saving state (signals for reliable CD) ─────────────────
+  /** Tab definitions — used by both the tab bar and aria attributes. */
+  protected readonly tabs: { id: Section; label: string }[] = [
+    { id: 'account',  label: 'Account'  },
+    { id: 'workout',  label: 'Workout'  },
+    { id: 'security', label: 'Security' },
+    { id: 'data',     label: 'Data'     },
+  ];
+
+  // ── Loading / saving state ────────────────────────────────────────────
   protected readonly loading = signal(true);
   protected readonly saving = signal(false);
   protected readonly accountSaving = signal(false);
   protected readonly passwordSaving = signal(false);
   protected readonly deleting = signal(false);
+
+  // ── Dirty-state guard ─────────────────────────────────────────────────
+  /** True when the active section has unsaved changes. */
+  private readonly isDirty = signal(false);
+  /** Controls the "unsaved changes" confirmation dialog. */
+  protected readonly showDirtyConfirm = signal(false);
+  /** The section the user wants to navigate to after confirming. */
+  private pendingSection: Section | null = null;
+
+  protected markDirty(): void { this.isDirty.set(true); }
+
+  protected setSection(section: string): void {
+    const target = section as Section;
+    if (target === this.activeSection()) return;
+    if (this.isDirty()) {
+      this.pendingSection = target;
+      this.showDirtyConfirm.set(true);
+      return;
+    }
+    this.activeSection.set(target);
+  }
+
+  protected confirmLeave(): void {
+    this.showDirtyConfirm.set(false);
+    this.isDirty.set(false);
+    if (this.pendingSection) {
+      this.activeSection.set(this.pendingSection);
+      this.pendingSection = null;
+    }
+  }
+
+  protected cancelLeave(): void {
+    this.showDirtyConfirm.set(false);
+    this.pendingSection = null;
+  }
 
   // ── Account form ─────────────────────────────────────────────────────
   protected displayName = '';
@@ -65,8 +109,9 @@ export class SettingsPageComponent implements OnInit {
 
   // ── Delete account ───────────────────────────────────────────────────
   protected deleteConfirmText = '';
-
   protected readonly canDelete = computed(() => this.deleteConfirmText === 'DELETE');
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────
 
   ngOnInit(): void {
     // Seed from store cache immediately — no flicker even before API returns
@@ -91,22 +136,21 @@ export class SettingsPageComponent implements OnInit {
     if (u) this.displayName = u.displayName;
   }
 
-  // ── Navigation ────────────────────────────────────────────────────────
-
-  protected setSection(section: string): void {
-    this.activeSection.set(section as Section);
-  }
+  // ── Unit / theme setters (also mark dirty) ────────────────────────────
 
   protected setWeightUnit(value: string): void {
     this.weightUnit = value as WeightUnit;
+    this.markDirty();
   }
 
   protected setDistanceUnit(value: string): void {
     this.distanceUnit = value as DistanceUnit;
+    this.markDirty();
   }
 
   protected setTheme(value: string): void {
     this.theme = value as AppTheme;
+    this.markDirty();
   }
 
   // ── Account ───────────────────────────────────────────────────────────
@@ -117,6 +161,7 @@ export class SettingsPageComponent implements OnInit {
     this.settingsService.updateAccount({ displayName: this.displayName.trim() }).subscribe({
       next: () => {
         this.toastService.success('Name updated');
+        this.isDirty.set(false);
         this.accountSaving.set(false);
       },
       error: (err) => {
@@ -130,25 +175,20 @@ export class SettingsPageComponent implements OnInit {
 
   protected saveWorkoutPrefs(): void {
     this.saving.set(true);
-    // Optimistic — store.update() applies immediately then persists to API
     this.settingsStore.update({
-      units: { weight: this.weightUnit, distance: this.distanceUnit },
+      units:   { weight: this.weightUnit, distance: this.distanceUnit },
       workout: {
         defaultRestSeconds: Number(this.defaultRestSeconds),
         autoStartRestTimer: this.autoStartRestTimer,
       },
+      appearance: { theme: this.theme },
     });
-    this.toastService.success('Workout preferences saved');
-    this.saving.set(false);
-  }
-
-  // ── Appearance ────────────────────────────────────────────────────────
-
-  protected saveAppearance(): void {
-    this.saving.set(true);
-    this.settingsStore.update({ appearance: { theme: this.theme } });
-    this.toastService.success('Appearance saved');
-    this.saving.set(false);
+    // Small delay so "Saving…" label is perceptible before the optimistic update resolves
+    window.setTimeout(() => {
+      this.toastService.success('Preferences saved');
+      this.isDirty.set(false);
+      this.saving.set(false);
+    }, 400);
   }
 
   // ── Security ──────────────────────────────────────────────────────────
@@ -183,6 +223,7 @@ export class SettingsPageComponent implements OnInit {
           this.currentPassword = '';
           this.newPassword = '';
           this.confirmPassword = '';
+          this.isDirty.set(false);
           this.passwordSaving.set(false);
         },
         error: (err) => {
@@ -211,10 +252,10 @@ export class SettingsPageComponent implements OnInit {
   // ── Helpers ───────────────────────────────────────────────────────────
 
   private populateForms(s: UserSettings): void {
-    this.weightUnit = s.units.weight;
-    this.distanceUnit = s.units.distance;
+    this.weightUnit         = s.units.weight;
+    this.distanceUnit       = s.units.distance;
     this.defaultRestSeconds = s.workout.defaultRestSeconds;
     this.autoStartRestTimer = s.workout.autoStartRestTimer;
-    this.theme = s.appearance.theme;
+    this.theme              = s.appearance.theme;
   }
 }
