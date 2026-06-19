@@ -4,6 +4,7 @@ import com.liftorium.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.NoHandlerFoundException;
+
+@Slf4j
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -77,10 +80,11 @@ public class GlobalExceptionHandler {
   }
 
   @ExceptionHandler(Exception.class)
-  public ResponseEntity<ErrorResponse> handleUnexpectedException() {
+  public ResponseEntity<ErrorResponse> handleUnexpectedException(Exception exception) {
+    log.error("Unhandled exception", exception);
     return ResponseEntity
         .status(HttpStatus.INTERNAL_SERVER_ERROR)
-        .body(ErrorResponse.of("INTERNAL_SERVER_ERROR", "Unexpected server error", List.of()));
+        .body(ErrorResponse.of("INTERNAL_SERVER_ERROR", exception.getMessage(), List.of(exception.getClass().getName())));
   }
 
   private record ValidationIssue(String field, String message) {
