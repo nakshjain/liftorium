@@ -1,5 +1,24 @@
 # Exercise Module Architecture
 
+> **⚠ STATUS: DESIGN PROPOSAL — NOT IMPLEMENTED**
+>
+> This document describes a proposed provider-mapping architecture that was **not built**.
+> The implemented exercise catalog differs significantly from this design.
+> Do not treat any schema, collection name, service, or class listed here as existing in the codebase.
+>
+> For the **implemented** exercise architecture see:
+> - [data-model.md](./data-model.md) — the actual `exercises` collection schema
+> - [backend.md](./backend.md) — `ExerciseService`, `CatalogVersionService`, `ExerciseSyncService`
+> - [TRACKING_TYPES.md](./TRACKING_TYPES.md) — `trackingType` field on `Exercise`
+> - [backend-components.md](./backend-components.md) — full class diagram
+>
+> This document is preserved as a record of the original design intent and contains
+> valid architectural reasoning about provider independence, index strategy, and
+> workout snapshot contracts that may inform future work.
+> Consider moving it to [docs/decisions/](../decisions/) as a design decision record.
+
+---
+
 ## Scope
 
 This design covers the shared Exercise catalog, provider mappings, search, provider content retrieval, synchronization, and references from workout records. It does not change the finalized authentication, workout ownership, analytics, or collection boundaries.
