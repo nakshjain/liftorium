@@ -18,6 +18,8 @@ export class ExerciseService {
     if (params.equipment) httpParams = httpParams.set('equipment', params.equipment);
     if (params.exerciseType) httpParams = httpParams.set('exerciseType', params.exerciseType);
     if (params.level) httpParams = httpParams.set('level', params.level);
+    if (params.mechanic) httpParams = httpParams.set('mechanic', params.mechanic);
+    if (params.force) httpParams = httpParams.set('force', params.force);
 
     return this.http
       .get<ApiSuccessResponse<ExercisePage>>(`${this.baseUrl}/exercises`, { params: httpParams })

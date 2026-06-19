@@ -1,11 +1,13 @@
 package com.liftorium.controller;
 
 import com.liftorium.dto.ApiResponse;
+import com.liftorium.dto.CatalogVersionResponse;
 import com.liftorium.dto.ExerciseDtos.CursorPageDto;
 import com.liftorium.dto.ExerciseDtos.ExerciseDto;
 import com.liftorium.dto.ExerciseDtos.ListExercisesQuery;
 import com.liftorium.dto.ExerciseDtos.SearchExercisesQuery;
 import com.liftorium.entity.ExerciseType;
+import com.liftorium.service.CatalogVersionService;
 import com.liftorium.service.ExerciseService;
 import com.liftorium.util.ObjectIdValidator;
 import jakarta.validation.constraints.Max;
@@ -27,10 +29,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class ExerciseController {
 
   private final ExerciseService exerciseService;
+  private final CatalogVersionService catalogVersionService;
+
+  @GetMapping("/catalog-version")
+  public ApiResponse<CatalogVersionResponse> getCatalogVersion() {
+    return ApiResponse.success(catalogVersionService.getVersion());
+  }
 
   @GetMapping
   public ApiResponse<CursorPageDto> list(
-      @RequestParam(defaultValue = "25") @Min(1) @Max(100) int limit,
+      @RequestParam(defaultValue = "25") @Min(1) @Max(500) int limit,
       @RequestParam(required = false) @Size(max = 500) String cursor,
       @RequestParam(required = false) @Size(max = 80) String muscle,
       @RequestParam(required = false) @Size(max = 80) String equipment,

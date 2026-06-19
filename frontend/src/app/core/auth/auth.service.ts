@@ -1,5 +1,5 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, inject, Injectable, Injector, signal } from '@angular/core';
 import { catchError, map, Observable, of, tap, throwError } from 'rxjs';
 import { API_BASE_URL } from '../api/api.config';
 import type { ApiSuccessResponse } from '../api/api-response';
@@ -9,8 +9,10 @@ import type {
   AuthStatus,
   AuthUser,
   CurrentUserData,
+  ForgotPasswordRequest,
   LoginRequest,
   LogoutData,
+  ResetPasswordRequest,
   SignupInitiateRequest,
   SignupInitiateResponse,
   SignupRequest,
@@ -25,6 +27,7 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly tokenStorage = inject(TokenStorageService);
   private readonly apiBaseUrl = inject(API_BASE_URL);
+  private readonly injector = inject(Injector);
 
   private readonly userSignal = signal<AuthUser | null>(null);
   private readonly accessTokenSignal = signal<string | null>(this.tokenStorage.getAccessToken());
@@ -87,7 +90,31 @@ export class AuthService {
       .pipe(map((response) => this.applySession(response.data)));
   }
 
+  public forgotPassword(input: ForgotPasswordRequest): Observable<void> {
+    return this.http
+      .post<void>(`${this.apiBaseUrl}/auth/forgot-password`, input, {
+        context: this.bypassContext()
+      })
+      .pipe(map(() => undefined));
+  }
+
+  public resetPassword(input: ResetPasswordRequest): Observable<AuthUser> {
+    return this.http
+      .post<ApiSuccessResponse<AuthSessionData>>(`${this.apiBaseUrl}/auth/forgot-password/reset`, input, {
+        context: this.bypassContext(),
+        withCredentials: true
+      })
+      .pipe(map((response) => this.applySession(response.data)));
+  }
+
   public refreshSession(): Observable<AuthUser> {
+    // If the user explicitly logged out, do not attempt a silent refresh.
+    // The refresh cookie may still be present in the browser until the
+    // Set-Cookie maxAge=0 response is fully processed, so we must gate here.
+    if (this.tokenStorage.isLoggedOut()) {
+      return throwError(() => new Error('User has logged out'));
+    }
+
     return this.http
       .post<ApiSuccessResponse<AuthSessionData>>(
         `${this.apiBaseUrl}/auth/refresh`,
@@ -111,30 +138,46 @@ export class AuthService {
   }
 
   public logout(): Observable<void> {
+    const token = this.accessTokenSignal();
     return this.http
       .post<ApiSuccessResponse<LogoutData>>(
         `${this.apiBaseUrl}/auth/logout`,
         {},
         {
+          // BYPASS_AUTH_INTERCEPTOR so the 401-retry loop never triggers on logout.
+          // We attach the access token manually below so the backend can identify the session.
           context: this.bypassContext(),
-          withCredentials: true
+          withCredentials: true,
+          ...(token ? { headers: { Authorization: `Bearer ${token}` } } : {})
         }
       )
       .pipe(
         tap(() => this.clearSession()),
         map(() => undefined),
-        catchError((error: unknown) => {
+        catchError(() => {
           this.clearSession();
-          return throwError(() => error);
+          return of(undefined);
         })
       );
   }
 
   public clearSession(): void {
     this.tokenStorage.clearAccessToken();
+    this.tokenStorage.setLoggedOut();
     this.accessTokenSignal.set(null);
     this.userSignal.set(null);
     this.statusSignal.set('anonymous');
+    import('../../features/settings/settings.store').then(({ UserSettingsStore }) => {
+      this.injector.get(UserSettingsStore).clear();
+    });
+  }
+
+  /** Merges partial user data into the current user signal (e.g. after a display name update). */
+  public patchUser(patch: Partial<AuthUser>): void {
+    const current = this.userSignal();
+    if (current) {
+      this.userSignal.set({ ...current, ...patch });
+    }
   }
 
   private applySession(session: AuthSessionData): AuthUser {
@@ -142,6 +185,10 @@ export class AuthService {
     this.accessTokenSignal.set(session.accessToken);
     this.userSignal.set(session.user);
     this.statusSignal.set('authenticated');
+    // Lazy-load to avoid circular dependency (SettingsStore → SettingsService → AuthInterceptor → AuthService)
+    import('../../features/settings/settings.store').then(({ UserSettingsStore }) => {
+      this.injector.get(UserSettingsStore).load();
+    });
     return session.user;
   }
 

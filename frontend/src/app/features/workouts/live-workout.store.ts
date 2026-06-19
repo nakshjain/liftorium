@@ -1,30 +1,35 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs';
-import { Subject } from 'rxjs';
-import { ExerciseService } from '../exercises/exercise.service';
 import { PlanExercise } from '../plan/plan.models';
-import { WorkoutService } from './workout.service';
-import { ExerciseOption, LiveWorkout, PreviousSet, WorkoutExercise, WorkoutSet } from './live-workout.models';
+import { GuestWorkoutStorageService } from './guest-workout-storage.service';
+import {
+  ExerciseOption,
+  LiveWorkout,
+  PreviousSet,
+  TrackingType,
+  WorkoutExercise,
+  WorkoutSet,
+} from './live-workout.models';
+import { UserSettingsStore } from '../settings/settings.store';
+import { defaultWeight, weightStep } from '../../shared/utils/weight.utils';
 
-const STORAGE_KEY = 'liftorium_active_workout';
 const DEFAULT_REST_SECONDS = 90;
 
 @Injectable({ providedIn: 'root' })
 export class LiveWorkoutStore {
-  private readonly exerciseService = inject(ExerciseService);
-  private readonly workoutService = inject(WorkoutService);
+  private readonly guestStorage = inject(GuestWorkoutStorageService);
+  private readonly settingsStore = inject(UserSettingsStore);
 
-  private readonly workout = signal<LiveWorkout | null>(this.loadFromStorage());
+  /** Exposed so templates and the page component can read the current unit. */
+  readonly weightUnit = this.settingsStore.weightUnit;
+  /** Exposed so templates and the page component can read the current distance unit. */
+  readonly distanceUnit = this.settingsStore.distanceUnit;
+  /** Step used by the ±2.5 / ±5 weight stepper buttons. */
+  readonly weightStepSize = computed(() => weightStep(this.weightUnit()));
+
+  private readonly workout = signal<LiveWorkout | null>(null);
   private readonly finishedWorkout = signal<LiveWorkout | null>(null);
   private readonly now = signal(Date.now());
   private readonly restEndsAt = signal<number | null>(null);
-
-  private readonly exerciseSearch$ = new Subject<string>();
-  readonly exerciseQuery = signal('');
-  readonly exercises = signal<ExerciseOption[]>([]);
-  readonly exercisesLoading = signal(false);
-  readonly exerciseError = signal<string | null>(null);
 
   readonly activeWorkout = this.workout.asReadonly();
   readonly lastFinishedWorkout = this.finishedWorkout.asReadonly();
@@ -53,73 +58,39 @@ export class LiveWorkoutStore {
       (count, ex) => count + ex.sets.filter((s) => s.completed).length, 0
     ) ?? 0
   );
+
+  /**
+   * Total volume — only meaningful for WEIGHT_REPS exercises.
+   * REPS_ONLY / DURATION / CARDIO sets contribute 0 to keep the display clean.
+   */
   readonly totalVolume = computed(
     () => this.workout()?.exercises.reduce(
       (total, ex) => total + ex.sets.reduce(
-        (t, s) => t + (s.completed ? s.reps * s.weight : 0), 0
-      ), 0
+        (t, s) => t + (s.completed && s.reps != null && s.weight != null
+          ? s.reps * s.weight
+          : 0),
+        0,
+      ),
+      0,
     ) ?? 0
   );
 
   constructor() {
-    this.exerciseSearch$.pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      switchMap((q) => {
-        this.exercisesLoading.set(true);
-        this.exerciseError.set(null);
-        const call = q.length >= 2
-          ? this.exerciseService.search({ q, limit: 30 })
-          : this.exerciseService.list({ limit: 30 });
-        return call;
-      }),
-      takeUntilDestroyed(),
-    ).subscribe({
-      next: (page) => {
-        this.exercises.set(page.items.map((ex) => ({
-          id: ex.id,
-          name: ex.name,
-          target: ex.primaryMuscles[0] ?? '',
-          equipment: ex.equipment[0] ?? '',
-          previous: [],
-        })));
-        this.exercisesLoading.set(false);
-        this.exerciseError.set(null);
-      },
-      error: () => {
-        this.exercisesLoading.set(false);
-        this.exerciseError.set('Failed to load exercises.');
-      },
-    });
-
-    // Initial load
-    this.exerciseSearch$.next('');
+    this.hydrateFromStorage();
   }
 
-  searchExercises(query: string): void {
-    this.exerciseQuery.set(query);
-    this.exerciseSearch$.next(query);
-  }
-
-  retryExerciseSearch(): void {
-    this.exerciseSearch$.next(this.exerciseQuery());
+  private async hydrateFromStorage(): Promise<void> {
+    const workout = await this.guestStorage.loadActiveWorkout();
+    if (workout) {
+      const accumulated = workout.resumedAt !== 0
+        ? workout.accumulatedMs + (Date.now() - workout.resumedAt)
+        : workout.accumulatedMs;
+      this.workout.set({ ...workout, resumedAt: 0, accumulatedMs: accumulated });
+    }
   }
 
   tick(): void {
     this.now.set(Date.now());
-    this.checkDayBoundary();
-  }
-
-  private checkDayBoundary(): void {
-    const workout = this.workout();
-    if (!workout || workout.finishedAt) return;
-    const startedToday = new Date(workout.startedAt).toDateString() === new Date().toDateString();
-    if (!startedToday) {
-      this.autoCompleteStaleWorkout(workout);
-      this.workout.set(null);
-      this.restEndsAt.set(null);
-      this.clearStorage();
-    }
   }
 
   startWorkout(): void {
@@ -163,12 +134,25 @@ export class LiveWorkoutStore {
     this.clearStorage();
   }
 
-  addExercise(exerciseId: string): void {
-    const option = this.exercises().find((ex) => ex.id === exerciseId);
-    if (!option) return;
-
+  /** Add an exercise directly from the shared ExercisePickerComponent. */
+  addExerciseFromPicker(
+    id: string,
+    name: string,
+    target: string,
+    equipment: string,
+    trackingType: TrackingType,
+  ): void {
     this.workout.update((workout) => {
-      if (!workout || workout.exercises.some((ex) => ex.exerciseId === exerciseId)) return workout;
+      if (!workout || workout.exercises.some((ex) => ex.exerciseId === id)) return workout;
+      const option: ExerciseOption = {
+        id,
+        name,
+        target,
+        equipment,
+        trackingType,
+        previous: [],
+        bestSet: null,
+      };
       const updated = { ...workout, exercises: [...workout.exercises, this.createWorkoutExercise(option)] };
       this.persist(updated);
       return updated;
@@ -184,15 +168,57 @@ export class LiveWorkoutStore {
     });
   }
 
+  moveExercise(workoutExerciseId: string, direction: 'up' | 'down'): void {
+    this.workout.update((workout) => {
+      if (!workout) return workout;
+      const exercises = [...workout.exercises];
+      const idx = exercises.findIndex((ex) => ex.id === workoutExerciseId);
+      const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+      if (idx === -1 || targetIdx < 0 || targetIdx >= exercises.length) return workout;
+      [exercises[idx], exercises[targetIdx]] = [exercises[targetIdx], exercises[idx]];
+      const updated = { ...workout, exercises };
+      this.persist(updated);
+      return updated;
+    });
+  }
+
+  replaceExercise(
+    workoutExerciseId: string,
+    id: string,
+    name: string,
+    target: string,
+    equipment: string,
+    trackingType: TrackingType,
+  ): void {
+    this.workout.update((workout) => {
+      if (!workout) return workout;
+      const option: ExerciseOption = { id, name, target, equipment, trackingType, previous: [], bestSet: null };
+      const exercises = workout.exercises.map((ex) =>
+        ex.id === workoutExerciseId ? { ...this.createWorkoutExercise(option), id: ex.id } : ex
+      );
+      const updated = { ...workout, exercises };
+      this.persist(updated);
+      return updated;
+    });
+  }
+
   addSet(workoutExerciseId: string): void {
     this.workout.update((workout) => {
       const updated = this.updateExercise(workout, workoutExerciseId, (exercise) => {
         const previousSet = exercise.sets.at(-1);
         const comparisonSet = exercise.previous[exercise.sets.length] ?? exercise.previous.at(-1);
-        const baseSet = previousSet ?? this.createWorkoutSet(1, comparisonSet);
+        const baseSet = previousSet ?? this.createWorkoutSet(1, exercise.trackingType, comparisonSet);
         return {
           ...exercise,
-          sets: [...exercise.sets, this.createWorkoutSet(exercise.sets.length + 1, { reps: baseSet.reps, weight: baseSet.weight })],
+          sets: [
+            ...exercise.sets,
+            this.createWorkoutSet(exercise.sets.length + 1, exercise.trackingType, {
+              reps: baseSet.reps,
+              weight: baseSet.weight,
+              durationSeconds: baseSet.durationSeconds,
+              distanceKm: baseSet.distanceKm,
+            }),
+          ],
         };
       });
       if (updated) this.persist(updated);
@@ -213,10 +239,17 @@ export class LiveWorkoutStore {
     });
   }
 
-  adjustSet(workoutExerciseId: string, setId: string, field: 'reps' | 'weight', amount: number): void {
+  /** Adjust a numeric field on a set by a delta. Only applies to strength fields. */
+  adjustSet(
+    workoutExerciseId: string,
+    setId: string,
+    field: 'reps' | 'weight',
+    amount: number,
+  ): void {
     this.workout.update((workout) => {
       const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => {
-        const next = Math.max(0, set[field] + amount);
+        const current = set[field] ?? 0;
+        const next = Math.max(0, current + amount);
         return { ...set, [field]: field === 'reps' ? Math.round(next) : Number(next.toFixed(1)) };
       });
       if (updated) this.persist(updated);
@@ -224,15 +257,37 @@ export class LiveWorkoutStore {
     });
   }
 
-  setValue(workoutExerciseId: string, setId: string, field: 'reps' | 'weight', value: string): void {
+  /** Adjust a duration field by a delta (seconds). */
+  adjustDuration(workoutExerciseId: string, setId: string, amount: number): void {
+    this.workout.update((workout) => {
+      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => {
+        const current = set.durationSeconds ?? 0;
+        return { ...set, durationSeconds: Math.max(0, current + amount) };
+      });
+      if (updated) this.persist(updated);
+      return updated;
+    });
+  }
+
+  setValue(
+    workoutExerciseId: string,
+    setId: string,
+    field: 'reps' | 'weight' | 'durationSeconds' | 'distanceKm' | 'speed' | 'incline',
+    value: string,
+  ): void {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return;
 
     this.workout.update((workout) => {
-      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => ({
-        ...set,
-        [field]: field === 'reps' ? Math.max(0, Math.round(parsed)) : Math.max(0, Number(parsed.toFixed(1))),
-      }));
+      const updated = this.updateSet(workout, workoutExerciseId, setId, (set) => {
+        if (field === 'reps') {
+          return { ...set, reps: Math.max(0, Math.round(parsed)) };
+        }
+        if (field === 'durationSeconds') {
+          return { ...set, durationSeconds: Math.max(0, Math.round(parsed)) };
+        }
+        return { ...set, [field]: Math.max(0, Number(parsed.toFixed(2))) };
+      });
       if (updated) this.persist(updated);
       return updated;
     });
@@ -295,14 +350,23 @@ export class LiveWorkoutStore {
     }
 
     const now = Date.now();
+    // Plan exercises don't carry trackingType yet — default to WEIGHT_REPS.
+    // The ExercisePicker path is the recommended entry point for non-weight exercises.
     const exercises: WorkoutExercise[] = planExercises.map((pe) => ({
       id: crypto.randomUUID(),
       exerciseId: pe.exerciseId,
       name: pe.exerciseName,
       target: '',
       equipment: '',
+      trackingType: 'WEIGHT_REPS' as TrackingType,
       previous: [],
-      sets: pe.sets.map((s, i) => this.createWorkoutSet(i + 1, { reps: s.reps, weight: 20 })),
+      bestSet: null,
+      sets: pe.sets.map((s, i) =>
+        this.createWorkoutSet(i + 1, 'WEIGHT_REPS', {
+          reps: s.reps,
+          weight: defaultWeight(this.weightUnit()),
+        })
+      ),
     }));
 
     const workout: LiveWorkout = {
@@ -318,63 +382,16 @@ export class LiveWorkoutStore {
     this.persist(workout);
   }
 
+  // ── Private helpers ───────────────────────────────────────────────────────
+
   private persist(workout: LiveWorkout): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(workout));
-    } catch {
+    this.guestStorage.saveActiveWorkout(workout).catch(() => {
       // storage quota exceeded — non-fatal
-    }
+    });
   }
 
   private clearStorage(): void {
-    localStorage.removeItem(STORAGE_KEY);
-  }
-
-  private loadFromStorage(): LiveWorkout | null {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw) as LiveWorkout;
-      if (parsed.finishedAt) return null;
-
-      const startedToday = new Date(parsed.startedAt).toDateString() === new Date().toDateString();
-      if (!startedToday) {
-        this.autoCompleteStaleWorkout(parsed);
-        return null;
-      }
-
-      // Restore in paused state — user resumes explicitly
-      const accumulated = parsed.resumedAt !== 0
-        ? parsed.accumulatedMs + (Date.now() - parsed.resumedAt)
-        : parsed.accumulatedMs;
-      return { ...parsed, resumedAt: 0, accumulatedMs: accumulated };
-    } catch {
-      return null;
-    }
-  }
-
-  private autoCompleteStaleWorkout(workout: LiveWorkout): void {
-    const endOfDay = new Date(workout.startedAt);
-    endOfDay.setHours(23, 59, 59, 999);
-    const finishedAt = endOfDay.getTime();
-    const finalAccumulated = workout.resumedAt !== 0
-      ? workout.accumulatedMs + (finishedAt - workout.resumedAt)
-      : workout.accumulatedMs;
-    const finished: LiveWorkout = { ...workout, finishedAt, resumedAt: 0, accumulatedMs: finalAccumulated };
-    this.clearStorage();
-
-    const setCount = finished.exercises.reduce((count, ex) => count + ex.sets.filter(s => s.completed).length, 0);
-
-    this.workoutService.save(finished).subscribe({
-      error: (err) => console.error('Failed to auto-complete stale workout', err),
-    });
-
-    // Store notification flag for component to display on next mount
-    try {
-      localStorage.setItem('liftorium_stale_workout_notification', JSON.stringify({ setCount, timestamp: Date.now() }));
-    } catch {
-      // storage quota — non-fatal
-    }
+    this.guestStorage.clearActiveWorkout().catch(() => {});
   }
 
   private createWorkoutExercise(option: ExerciseOption): WorkoutExercise {
@@ -384,20 +401,58 @@ export class LiveWorkoutStore {
       name: option.name,
       target: option.target,
       equipment: option.equipment,
+      trackingType: option.trackingType,
       previous: option.previous,
-      sets: [this.createWorkoutSet(1, option.previous[0])],
+      bestSet: option.bestSet ?? null,
+      sets: [this.createWorkoutSet(1, option.trackingType, option.previous[0])],
     };
   }
 
-  private createWorkoutSet(order: number, previousSet?: PreviousSet): WorkoutSet {
-    return {
+  private createWorkoutSet(
+    order: number,
+    trackingType: TrackingType,
+    previousSet?: PreviousSet,
+  ): WorkoutSet {
+    const base: WorkoutSet = {
       id: crypto.randomUUID(),
       order,
-      reps: previousSet?.reps ?? 8,
-      weight: previousSet?.weight ?? 20,
+      reps: null,
+      weight: null,
+      durationSeconds: null,
+      distanceKm: null,
+      speed: null,
+      incline: null,
       completed: false,
       completedAt: null,
     };
+
+    switch (trackingType) {
+      case 'WEIGHT_REPS':
+        return {
+          ...base,
+          reps: previousSet?.reps ?? 8,
+          weight: previousSet?.weight ?? defaultWeight(this.weightUnit()),
+        };
+
+      case 'REPS_ONLY':
+        return {
+          ...base,
+          reps: previousSet?.reps ?? 8,
+        };
+
+      case 'DURATION':
+        return {
+          ...base,
+          durationSeconds: previousSet?.durationSeconds ?? 30,
+        };
+
+      case 'CARDIO':
+        return {
+          ...base,
+          durationSeconds: previousSet?.durationSeconds ?? 300,  // 5 min default
+          distanceKm: previousSet?.distanceKm ?? null,
+        };
+    }
   }
 
   private updateExercise(
@@ -406,7 +461,12 @@ export class LiveWorkoutStore {
     update: (exercise: WorkoutExercise) => WorkoutExercise,
   ): LiveWorkout | null {
     if (!workout) return workout;
-    return { ...workout, exercises: workout.exercises.map((ex) => ex.id === workoutExerciseId ? update(ex) : ex) };
+    return {
+      ...workout,
+      exercises: workout.exercises.map((ex) =>
+        ex.id === workoutExerciseId ? update(ex) : ex
+      ),
+    };
   }
 
   private updateSet(
@@ -415,9 +475,9 @@ export class LiveWorkoutStore {
     setId: string,
     update: (set: WorkoutSet) => WorkoutSet,
   ): LiveWorkout | null {
-    return this.updateExercise(workout, workoutExerciseId, (ex) => ({
-      ...ex,
-      sets: ex.sets.map((s) => s.id === setId ? update(s) : s),
+    return this.updateExercise(workout, workoutExerciseId, (exercise) => ({
+      ...exercise,
+      sets: exercise.sets.map((s) => (s.id === setId ? update(s) : s)),
     }));
   }
 }

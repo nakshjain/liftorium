@@ -60,16 +60,12 @@ export class ExerciseDetailPageComponent implements OnInit {
     if (!ex || this.adding()) return;
 
     this.adding.set(true);
-
-    // Add exercise to active workout
-    this.liveWorkoutStore.addExercise(ex.id);
-
-    // Show success toast and navigate to workout
+    this.liveWorkoutStore.addExerciseFromPicker(ex.id, ex.name, ex.primaryMuscles[0] ?? '', ex.equipment[0] ?? '', ex.trackingType ?? 'WEIGHT_REPS');
     this.toastService.success(`${ex.name} added to workout`);
 
     setTimeout(() => {
       this.adding.set(false);
-      this.router.navigate(['/app/workout/live']);
+      this.router.navigate(['/app/workout']);
     }, 500);
   }
 
@@ -79,16 +75,15 @@ export class ExerciseDetailPageComponent implements OnInit {
 
     this.adding.set(true);
 
-    // Start a new workout with this exercise
-    // First, ensure any existing workout is cleared (user confirmed via button context)
-    // Then add this exercise and navigate to live workout page
-    this.liveWorkoutStore.addExercise(ex.id);
-
+    if (!this.liveWorkoutStore.activeWorkout()) {
+      this.liveWorkoutStore.startNewWorkout();
+    }
+    this.liveWorkoutStore.addExerciseFromPicker(ex.id, ex.name, ex.primaryMuscles[0] ?? '', ex.equipment[0] ?? '', ex.trackingType ?? 'WEIGHT_REPS');
     this.toastService.success(`Started workout with ${ex.name}`);
 
     setTimeout(() => {
       this.adding.set(false);
-      this.router.navigate(['/app/workout/live']);
+      this.router.navigate(['/app/workout']);
     }, 500);
   }
 }

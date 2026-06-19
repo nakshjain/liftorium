@@ -342,10 +342,10 @@ Use this file for short, dated progress entries.
 ### Completed
 
 - Added email OTP verification flow to registration process.
-- Implemented backend services: `OtpService` (6-digit code generation and bcrypt verification) and `EmailService` (SMTP integration).
+- Implemented backend services: `OtpService` (6-digit code generation and bcrypt verification) and `EmailService` (transactional email delivery).
 - Added `PendingRegistration` entity with TTL-based expiration, rate limiting (3 attempts per 10-minute window), and OTP hash storage.
 - Added two-step registration endpoints: `/api/v1/auth/register/initiate` (send OTP) and `/api/v1/auth/register/verify` (verify OTP and create user).
-- Configured Spring Mail with SMTP properties and added Gmail app password support.
+- Configured email delivery properties for the initial provider.
 - Added OTP configuration properties: 5-minute expiry, rate limiting, and attempt tracking.
 - Updated SecurityConfig to permit new OTP endpoints.
 - Implemented frontend two-step signup flow with OTP input screen, 60-second resend cooldown, and proper error handling.
@@ -360,10 +360,135 @@ Use this file for short, dated progress entries.
 
 ### Notes
 
-- SMTP credentials must be configured in environment variables: `SMTP_EMAIL` and `SMTP_PASSWORD`.
-- For Gmail, use an app-specific password if 2FA is enabled, or enable "Less secure app access" for regular passwords.
+- Transactional email credentials must be configured in environment variables.
 - Environment variables should be managed securely - do not encrypt them with JWT secrets; use proper secret management (Vault, cloud secret managers, etc.) for production.
 - MongoDB TTL index on `PendingRegistration.expiresAt` handles automatic cleanup of expired registrations.
 - Rate limiting prevents abuse with 3 attempts per 10-minute window per email.
 - OTP codes are 6 digits, hashed with BCrypt before storage, and expire after 5 minutes.
 - The original direct `/api/v1/auth/register` endpoint remains functional for backward compatibility or testing.
+
+## 2026-06-14 - Resend OTP Email Delivery
+
+### Completed
+
+- Replaced SMTP/Spring Mail OTP delivery with Resend's Email API.
+- Removed the Spring Mail dependency and SMTP configuration.
+- Added `app.email.resend-api-key` and `app.email.from` properties backed by `RESEND_API_KEY` and `RESEND_FROM_EMAIL`.
+- Updated OTP email copy to use the configured OTP expiry value.
+- Documented Resend configuration in backend, deployment, API, prompt, and ADR docs.
+
+### Verification
+
+- Ran backend tests with IntelliJ bundled Maven and Java runtime.
+- Tests run: 2; failures: 0; errors: 0.
+
+### Notes
+
+- The auth API contract stays unchanged.
+- `RESEND_FROM_EMAIL` must be a verified Resend sender, usually `Liftorium <onboarding@your-domain.com>`.
+
+## 2026-06-14 - Sign-In Performance Tuning
+
+### Completed
+
+- Removed the redundant second MongoDB write from refresh-token session creation by pre-generating the refresh-token document id.
+- Added `BCRYPT_STRENGTH` / `app.security.bcrypt-strength` so password hashing cost can be tuned per environment.
+- Set the local/default BCrypt strength to `10` for faster development sign-ins while keeping production override support.
+- Updated the backend sample environment and security architecture documentation.
+
+### Verification
+
+- Ran the backend Maven test suite with IntelliJ's bundled Maven and Java 21.
+- Tests run: 2; failures: 0; errors: 0.
+
+### Notes
+
+- Existing users with BCrypt strength `12` password hashes will still verify at strength `12` until their password is recreated.
+- Production should benchmark login latency and set `BCRYPT_STRENGTH` to the highest acceptable value for the deployed hardware.
+
+## 2026-06-14 - Production API Subdomain Routing
+
+### Completed
+
+- Switched the Angular production API base URL to `https://api.liftorium.fit/api/v1`.
+- Added a production-profile default CORS origin of `https://liftorium.fit`.
+- Documented the production domain strategy: `liftorium.fit` serves Angular and `api.liftorium.fit` serves Spring Boot.
+
+### Verification
+
+- Ran `npm run build` in `frontend`.
+
+### Notes
+
+- The earlier same-origin `/api` proxy approach was dropped because it did not work on the current deployment path.
+
+## 2026-06-15 - Progress Backend Refinements
+
+### Completed
+
+- **ExerciseProgressHistory redesigned** — now stores one snapshot per exercise per completed workout, unconditionally. Removed PR-gate. Renamed `maxWeight` → `bestWeight`, `achievedAt` → `performedAt`. Repository updated to match.
+- **PrEvent extended** — added `previousValue` (nullable) and `newValue` fields. Creation logic now captures the previous record before mutating `ExerciseProgress`, enabling frontend to render "35kg → 47.5kg" transitions.
+- **ExerciseProgress extended** — added `firstWeightPr` and `firstEstimatedOneRepMax` fields. Both are set exactly once (first PR) and never overwritten, supporting "Started: 20kg → Now: 47.5kg" summaries.
+- **DTOs updated** — `ExerciseProgressDetailDto` now exposes `firstWeightPr` and `firstEstimatedOneRepMax`. `PrEventDto` now exposes `previousValue` and `newValue`. `ExerciseProgressHistoryEntryDto` renamed fields to match entity.
+- **API documented** — created `docs/api/progress.md` with full endpoint reference including new fields.
+
+### Notes
+
+- No API routes changed — refinement only.
+- Existing `exercise_progress_history` documents in MongoDB will have `bestWeight`/`performedAt` as null on old records (created before this change). The unique index on `(userId, exerciseId, workoutId)` is preserved so re-evaluation is safe.
+- `firstWeightPr` and `firstEstimatedOneRepMax` are `null` on existing `exercise_progress` documents until the next PR is recorded — this is safe; frontend should handle `null` as "data not yet available".
+
+## 2026-06-19 - User Settings Feature
+
+### Completed
+
+- Created `UserSettings` MongoDB entity (`user_settings` collection) with unique index on `userId` and three nested value objects: `UnitsSettings`, `WorkoutSettings`, `AppearanceSettings`.
+- Created `UserSettingsRepository` with `findByUserId`, `existsByUserId`, `deleteByUserId`.
+- Created `UserSettingsDtos` — `UserSettingsDto`, `UpdateSettingsRequest` (with `@Valid` nested records and `@Pattern` validation), `UpdateAccountRequest`, `ChangePasswordRequest`.
+- Created `UserSettingsService` — `getOrCreate`, `update`, `createDefaults`, `updateAccount`, `changePassword`, `deleteAccount`.
+- Created `UserSettingsController` with five endpoints:
+  - `GET /api/v1/settings`
+  - `PUT /api/v1/settings`
+  - `PUT /api/v1/settings/account`
+  - `PUT /api/v1/settings/security/password`
+  - `DELETE /api/v1/settings/account`
+- Wired `createDefaults` into `AuthService` — called after `userRepository.save()` in both `register()` and `verifyRegistration()`.
+- Added frontend `settings.models.ts`, `settings.service.ts`, `SettingsPageComponent` (5-section tab UI: Account, Workout, Appearance, Security, Data & Privacy).
+- Added `patchUser()` to `AuthService` so display name updates reflect in the nav bar immediately.
+- Added `/app/settings` lazy-loaded route with `authGuard`.
+- Added Settings link to NavBar account dropdown.
+- Added API docs at `docs/api/settings.md` and architecture notes at `docs/architecture/user-settings.md`.
+
+### Verification
+
+- All backend endpoints are covered by `anyRequest().authenticated()` in `SecurityConfig` — no additional security config required.
+- Default settings are created idempotently: `createDefaults` in `AuthService` is the primary path; `getOrCreate` in the service is a safety net for accounts that predate this feature.
+
+### Notes
+
+- Email is intentionally read-only in account settings (no endpoint to change it).
+- Extensibility hooks are documented: add new top-level sections to `UserSettings` entity + DTOs + frontend models + page tabs.
+- Future additions: notification settings, dashboard preferences, analytics preferences.
+
+## 2026-06-19 - Multi-Tracking-Type Support
+
+### Completed
+
+- Added `TrackingType` enum (`WEIGHT_REPS`, `REPS_ONLY`, `DURATION`, `CARDIO`) to backend.
+- Added `trackingType` field to `Exercise` entity (defaults to `WEIGHT_REPS` — zero-migration).
+- Refactored `WorkoutSet` entity: `reps`/`weight` are now nullable `Integer`/`Double`; added `durationSeconds`, `distanceKm`, `speed`, `incline`.
+- Added `WorkoutSetValidator` — tracking-type-aware validation injected into `WorkoutService.addSet`.
+- Updated all workout DTOs (`WorkoutSetDto`, `AddWorkoutSetRequest`, `SyncWorkoutSetRequest`) with new fields.
+- Updated `ExerciseDto` to include `trackingType`; `ExerciseService` defaults legacy documents to `WEIGHT_REPS`.
+- Rewrote `ProgressEvaluationService`: batch-resolves `TrackingType` per workout, applies type-specific PR logic.
+- Added `DURATION` and `DISTANCE` PR types to `PrType` enum.
+- Extended `ExerciseProgress` with `longestDurationSeconds` and `longestDistanceKm` PR fields.
+- Extended `ExerciseProgressHistory` with nullable `bestDurationSeconds` and `bestDistanceKm`.
+- Updated `ProgressDtos` and `ProgressService` mappers throughout.
+- Updated all frontend models: `TrackingType` type, `WorkoutSet` (nullable fields), `WorkoutExercise`, `ExerciseOption`, `PreviousSet`, `CachedExercise`.
+- Rewrote `LiveWorkoutStore` to be fully tracking-type-aware: type-specific set creation, `adjustDuration`, `setValue` handles all field types.
+- Updated `live-workout-page` HTML: dynamic column grid and input widgets per `TrackingType`.
+- Updated `workout.service.ts` and `workout-sync.service.ts` to send all new set fields.
+- Updated `catalog-sync.service.ts` to map `trackingType` into `CachedExercise`.
+- Updated `ExercisePickerComponent` handler to forward `trackingType` to the store.
+- Architecture decision document written at `docs/architecture/TRACKING_TYPES.md`.

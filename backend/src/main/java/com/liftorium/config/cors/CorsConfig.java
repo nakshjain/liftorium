@@ -1,6 +1,7 @@
 package com.liftorium.config.cors;
 
 import com.liftorium.config.AppProperties;
+import java.util.Arrays;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -17,8 +18,16 @@ public class CorsConfig {
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource() {
+    // Split comma-separated origins and trim whitespace from each entry.
+    // setAllowedOriginPatterns is used (not setAllowedOrigins) because it
+    // supports wildcard patterns such as https://*.liftorium.fit.
+    List<String> origins = Arrays.stream(appProperties.cors().allowedOrigins().split(","))
+        .map(String::trim)
+        .filter(s -> !s.isBlank())
+        .toList();
+
     CorsConfiguration configuration = new CorsConfiguration();
-    configuration.setAllowedOrigins(List.of(appProperties.cors().allowedOrigin()));
+    configuration.setAllowedOriginPatterns(origins);
     configuration.setAllowedMethods(List.of("GET", "POST", "PATCH", "DELETE", "OPTIONS", "PUT"));
     configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
     configuration.setAllowCredentials(true);

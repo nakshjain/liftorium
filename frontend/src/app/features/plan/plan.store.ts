@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { MuscleGroup, PlanDay, PLAN_TEMPLATES, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
+import { MuscleGroup, PlanDay, PlanTemplate, WorkoutPlan, emptyPlan } from './plan.models';
 import { PlanService } from './plan.service';
 
 const STORAGE_KEY = 'liftorium_workout_plan';
@@ -10,10 +10,16 @@ export class PlanStore {
 
   readonly plan = signal<WorkoutPlan>(this.loadFromStorage());
   readonly activeTemplateId = signal<string | null>(null);
+  readonly templates = signal<PlanTemplate[]>([]);
+  readonly templatesLoading = signal(true);
+
   readonly syncing = signal(false);
   readonly syncError = signal(false);
   readonly syncSuccess = signal(false);
+  readonly isDirty = signal(false);
   readonly resetting = signal(false);
+  readonly resetSuccess = signal(false);
+  readonly resetError = signal(false);
 
   readonly activeDayCount = computed(
     () => this.plan().days.filter((d) => !d.rest).length,
@@ -25,11 +31,24 @@ export class PlanStore {
   });
 
   constructor() {
-    // Load from server on init — server wins over localStorage
+    // Load templates from server
+    this.planService.getTemplates().subscribe({
+      next: (templates) => {
+        this.templates.set(templates);
+        this.templatesLoading.set(false);
+      },
+      error: () => {
+        this.templatesLoading.set(false);
+      },
+    });
+
+    // Load user plan from server — server wins over localStorage
     this.planService.get().subscribe({
       next: (serverPlan) => {
         this.plan.set(serverPlan);
         this.persist(serverPlan);
+        this.activeTemplateId.set(serverPlan.templateId ?? null);
+        this.isDirty.set(false);
       },
       error: () => { /* offline — keep localStorage copy */ },
     });
@@ -40,13 +59,13 @@ export class PlanStore {
     this.syncing.set(true);
     this.syncError.set(false);
     this.syncSuccess.set(false);
-    this.planService.save(this.plan()).subscribe({
+    this.planService.save(this.plan(), this.activeTemplateId()).subscribe({
       next: (saved) => {
-        this.plan.update((p) => ({ ...p, id: saved.id }));
+        this.plan.update((p) => ({ ...p, id: saved.id, templateId: saved.templateId }));
         this.persist(this.plan());
         this.syncing.set(false);
         this.syncSuccess.set(true);
-        setTimeout(() => this.syncSuccess.set(false), 2000);
+        this.isDirty.set(false);
       },
       error: () => {
         this.syncing.set(false);
@@ -57,39 +76,56 @@ export class PlanStore {
 
   reset(): void {
     this.resetting.set(true);
+    this.resetSuccess.set(false);
+    this.resetError.set(false);
     this.planService.get().subscribe({
       next: (serverPlan) => {
-        this.plan.set(serverPlan);
-        this.persist(serverPlan);
-        this.activeTemplateId.set(null);
+        const planToApply = serverPlan.id ? serverPlan : emptyPlan();
+        this.plan.set(planToApply);
+        this.persist(planToApply);
+        this.activeTemplateId.set(planToApply.templateId ?? null);
+        this.isDirty.set(false);
         this.resetting.set(false);
+        this.resetSuccess.set(true);
+        setTimeout(() => this.resetSuccess.set(false), 2000);
       },
       error: () => {
-        const defaultPlan: WorkoutPlan = {
-          ...emptyPlan(),
-          days: PLAN_TEMPLATES[0].days.map((d) => ({ ...d })),
-        };
-        this.plan.set(defaultPlan);
-        this.persist(defaultPlan);
-        this.activeTemplateId.set(PLAN_TEMPLATES[0].id);
+        const fallback = emptyPlan();
+        this.plan.set(fallback);
+        this.persist(fallback);
+        this.activeTemplateId.set(null);
+        this.isDirty.set(false);
         this.resetting.set(false);
+        this.resetError.set(true);
+        setTimeout(() => this.resetError.set(false), 3000);
       },
     });
   }
 
   applyTemplate(template: PlanTemplate): void {
-    this.plan.update((p) => ({ ...p, days: template.days.map((d) => ({ ...d })) }));
+    this.plan.update((p) => ({
+      ...p,
+      days: template.days.map((d) => ({ ...d })),
+      templateId: template.id,
+    }));
     this.activeTemplateId.set(template.id);
-    this.afterMutation();
+    this.isDirty.set(true);
+    this.syncSuccess.set(false);
+    this.syncError.set(false);
+    this.afterMutation(false);
   }
 
   clearTemplate(): void {
     this.plan.update((p) => ({
       ...p,
+      templateId: null,
       days: p.days.map((d) => ({ ...d, label: '', muscleGroups: [], exercises: [], rest: true })),
     }));
     this.activeTemplateId.set(null);
-    this.afterMutation();
+    this.isDirty.set(true);
+    this.syncSuccess.set(false);
+    this.syncError.set(false);
+    this.afterMutation(false);
   }
 
   toggleRest(dayOfWeek: number): void {
@@ -101,7 +137,6 @@ export class PlanStore {
           : d,
       ),
     }));
-    this.activeTemplateId.set(null);
     this.afterMutation();
   }
 
@@ -110,7 +145,6 @@ export class PlanStore {
       ...p,
       days: p.days.map((d) => (d.dayOfWeek === dayOfWeek ? { ...d, label } : d)),
     }));
-    this.activeTemplateId.set(null);
     this.afterMutation();
   }
 
@@ -128,7 +162,6 @@ export class PlanStore {
         };
       }),
     }));
-    this.activeTemplateId.set(null);
     this.afterMutation();
   }
 
@@ -141,7 +174,6 @@ export class PlanStore {
         return { ...d, exercises: [...d.exercises, { ...exercise, sets: [{ reps: 10 }], order }] };
       }),
     }));
-    this.activeTemplateId.set(null);
     this.afterMutation();
   }
 
@@ -156,7 +188,29 @@ export class PlanStore {
         return { ...d, exercises };
       }),
     }));
-    this.activeTemplateId.set(null);
+    this.afterMutation();
+  }
+
+  /**
+   * Reorders two days by swapping their dayOfWeek values while keeping all
+   * content (label, muscleGroups, exercises, rest) in place.
+   * fromIndex / toIndex are positions in the rendered DAY_LABELS array (0 = Mon, 6 = Sun).
+   */
+  reorderDay(fromIndex: number, toIndex: number): void {
+    if (fromIndex === toIndex) return;
+    this.plan.update((p) => {
+      const days = [...p.days];
+      // Swap the dayOfWeek keys so the content stays but the slot moves
+      const fromDay = days.find((d) => d.dayOfWeek === fromIndex);
+      const toDay   = days.find((d) => d.dayOfWeek === toIndex);
+      if (!fromDay || !toDay) return p;
+      const updated = days.map((d) => {
+        if (d.dayOfWeek === fromIndex) return { ...toDay,   dayOfWeek: fromIndex };
+        if (d.dayOfWeek === toIndex)   return { ...fromDay, dayOfWeek: toIndex   };
+        return d;
+      });
+      return { ...p, days: updated };
+    });
     this.afterMutation();
   }
 
@@ -167,18 +221,11 @@ export class PlanStore {
         if (d.dayOfWeek !== dayOfWeek) return d;
         const exercises = [...d.exercises];
         const targetIndex = direction === 'up' ? exerciseIndex - 1 : exerciseIndex + 1;
-
         if (targetIndex < 0 || targetIndex >= exercises.length) return d;
-
-        // Swap exercises
         [exercises[exerciseIndex], exercises[targetIndex]] = [exercises[targetIndex], exercises[exerciseIndex]];
-
-        // Update order property
-        const reordered = exercises.map((e, i) => ({ ...e, order: i }));
-        return { ...d, exercises: reordered };
+        return { ...d, exercises: exercises.map((e, i) => ({ ...e, order: i })) };
       }),
     }));
-    this.activeTemplateId.set(null);
     this.afterMutation();
   }
 
@@ -193,7 +240,6 @@ export class PlanStore {
         return { ...d, exercises };
       }),
     }));
-    this.activeTemplateId.set(null);
     this.afterMutation();
   }
 
@@ -208,7 +254,6 @@ export class PlanStore {
         return { ...d, exercises };
       }),
     }));
-    this.activeTemplateId.set(null);
     this.afterMutation();
   }
 
@@ -225,7 +270,6 @@ export class PlanStore {
         return { ...d, exercises };
       }),
     }));
-    this.activeTemplateId.set(null);
     this.afterMutation();
   }
 
@@ -233,7 +277,18 @@ export class PlanStore {
     return this.plan().days.find((d) => d.dayOfWeek === dayOfWeek)!;
   }
 
-  private afterMutation(): void {
+  /**
+   * Mark plan as custom when the user edits it after applying a template.
+   * Pass false to skip clearing (e.g. when applying/clearing a template itself).
+   */
+  private afterMutation(markCustom = true): void {
+    if (markCustom) {
+      this.activeTemplateId.set(null);
+      this.plan.update((p) => ({ ...p, templateId: null }));
+    }
+    this.isDirty.set(true);
+    this.syncSuccess.set(false);
+    this.syncError.set(false);
     this.persist(this.plan());
   }
 

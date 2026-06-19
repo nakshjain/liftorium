@@ -1,6 +1,8 @@
 package com.liftorium.config;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
 
@@ -10,11 +12,13 @@ public record AppProperties(
     Cors cors,
     Jwt jwt,
     Exercises exercises,
-    Otp otp
+    Email email,
+    Otp otp,
+    Security security
 ) {
 
   public record Cors(
-      @NotBlank String allowedOrigin
+      @NotBlank String allowedOrigins
   ) {
   }
 
@@ -33,10 +37,21 @@ public record AppProperties(
   ) {
   }
 
+  public record Email(
+      @NotBlank String resendApiKey,
+      @NotBlank String from
+  ) {
+  }
+
   public record Otp(
       int expiryMinutes,
       int maxAttemptsPerWindow,
       int rateLimitWindowMinutes
+  ) {
+  }
+
+  public record Security(
+      @Min(4) @Max(31) int bcryptStrength
   ) {
   }
 }

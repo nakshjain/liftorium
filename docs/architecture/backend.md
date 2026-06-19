@@ -55,6 +55,7 @@ HTTP request
 ## Modules
 
 - Auth: registration, login, current user, refresh rotation, logout, BCrypt password hashing, and refresh-token persistence.
+- Email: OTP and password reset delivery through Resend's Email API.
 - Exercises: catalog CRUD, pagination, filtering, search, and Mongo indexes.
 - Workouts: authenticated user-owned sessions, active workout rules, exercise additions, set add/remove, completion, and history pagination.
 
@@ -107,6 +108,8 @@ Key environment variables:
 - `CORS_ORIGIN`
 - `JWT_ACCESS_SECRET`
 - `JWT_REFRESH_SECRET`
+- `RESEND_API_KEY`
+- `RESEND_FROM_EMAIL`
 - `ACCESS_TOKEN_TTL`
 - `REFRESH_TOKEN_TTL`
 - `REFRESH_TOKEN_COOKIE_NAME`

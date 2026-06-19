@@ -1,176 +1,115 @@
 import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { DAY_LABELS, MUSCLE_GROUPS, PLAN_TEMPLATES, MuscleGroup } from '../plan.models';
+import { DAY_LABELS, MUSCLE_GROUPS, MuscleGroup } from '../plan.models';
 import { PlanStore } from '../plan.store';
-import { ExerciseService } from '../../exercises/exercise.service';
-import { Exercise } from '../../exercises/exercise.models';
+import { CachedExercise } from '../../exercises/cache/exercise-cache.models';
 import { ConfirmationDialogComponent } from '../../../shared/ui/confirmation-dialog/confirmation-dialog';
 import { ToastService } from '../../../shared/ui/toast/toast.service';
+import { TrainingHubLinkComponent } from '../../../shared/ui/training-hub-link/training-hub-link';
+import { ExercisePickerComponent } from '../../../shared/ui/exercise-picker/exercise-picker';
 
 @Component({
   selector: 'app-plan-page',
-  imports: [RouterLink, FormsModule, ConfirmationDialogComponent],
+  imports: [FormsModule, ConfirmationDialogComponent, TrainingHubLinkComponent, ExercisePickerComponent],
   templateUrl: './plan-page.html',
 })
 export class PlanPageComponent {
   protected readonly store = inject(PlanStore);
-  private readonly exerciseService = inject(ExerciseService);
   private readonly toastService = inject(ToastService);
 
-  protected readonly templates = PLAN_TEMPLATES;
+  protected readonly templates = this.store.templates;
   protected readonly muscleGroups = MUSCLE_GROUPS;
   protected readonly dayLabels = DAY_LABELS;
 
-  // Muscle group quick-picks
-  protected readonly muscleGroupPresets = [
-    { label: 'Push', groups: ['Chest' as MuscleGroup, 'Shoulders' as MuscleGroup, 'Triceps' as MuscleGroup] },
-    { label: 'Pull', groups: ['Back' as MuscleGroup, 'Biceps' as MuscleGroup, 'Forearms' as MuscleGroup] },
-    { label: 'Legs', groups: ['Legs' as MuscleGroup] },
-  ];
-
-  protected readonly expandedDay = signal<number | null>(null);
-  protected readonly showAdvancedMuscleGroups = signal<number | null>(null);
+  protected readonly expandedDays = signal<Set<number>>(new Set([0, 1, 2, 3, 4, 5, 6]));
   protected readonly todayIndex = this.store.todayDayOfWeek;
 
   protected readonly searchingDay = signal<number | null>(null);
-  protected readonly searchQuery = signal('');
-  protected readonly searchResults = signal<Exercise[]>([]);
-  protected readonly exercisesLoading = signal(true);
-  protected readonly exerciseLoadError = signal(false);
+
+  // ── Drag-to-reorder state ────────────────────────────────────────────────
+  /** dayOfWeek index currently being dragged, or null when idle. */
+  protected readonly dragIndex = signal<number | null>(null);
+  /** dayOfWeek index the drag is currently hovering over. */
+  protected readonly dragOverIndex = signal<number | null>(null);
+
+  protected onDragStart(index: number): void {
+    this.dragIndex.set(index);
+  }
+
+  protected onDragOver(event: DragEvent, index: number): void {
+    event.preventDefault(); // allow drop
+    if (index !== this.dragOverIndex()) {
+      this.dragOverIndex.set(index);
+    }
+  }
+
+  protected onDrop(toIndex: number): void {
+    const from = this.dragIndex();
+    if (from !== null && from !== toIndex) {
+      this.store.reorderDay(from, toIndex);
+    }
+    this.dragIndex.set(null);
+    this.dragOverIndex.set(null);
+  }
+
+  protected onDragEnd(): void {
+    this.dragIndex.set(null);
+    this.dragOverIndex.set(null);
+  }
 
   // Confirmation dialog state
   protected readonly showRemoveExerciseConfirm = signal(false);
   protected readonly showResetConfirm = signal(false);
   protected pendingRemoval: { dayOfWeek: number; exerciseIndex: number; exerciseName: string; setCount: number } | null = null;
 
-  private allExercises: Exercise[] = [];
-  private initialPlanSnapshot: string = '';
   private templateSwitchTimeout: any = null;
-
-  protected readonly hasUnsavedChanges = computed(() => {
-    return JSON.stringify(this.store.plan()) !== this.initialPlanSnapshot;
-  });
 
   protected readonly planLoading = signal(true);
 
   protected readonly activeTemplateDescription = computed(() => {
     const tid = this.store.activeTemplateId();
     if (!tid) return null;
-    return this.templates.find((t) => t.id === tid)?.description ?? null;
+    return this.store.templates().find((t) => t.id === tid)?.description ?? null;
   });
 
   constructor() {
-    this.loadAllExercises();
-
-    // Track initial plan state for unsaved changes
-    effect(() => {
-      // Update snapshot when plan is successfully saved
-      if (this.store.syncSuccess()) {
-        this.initialPlanSnapshot = JSON.stringify(this.store.plan());
-      }
-    }, { allowSignalWrites: false });
-
-    // Wait for plan to load from server
+    // Hide loading skeleton once the plan arrives from the server
     effect(() => {
       const plan = this.store.plan();
       if (plan && plan.days.length > 0) {
         this.planLoading.set(false);
-        this.initialPlanSnapshot = JSON.stringify(plan);
       }
-    }, { allowSignalWrites: false });
+    }, { allowSignalWrites: true });
 
-    // Warn before leaving with unsaved changes
-    if (typeof window !== 'undefined') {
-      window.addEventListener('beforeunload', this.handleBeforeUnload);
-    }
+    // Show toast on reset result
+    effect(() => {
+      if (this.store.resetSuccess()) {
+        this.toastService.success('Plan restored from server.');
+      }
+    });
+    effect(() => {
+      if (this.store.resetError()) {
+        this.toastService.error('Could not reach server — plan cleared.');
+      }
+    });
   }
 
   ngOnDestroy(): void {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('beforeunload', this.handleBeforeUnload);
-    }
     if (this.templateSwitchTimeout) {
       clearTimeout(this.templateSwitchTimeout);
     }
   }
 
-  private handleBeforeUnload = (e: BeforeUnloadEvent): string | undefined => {
-    if (this.hasUnsavedChanges()) {
-      e.preventDefault();
-      return 'You have unsaved changes. Are you sure you want to leave?';
-    }
-    return undefined;
-  };
-
-  private loadAllExercises(): void {
-    this.exercisesLoading.set(true);
-    this.exerciseLoadError.set(false);
-    this.allExercises = [];
-    this.fetchPage(undefined);
-  }
-
-  protected retryLoadExercises(): void {
-    this.loadAllExercises();
-  }
-
-  private fetchPage(cursor: string | undefined): void {
-    this.exerciseService.list({ limit: 100, cursor }).subscribe({
-      next: (page) => {
-        this.allExercises = [...this.allExercises, ...page.items];
-        if (page.hasNext && page.nextCursor) {
-          this.fetchPage(page.nextCursor);
-        } else {
-          this.exercisesLoading.set(false);
-          this.exerciseLoadError.set(false);
-        }
-      },
-      error: () => {
-        this.exercisesLoading.set(false);
-        this.exerciseLoadError.set(true);
-      },
-    });
-  }
-
-  protected get exerciseCount(): number {
-    return this.allExercises.length;
-  }
-
   protected toggleDay(dayOfWeek: number): void {
-    this.expandedDay.update((current) => (current === dayOfWeek ? null : dayOfWeek));
+    this.expandedDays.update((set) => {
+      const next = new Set(set);
+      next.has(dayOfWeek) ? next.delete(dayOfWeek) : next.add(dayOfWeek);
+      return next;
+    });
   }
 
   protected hasMuscleGroup(dayOfWeek: number, group: MuscleGroup): boolean {
     return this.store.getDay(dayOfWeek).muscleGroups.includes(group);
-  }
-
-  protected hasAllPresetGroups(dayOfWeek: number, presetGroups: MuscleGroup[]): boolean {
-    const dayGroups = this.store.getDay(dayOfWeek).muscleGroups;
-    return presetGroups.every(g => dayGroups.includes(g));
-  }
-
-  protected togglePresetGroups(dayOfWeek: number, presetGroups: MuscleGroup[]): void {
-    const hasAll = this.hasAllPresetGroups(dayOfWeek, presetGroups);
-    if (hasAll) {
-      // Remove all preset groups
-      presetGroups.forEach(g => {
-        if (this.hasMuscleGroup(dayOfWeek, g)) {
-          this.store.toggleMuscleGroup(dayOfWeek, g);
-        }
-      });
-    } else {
-      // Add all preset groups
-      presetGroups.forEach(g => {
-        if (!this.hasMuscleGroup(dayOfWeek, g)) {
-          this.store.toggleMuscleGroup(dayOfWeek, g);
-        }
-      });
-    }
-  }
-
-  protected toggleAdvancedMuscleGroups(dayOfWeek: number): void {
-    const current = this.showAdvancedMuscleGroups();
-    this.showAdvancedMuscleGroups.set(current === dayOfWeek ? null : dayOfWeek);
   }
 
   protected muscleGroupChips(dayOfWeek: number): string {
@@ -188,32 +127,13 @@ export class PlanPageComponent {
 
   protected openExerciseSearch(dayOfWeek: number): void {
     this.searchingDay.set(dayOfWeek);
-    this.searchQuery.set('');
-    this.searchResults.set([]);
   }
 
   protected closeExerciseSearch(): void {
     this.searchingDay.set(null);
-    this.searchQuery.set('');
-    this.searchResults.set([]);
   }
 
-  protected onSearchInput(value: string): void {
-    this.searchQuery.set(value);
-    if (value.length < 2) {
-      this.searchResults.set([]);
-      return;
-    }
-    const query = value.toLowerCase();
-    const filtered = this.allExercises
-      .filter((e) => e.name.toLowerCase().includes(query))
-      .slice(0, 15);
-    this.searchResults.set(filtered);
-  }
-
-  protected selectExercise(exercise: Exercise): void {
-    const dayOfWeek = this.searchingDay();
-    if (dayOfWeek === null) return;
+  protected onExerciseSelected(exercise: CachedExercise, dayOfWeek: number): void {
     this.store.addExercise(dayOfWeek, {
       exerciseId: exercise.id,
       exerciseName: exercise.name,
@@ -307,12 +227,9 @@ export class PlanPageComponent {
   }
 
   protected applyTemplateDebounced(template: any): void {
-    // Clear any pending template switch
     if (this.templateSwitchTimeout) {
       clearTimeout(this.templateSwitchTimeout);
     }
-
-    // Debounce rapid template switching
     this.templateSwitchTimeout = setTimeout(() => {
       this.store.applyTemplate(template);
     }, 200);
@@ -322,7 +239,6 @@ export class PlanPageComponent {
     if (this.templateSwitchTimeout) {
       clearTimeout(this.templateSwitchTimeout);
     }
-
     this.templateSwitchTimeout = setTimeout(() => {
       this.store.clearTemplate();
     }, 200);

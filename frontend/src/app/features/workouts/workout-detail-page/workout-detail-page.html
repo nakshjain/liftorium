@@ -1,17 +1,18 @@
-<main class="min-h-dvh bg-zinc-950 pb-16 text-zinc-50">
+<main class="min-h-dvh bg-zinc-950 pb-24 text-zinc-50">
   <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
 
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
-      <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app/workouts/history">
-        <svg class="mr-1 inline h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+    <header class="anim-enter sticky top-0 z-20 -mx-4 border-b border-zinc-800 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
+      <a class="inline-flex items-center gap-1 text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app/workouts/history">
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
         </svg>
         History
       </a>
       @if (workout(); as w) {
         <h1 class="mt-1 text-2xl font-semibold tracking-normal text-zinc-50">{{ w.name }}</h1>
         <p class="mt-0.5 text-sm text-zinc-500">
-          {{ formatDate(w.startedAt) }} &bull; {{ formatDuration(w.durationSeconds) }} &bull; {{ totalVolume() | number:'1.0-0' }} kg
+          {{ formatDate(w.startedAt) }}@if (w.durationSeconds) { &bull; {{ formatDuration(w.durationSeconds) }}} &bull; {{ displayVolume(totalVolume()) | number:'1.0-0' }} {{ weightUnit() }}
+
         </p>
       }
     </header>
@@ -27,7 +28,7 @@
         <p class="text-sm font-medium text-rose-300">{{ error() }}</p>
       </div>
     } @else if (workout(); as w) {
-      <section class="mt-6 space-y-6">
+      <section class="anim-enter-1 mt-6 space-y-6">
         @for (exercise of w.exercises; track exercise.id; let idx = $index) {
           <div>
             <div class="flex items-center justify-between">
@@ -38,18 +39,18 @@
                 <thead>
                   <tr class="border-b border-zinc-800 bg-zinc-900/80">
                     <th class="px-4 py-2 text-left text-xs font-medium uppercase tracking-wide text-zinc-500">Set</th>
-                    <th class="px-4 py-2 text-right text-xs font-medium uppercase tracking-wide text-zinc-500">Weight</th>
+                    <th class="px-4 py-2 text-right text-xs font-medium uppercase tracking-wide text-zinc-500">Weight ({{ weightUnit() }})</th>
                     <th class="px-4 py-2 text-right text-xs font-medium uppercase tracking-wide text-zinc-500">Reps</th>
-                    <th class="px-4 py-2 text-right text-xs font-medium uppercase tracking-wide text-zinc-500">Vol</th>
+                    <th class="px-4 py-2 text-right text-xs font-medium uppercase tracking-wide text-zinc-500">Vol ({{ weightUnit() }})</th>
                   </tr>
                 </thead>
                 <tbody>
                   @for (set of exercise.sets; track set.id) {
                     <tr class="border-b border-zinc-800/50 last:border-0">
                       <td class="px-4 py-2.5 text-zinc-400">{{ set.order }}</td>
-                      <td class="px-4 py-2.5 text-right font-medium text-zinc-100">{{ formatWeight(set.weight) }} kg</td>
+                      <td class="px-4 py-2.5 text-right font-medium text-zinc-100">{{ formatWeight(set.weight) }}</td>
                       <td class="px-4 py-2.5 text-right text-zinc-300">{{ set.reps }}</td>
-                      <td class="px-4 py-2.5 text-right text-zinc-500">{{ set.reps * set.weight | number:'1.0-0' }}</td>
+                      <td class="px-4 py-2.5 text-right text-zinc-500">{{ set.reps * displayVolume(set.weight) | number:'1.0-0' }}</td>
                     </tr>
                   }
                 </tbody>

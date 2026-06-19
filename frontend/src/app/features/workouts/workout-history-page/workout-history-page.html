@@ -1,129 +1,373 @@
-<main class="min-h-dvh bg-zinc-950 pb-16 text-zinc-50">
-  <div class="mx-auto w-full max-w-3xl px-4 py-4 sm:px-6">
+<main class="min-h-dvh bg-zinc-950 pb-24 text-zinc-50">
+  <div class="mx-auto w-full max-w-3xl px-4 pt-4 sm:px-6">
 
-    <header class="sticky top-0 z-20 -mx-4 border-b border-zinc-900 bg-zinc-950/95 px-4 pb-3 pt-2 backdrop-blur sm:-mx-6 sm:px-6">
-      <a class="text-sm font-medium text-zinc-400 transition hover:text-zinc-200" routerLink="/app">Training hub</a>
-      <div class="mt-1 flex items-center justify-between">
-        <h1 class="text-2xl font-semibold tracking-normal text-zinc-50">History</h1>
-        <div class="flex items-center gap-2">
+    <!-- ── Header ─────────────────────────────────────────────────── -->
+    <header class="anim-enter lft-page-header">
+      <app-training-hub-link />
+      <div class="mt-2 flex items-center justify-between">
+        <h1 class="lft-page-title">History</h1>
+        <!-- Month navigator -->
+        <div class="flex items-center gap-0.5">
           <button
-            class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200"
-            type="button"
-            (click)="prevMonth()"
+            class="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 active:bg-zinc-700"
+            type="button" aria-label="Previous month" (click)="prevMonth()"
           >
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/>
             </svg>
           </button>
-          <span class="min-w-[140px] text-center text-sm font-medium text-zinc-200">{{ monthLabel() }}</span>
           <button
-            class="flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-800 text-zinc-400 transition hover:border-zinc-600 hover:text-zinc-200 disabled:opacity-30"
+            class="min-w-[116px] rounded-xl px-2 py-1 text-center text-sm font-semibold text-zinc-200 transition-colors hover:bg-zinc-800 hover:text-zinc-50"
             type="button"
-            [disabled]="isCurrentMonth()"
-            (click)="nextMonth()"
+            [attr.aria-label]="isCurrentMonth() ? 'Current month' : 'Jump to current month'"
+            [class.pointer-events-none]="isCurrentMonth()"
+            (click)="jumpToCurrentMonth()"
+          >{{ monthLabel() }}</button>
+          <button
+            class="flex h-8 w-8 items-center justify-center rounded-xl text-zinc-500 transition-colors hover:bg-zinc-800 hover:text-zinc-200 active:bg-zinc-700 disabled:pointer-events-none disabled:opacity-25"
+            type="button" aria-label="Next month" [disabled]="isCurrentMonth()" (click)="nextMonth()"
           >
-            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
             </svg>
           </button>
         </div>
       </div>
     </header>
 
-    @if (stats(); as s) {
-      <section class="mt-4">
-        @if (s.streak > 0) {
-          <div class="mb-3 flex items-center gap-2 text-sm font-medium text-amber-400">
-            <span class="text-base">&#x1F525;</span>
-            <span>{{ s.streak }} day streak</span>
-          </div>
-        }
 
-        <div class="grid grid-cols-3 gap-3">
-          <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
-            <p class="text-xl font-bold text-zinc-50">{{ s.sessions }}</p>
-            <p class="mt-0.5 text-xs text-zinc-500">sessions</p>
-          </div>
-          <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
-            <p class="text-xl font-bold text-zinc-50">{{ formatVolume(s.totalVolume) }}</p>
-            <p class="mt-0.5 text-xs text-zinc-500">kg volume</p>
-          </div>
-          <div class="rounded-lg border border-zinc-800 bg-zinc-900/60 p-3 text-center">
-            <p class="text-xl font-bold text-zinc-50">{{ s.personalRecords.length }}</p>
-            <p class="mt-0.5 text-xs text-zinc-500">PRs</p>
-          </div>
-        </div>
+    <!-- ── Consistency strip ──────────────────────────────────────── -->
+    <section class="anim-enter mt-5" aria-label="Workout consistency">
+      <div class="lft-card rounded-2xl px-4 py-3.5">
+        @if (!loading()) {
+          <div class="flex items-center gap-4">
 
-        @if (volumeChangePercent() !== null) {
-          <div class="mt-3 flex items-center gap-2">
-            <div class="h-2 flex-1 overflow-hidden rounded-full bg-zinc-800">
-              <div
-                class="h-full rounded-full transition-all"
-                [class.bg-teal-400]="volumeChangePercent()! >= 0"
-                [class.bg-rose-400]="volumeChangePercent()! < 0"
-                [style.width.%]="volumeBarWidth()"
-              ></div>
+            <!-- Heatmap: fixed 10px cells, full calendar structure -->
+            <div
+              class="grid shrink-0"
+              role="grid"
+              aria-label="Monthly workout heatmap"
+              [style.grid-template-columns]="'0.75rem repeat(' + weekCount() + ', 10px)'"
+              [style.gap]="'3px 3px'"
+            >
+              @for (dow of [0,1,2,3,4,5,6]; track dow) {
+                <div
+                  class="flex h-[10px] items-center justify-end pr-0.5 text-[7px] font-medium leading-none text-zinc-700"
+                  aria-hidden="true"
+                >{{ ['S','M','T','W','T','F','S'][dow] }}</div>
+
+                @for (week of heatmapWeeks(); track $index) {
+                  @let day = week[dow];
+                  @if (day) {
+                    <div
+                      role="gridcell"
+                      class="h-[10px] w-[10px] rounded-[2px]"
+                      [class.bg-teal-400]="day.hasWorkout && !day.isFuture"
+                      [class.bg-zinc-800]="!day.hasWorkout && !day.isToday && !day.isFuture"
+                      [class.bg-zinc-700]="day.isToday && !day.hasWorkout"
+                      [class.ring-1]="day.isToday"
+                      [class.ring-teal-400]="day.isToday && day.hasWorkout"
+                      [class.ring-zinc-500]="day.isToday && !day.hasWorkout"
+                      [class.opacity-20]="day.isFuture"
+                      [attr.aria-label]="day.isFuture ? day.label : day.label + (day.hasWorkout ? ' — trained' : '')"
+                      [title]="day.label"
+                    ></div>
+                  } @else {
+                    <div
+                      class="h-[10px] w-[10px] rounded-[2px] bg-zinc-900"
+                      role="gridcell"
+                      aria-hidden="true"
+                    ></div>
+                  }
+                }
+              }
             </div>
-            <span class="shrink-0 text-xs font-medium" [class.text-teal-400]="volumeChangePercent()! >= 0" [class.text-rose-400]="volumeChangePercent()! < 0">
-              {{ volumeChangePercent()! >= 0 ? '+' : '' }}{{ volumeChangePercent() }}% vs last month
-            </span>
+
+            <div class="h-16 w-px shrink-0 bg-zinc-800"></div>
+
+            <div class="min-w-0 flex-1">
+              <div class="flex items-baseline gap-1.5">
+                <span class="text-xl font-extrabold tabular-nums leading-none text-zinc-50">{{ workedDayCount() }}</span>
+                <span class="text-xs text-zinc-500">/ {{ elapsedDays() }} days</span>
+              </div>
+
+              @if (workedDayCount() > 0) {
+                <div class="lft-progress-track mt-1.5">
+                  <div class="lft-progress-fill" [style.width.%]="consistencyPercent()"></div>
+                </div>
+              }
+
+              <div class="mt-2">
+                @if (stats(); as s) {
+                  @if (s.streak > 0) {
+                    <div class="flex items-center gap-1.5">
+                      <span class="h-1.5 w-1.5 rounded-full bg-amber-400" aria-hidden="true"></span>
+                      <span class="text-xs font-bold text-amber-400">{{ s.streak }}-day streak</span>
+                    </div>
+                  } @else if (workedDayCount() > 0) {
+                    <p class="text-xs text-zinc-500">
+                      <span class="font-semibold text-zinc-300">{{ consistencyPercent() }}%</span>
+                      consistency
+                    </p>
+                  }
+                }
+              </div>
+            </div>
+
+          </div>
+        } @else {
+          <!-- Skeleton -->
+          <div class="flex items-center gap-4">
+            <div class="shrink-0">
+              <div class="grid" [style.grid-template-columns]="'0.75rem repeat(6, 10px)'" [style.gap]="'3px 3px'" aria-hidden="true">
+                @for (row of [0,1,2,3,4,5,6]; track row) {
+                  <div class="h-[10px]"></div>
+                  @for (col of [1,2,3,4,5,6]; track col) {
+                    <div class="lft-skeleton h-[10px] w-[10px] rounded-[2px]"></div>
+                  }
+                }
+              </div>
+            </div>
+            <div class="h-16 w-px bg-zinc-800"></div>
+            <div class="flex-1 space-y-2">
+              <div class="lft-skeleton h-5 w-24 rounded"></div>
+              <div class="lft-skeleton h-1 w-full rounded-full"></div>
+              <div class="lft-skeleton h-4 w-20 rounded"></div>
+            </div>
           </div>
         }
+      </div>
+    </section>
 
-        @if (s.personalRecords.length > 0) {
-          <div class="mt-3 flex flex-wrap gap-2">
-            @for (pr of s.personalRecords; track pr.exerciseId) {
-              <span class="rounded-full bg-amber-400/10 px-2.5 py-1 text-xs font-medium text-amber-300 ring-1 ring-amber-400/20">
-                &#x1F3C6; {{ pr.exerciseName }} {{ pr.weight }}kg x{{ pr.reps }}
-              </span>
+
+    <!-- ── Stats grid ──────────────────────────────────────────────── -->
+    @if (stats(); as s) {
+      <section class="anim-enter-1 mt-5" aria-label="Monthly statistics">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="lft-card rounded-2xl px-4 py-4">
+            <p class="lft-section-label">Sessions</p>
+            <p class="mt-2 text-4xl font-black tabular-nums leading-none tracking-tight text-zinc-50">{{ s.sessions }}</p>
+            <p class="mt-2 text-[11px] font-medium text-zinc-600">this month</p>
+          </div>
+
+          <div class="lft-card rounded-2xl px-4 py-4">
+            <p class="lft-section-label">Volume</p>
+            <p class="mt-2 text-4xl font-black tabular-nums leading-none tracking-tight text-zinc-50">
+              {{ formatVolume(displayVolume(s.totalVolume)) }}<span class="text-lg font-semibold text-zinc-500"> {{ weightUnit() }}</span>
+            </p>
+            @if (volumeChangePercent() !== null) {
+              <p class="mt-2 text-xs font-semibold"
+                [class.text-teal-400]="volumeChangePercent()! >= 0"
+                [class.text-rose-400]="volumeChangePercent()! < 0">
+                {{ volumeChangePercent()! >= 0 ? '▲' : '▼' }}&thinsp;{{ volumeChangePercent()! >= 0 ? '+' : '' }}{{ volumeChangePercent() }}% vs last month
+              </p>
+            } @else {
+              <p class="mt-2 text-[11px] text-zinc-600">first month logged</p>
             }
           </div>
-        }
-      </section>
-    }
+        </div>
 
-    <section class="mt-5">
-      @if (loading()) {
-        <div class="space-y-3">
-          @for (i of [1, 2, 3, 4, 5]; track i) {
-            <div class="h-[80px] animate-pulse rounded-lg border border-zinc-800 bg-zinc-900/50"></div>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div class="lft-card rounded-2xl px-4 py-3.5">
+            <p class="lft-section-label">Total Sets</p>
+            <p class="mt-1.5 text-2xl font-black tabular-nums leading-none text-zinc-200">{{ s.totalSets }}</p>
+          </div>
+
+          @if (insightsLoading()) {
+            <div class="lft-skeleton min-h-[64px] rounded-2xl"></div>
+          } @else if (insightsError()) {
+            <div class="lft-card rounded-2xl px-4 py-3.5">
+              <p class="lft-section-label">Most Trained</p>
+              <p class="mt-1.5 text-2xl font-black tabular-nums leading-none text-zinc-700">—</p>
+            </div>
+          } @else if (insights(); as ins) {
+            @if (ins.mostTrainedExercise; as ex) {
+              <a
+                class="lft-card-interactive rounded-2xl px-4 py-3.5"
+                [routerLink]="['/app/progress/exercises', ex.exerciseId]"
+              >
+                <p class="lft-section-label">Most Trained</p>
+                <p class="mt-1.5 truncate text-sm font-bold leading-tight text-zinc-200" [title]="ex.exerciseName">{{ ex.exerciseName }}</p>
+                <p class="mt-0.5 text-[11px] text-zinc-500">{{ ex.sessionCount }} session{{ ex.sessionCount !== 1 ? 's' : '' }}</p>
+              </a>
+            } @else {
+              <div class="lft-card rounded-2xl px-4 py-3.5">
+                <p class="lft-section-label">Most Trained</p>
+                <p class="mt-1.5 text-2xl font-black tabular-nums leading-none text-zinc-700">—</p>
+              </div>
+            }
           }
         </div>
-      } @else if (workouts().length === 0) {
-        <div class="py-16 text-center">
-          <p class="text-base font-medium text-zinc-400">No workouts this month</p>
-          <p class="mt-1 text-sm text-zinc-600">Complete a workout to see it here.</p>
+      </section>
+
+    } @else if (statsError()) {
+      <div class="anim-enter-1 mt-5 lft-card rounded-2xl px-5 py-6 text-center">
+        <p class="text-sm font-semibold text-zinc-400">Stats unavailable</p>
+        <p class="mt-1 text-xs text-zinc-600">Check your connection and try again.</p>
+        <button class="lft-btn lft-btn-ghost mt-4" type="button" (click)="retry()">Retry</button>
+      </div>
+    } @else {
+      <div class="mt-5 space-y-3">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="lft-skeleton h-28 rounded-2xl"></div>
+          <div class="lft-skeleton h-28 rounded-2xl"></div>
         </div>
-      } @else {
+        <div class="grid grid-cols-2 gap-3">
+          <div class="lft-skeleton h-16 rounded-2xl"></div>
+          <div class="lft-skeleton h-16 rounded-2xl"></div>
+        </div>
+      </div>
+    }
+
+
+    <!-- ── Session list ─────────────────────────────────────────────── -->
+    <section class="mt-5" aria-label="Workouts this month">
+
+      @if (!loading() && completedWorkouts().length > 0) {
+        <div class="mb-3 flex items-center gap-2">
+          <p class="lft-section-label">Sessions</p>
+          <span class="text-xs text-zinc-600">{{ filteredWorkouts().length }}</span>
+          <div class="relative ml-auto flex items-center">
+            <svg class="pointer-events-none absolute left-2.5 h-3.5 w-3.5 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+            </svg>
+            <input
+              class="lft-input h-9 w-40 pl-8 pr-7 text-xs"
+              type="search"
+              placeholder="Search sessions…"
+              autocomplete="off"
+              aria-label="Search workouts by name or exercise"
+              [ngModel]="searchQuery()"
+              (ngModelChange)="searchQuery.set($event)"
+            />
+            @if (searchQuery()) {
+              <button
+                class="absolute right-2 flex h-5 w-5 items-center justify-center rounded-full text-zinc-500 transition-colors hover:text-zinc-300"
+                type="button" aria-label="Clear search" (click)="searchQuery.set('')"
+              >
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      @if (loading()) {
         <div class="space-y-2">
-          @for (workout of workouts(); track workout.id) {
-            <a
-              class="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-4 transition hover:border-zinc-700 hover:bg-zinc-900 active:scale-[0.995]"
-              [routerLink]="['/app/workouts', workout.id]"
-            >
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center gap-2">
-                  <p class="truncate text-sm font-semibold text-zinc-50">{{ workout.name }}</p>
+          @for (h of skeletonHeights; track h; let i = $index) {
+            <div class="lft-skeleton anim-stagger rounded-2xl" [style.height.px]="h" [style.--stagger-i]="i"></div>
+          }
+        </div>
+
+      } @else if (listError()) {
+        <div class="lft-card rounded-2xl px-6 py-12 text-center">
+          <p class="text-sm font-semibold text-zinc-200">Couldn't load workouts</p>
+          <p class="mt-1.5 text-xs text-zinc-500">Check your connection and try again.</p>
+          <button class="lft-btn lft-btn-ghost mt-5" type="button" (click)="retry()">Retry</button>
+        </div>
+
+      } @else if (completedWorkouts().length === 0) {
+        <div class="anim-enter py-14 text-center">
+          @if (isCurrentMonth()) {
+            <p class="text-sm font-semibold text-zinc-300">No sessions this month</p>
+            <p class="mt-1 text-xs text-zinc-500">Complete a workout to see it here.</p>
+            <a class="lft-btn lft-btn-primary mt-5 inline-flex" routerLink="/app/workout">Start a Workout</a>
+          } @else {
+            <p class="text-sm font-medium text-zinc-500">No sessions in {{ monthLabel() }}</p>
+          }
+        </div>
+
+      } @else {
+        @if (filteredWorkouts().length === 0) {
+          <div class="lft-card rounded-2xl px-5 py-10 text-center">
+            <p class="text-sm font-medium text-zinc-400">No sessions matching "{{ searchQuery() }}"</p>
+            <button class="mt-3 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-300" type="button" (click)="searchQuery.set('')">
+              Clear search
+            </button>
+          </div>
+        } @else {
+          <div class="space-y-2">
+            @for (workout of filteredWorkouts(); track workout.id; let i = $index) {
+
+            <!-- ── BEST WORKOUT ── -->
+            @if (isBestWorkout(workout)) {
+              <a
+                class="anim-stagger lft-card-accent group relative flex flex-col rounded-2xl px-4 py-4 transition-colors"
+                [style.--stagger-i]="i"
+                [routerLink]="['/app/workouts', workout.id]"
+              >
+                <span class="absolute right-3 top-3 lft-badge lft-badge-accent text-[9px] uppercase tracking-wide">
+                  Top Volume
+                </span>
+                <div class="flex items-start gap-3 pr-20">
+                  <p class="text-[0.9375rem] font-bold leading-snug text-zinc-50">{{ workout.name }}</p>
                 </div>
-                <p class="mt-1 text-xs text-zinc-500">
-                  {{ formatDuration(workout.durationSeconds) }} &bull; {{ exerciseNames(workout) }} &bull; {{ formatVolume(workoutVolume(workout)) }}kg
-                </p>
-              </div>
-              <span class="shrink-0 text-xs font-medium text-zinc-500">{{ formatDate(workout.startedAt) }}</span>
-            </a>
+                <p class="mt-0.5 text-xs text-zinc-500">{{ formatDate(workout.startedAt) }}</p>
+                <p class="mt-2 truncate text-xs text-zinc-400">{{ exercisePreview(workout) }}</p>
+                <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  @if (workout.durationSeconds) {
+                    <span class="text-xs text-zinc-400">{{ formatDuration(workout.durationSeconds) }}</span>
+                  }
+                  @if (workoutVolume(workout) > 0) {
+                    <span class="text-xs font-bold text-teal-400">{{ formatVolume(displayVolume(workoutVolume(workout))) }} {{ weightUnit() }}</span>
+                  }
+                  <span class="text-xs text-zinc-500">{{ workoutSetCount(workout) }} sets</span>
+                  <span class="text-xs text-zinc-500">{{ workout.exercises.length }} exercises</span>
+                </div>
+              </a>
+
+            <!-- ── REGULAR WORKOUT ── -->
+            } @else {
+              <a
+                class="anim-stagger lft-card-interactive group flex flex-col rounded-2xl px-4 py-4"
+                [style.--stagger-i]="i"
+                [routerLink]="['/app/workouts', workout.id]"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <p class="truncate text-[0.9375rem] font-semibold leading-snug text-zinc-100">{{ workout.name }}</p>
+                  <p class="shrink-0 text-xs font-medium text-zinc-500">{{ formatDate(workout.startedAt) }}</p>
+                </div>
+                <p class="mt-1 truncate text-xs text-zinc-500">{{ exercisePreview(workout) }}</p>
+                <div class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1">
+                  @if (workout.durationSeconds) {
+                    <span class="text-xs text-zinc-500">{{ formatDuration(workout.durationSeconds) }}</span>
+                  }
+                  @if (workoutVolume(workout) > 0) {
+                    <span class="text-xs text-zinc-500">{{ formatVolume(displayVolume(workoutVolume(workout))) }} {{ weightUnit() }}</span>
+                  }
+                  <span class="text-xs text-zinc-500">{{ workoutSetCount(workout) }} sets · {{ workout.exercises.length }} exercises</span>
+                  <svg class="ml-auto h-3.5 w-3.5 shrink-0 text-zinc-700 transition-colors group-hover:text-zinc-500" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"/>
+                  </svg>
+                </div>
+              </a>
+            }
           }
         </div>
 
         @if (page() < totalPages()) {
           <div class="mt-5 flex justify-center">
             <button
-              class="h-11 rounded-lg border border-zinc-700 px-6 text-sm font-semibold text-zinc-200 transition hover:border-zinc-500"
+              class="lft-btn lft-btn-ghost"
               type="button"
+              [disabled]="loadingMore()"
               (click)="loadMore()"
             >
-              Load more
+              @if (loadingMore()) {
+                <svg class="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                </svg>
+                Loading…
+              } @else {
+                Load more
+              }
             </button>
           </div>
+        }
         }
       }
     </section>

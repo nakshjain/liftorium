@@ -16,4 +16,13 @@ public interface ExerciseRepository extends MongoRepository<Exercise, String> {
 
   List<Exercise> findBySourceProviderAndActiveTrueAndLastSeenAtBefore(
       ExerciseProviderType provider, Instant before);
+
+  /** Used by ProgressService to search exercises by name for the list endpoint. */
+  List<Exercise> findByNameContainingIgnoreCase(String name);
+
+  /** Returns the count of active exercises — used for catalog version computation. */
+  long countByActiveTrue();
+
+  /** Returns the most recently updated active exercise — used for catalog version computation. */
+  Optional<Exercise> findTopByActiveTrueOrderByUpdatedAtDesc();
 }

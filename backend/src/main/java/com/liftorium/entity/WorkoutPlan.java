@@ -25,6 +25,8 @@ public class WorkoutPlan {
   @Indexed(unique = true)
   private String userId;
 
+  private String templateId;
+
   @Builder.Default
   private List<PlanDay> days = new ArrayList<>();
 

@@ -3,17 +3,23 @@ package com.liftorium.service;
 import com.liftorium.config.AppProperties;
 import com.liftorium.dto.AuthDtos.AuthSession;
 import com.liftorium.dto.AuthDtos.AuthUserDto;
+import com.liftorium.dto.AuthDtos.ForgotPasswordRequest;
 import com.liftorium.dto.AuthDtos.LoginRequest;
 import com.liftorium.dto.AuthDtos.RegisterInitiateRequest;
 import com.liftorium.dto.AuthDtos.RegisterRequest;
 import com.liftorium.dto.AuthDtos.RegisterVerifyRequest;
+import com.liftorium.dto.AuthDtos.ResetPasswordRequest;
+import com.liftorium.entity.PasswordResetRequest;
 import com.liftorium.entity.PendingRegistration;
 import com.liftorium.entity.RefreshToken;
 import com.liftorium.entity.User;
+import com.liftorium.entity.UserSettings;
 import com.liftorium.exception.AppException;
+import com.liftorium.repository.PasswordResetRequestRepository;
 import com.liftorium.repository.PendingRegistrationRepository;
 import com.liftorium.repository.RefreshTokenRepository;
 import com.liftorium.repository.UserRepository;
+import com.liftorium.repository.UserSettingsRepository;
 import io.jsonwebtoken.Claims;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -22,6 +28,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.bson.types.ObjectId;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -34,6 +41,8 @@ public class AuthService {
   private final UserRepository userRepository;
   private final RefreshTokenRepository refreshTokenRepository;
   private final PendingRegistrationRepository pendingRegistrationRepository;
+  private final PasswordResetRequestRepository passwordResetRequestRepository;
+  private final UserSettingsRepository userSettingsRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final OtpService otpService;
@@ -111,6 +120,9 @@ public class AuthService {
     User savedUser = userRepository.save(user);
     log.info("User created successfully via OTP verification. User ID: {}, Email: {}", savedUser.getId(), email);
 
+    userSettingsRepository.save(UserSettings.createDefaults(savedUser.getId()));
+    log.debug("Default settings created for userId={}", savedUser.getId());
+
     pendingRegistrationRepository.deleteByEmail(email);
     log.debug("Pending registration cleaned up for email: {}", email);
 
@@ -130,7 +142,10 @@ public class AuthService {
         .passwordHash(passwordEncoder.encode(input.password()))
         .build();
 
-    return createSession(userRepository.save(user));
+    User savedUser = userRepository.save(user);
+    userSettingsRepository.save(UserSettings.createDefaults(savedUser.getId()));
+
+    return createSession(savedUser);
   }
 
   public AuthSession login(LoginRequest input) {
@@ -167,6 +182,67 @@ public class AuthService {
     return createSession(user);
   }
 
+  public void initiateForgotPassword(ForgotPasswordRequest input) {
+    String email = normalizeEmail(input.email());
+    log.info("Password reset requested for email: {}", email);
+
+    // Always return success — never reveal whether email exists
+    if (!userRepository.existsByEmail(email)) {
+      log.info("Password reset requested for non-existent email (suppressed): {}", email);
+      return;
+    }
+
+    PasswordResetRequest reset = passwordResetRequestRepository.findByEmail(email)
+        .orElse(PasswordResetRequest.builder().email(email).attemptCount(0).build());
+
+    Instant rateLimitWindow = Instant.now().minus(
+        appProperties.otp().rateLimitWindowMinutes(), ChronoUnit.MINUTES);
+    if (reset.getLastAttemptAt() != null
+        && reset.getLastAttemptAt().isAfter(rateLimitWindow)
+        && reset.getAttemptCount() >= appProperties.otp().maxAttemptsPerWindow()) {
+      log.warn("Password reset rate limited for email: {}. Attempts: {}", email, reset.getAttemptCount());
+      // Silently suppress to avoid enumeration via rate-limit errors
+      return;
+    }
+
+    if (reset.getLastAttemptAt() == null || reset.getLastAttemptAt().isBefore(rateLimitWindow)) {
+      reset.setAttemptCount(0);
+    }
+
+    String otp = otpService.generateOtp();
+    reset.setOtpHash(otpService.hashOtp(otp));
+    reset.setAttemptCount(reset.getAttemptCount() + 1);
+    reset.setLastAttemptAt(Instant.now());
+    reset.setExpiresAt(Instant.now().plus(10, ChronoUnit.MINUTES));
+
+    passwordResetRequestRepository.save(reset);
+    emailService.sendPasswordResetOtp(email, otp);
+  }
+
+  public AuthSession resetPassword(ResetPasswordRequest input) {
+    String email = normalizeEmail(input.email());
+    log.info("Password reset verification requested for email: {}", email);
+
+    PasswordResetRequest reset = passwordResetRequestRepository.findByEmail(email)
+        .orElseThrow(() -> new AppException("OTP_EXPIRED", "Reset code has expired. Please request a new one.", HttpStatus.BAD_REQUEST));
+
+    if (!otpService.verifyOtp(input.otp(), reset.getOtpHash())) {
+      log.warn("Password reset failed - invalid OTP for email: {}", email);
+      throw new AppException("OTP_INVALID", "Invalid reset code", HttpStatus.BAD_REQUEST);
+    }
+
+    User user = userRepository.findByEmail(email)
+        .orElseThrow(() -> new AppException("USER_NOT_FOUND", "Account not found", HttpStatus.NOT_FOUND));
+
+    user.setPasswordHash(passwordEncoder.encode(input.newPassword()));
+    userRepository.save(user);
+
+    passwordResetRequestRepository.deleteByEmail(email);
+    log.info("Password reset successful for email: {}", email);
+
+    return createSession(user);
+  }
+
   public void logout(String refreshToken) {
     String tokenHash = hashRefreshToken(refreshToken);
     refreshTokenRepository.findByTokenHashAndRevokedAtIsNullAndExpiresAtAfter(tokenHash, Instant.now())
@@ -183,16 +259,16 @@ public class AuthService {
   private AuthSession createSession(User user) {
     AuthUserDto userDto = toUserDto(user);
     String accessToken = jwtService.signAccessToken(userDto);
+    String refreshTokenId = new ObjectId().toHexString();
+    Instant refreshTokenExpiresAt = Instant.now().plus(jwtService.getRefreshTokenTtl());
+    String refreshToken = jwtService.signRefreshToken(user.getId(), refreshTokenId);
 
-    RefreshToken record = refreshTokenRepository.save(RefreshToken.builder()
+    refreshTokenRepository.save(RefreshToken.builder()
+        .id(refreshTokenId)
         .userId(user.getId())
-        .tokenHash("pending")
-        .expiresAt(Instant.now().plus(jwtService.getRefreshTokenTtl()))
+        .tokenHash(hashRefreshToken(refreshToken))
+        .expiresAt(refreshTokenExpiresAt)
         .build());
-
-    String refreshToken = jwtService.signRefreshToken(user.getId(), record.getId());
-    record.setTokenHash(hashRefreshToken(refreshToken));
-    refreshTokenRepository.save(record);
 
     return new AuthSession(userDto, accessToken, refreshToken);
   }
