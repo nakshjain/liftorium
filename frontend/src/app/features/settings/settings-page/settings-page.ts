@@ -20,7 +20,7 @@ import type {
   WeightUnit,
 } from '../settings.models';
 
-type Section = 'account' | 'workout' | 'appearance' | 'security' | 'data';
+type Section = 'account' | 'workout' | 'security' | 'data';
 
 @Component({
   selector: 'app-settings-page',
@@ -39,11 +39,10 @@ export class SettingsPageComponent implements OnInit {
 
   /** Tab definitions — used by both the tab bar and aria attributes. */
   protected readonly tabs: { id: Section; label: string }[] = [
-    { id: 'account',    label: 'Account'    },
-    { id: 'workout',    label: 'Workout'    },
-    { id: 'appearance', label: 'Appearance' },
-    { id: 'security',   label: 'Security'   },
-    { id: 'data',       label: 'Data'       },
+    { id: 'account',  label: 'Account'  },
+    { id: 'workout',  label: 'Workout'  },
+    { id: 'security', label: 'Security' },
+    { id: 'data',     label: 'Data'     },
   ];
 
   // ── Loading / saving state ────────────────────────────────────────────
@@ -182,20 +181,14 @@ export class SettingsPageComponent implements OnInit {
         defaultRestSeconds: Number(this.defaultRestSeconds),
         autoStartRestTimer: this.autoStartRestTimer,
       },
+      appearance: { theme: this.theme },
     });
-    this.toastService.success('Workout preferences saved');
-    this.isDirty.set(false);
-    this.saving.set(false);
-  }
-
-  // ── Appearance ────────────────────────────────────────────────────────
-
-  protected saveAppearance(): void {
-    this.saving.set(true);
-    this.settingsStore.update({ appearance: { theme: this.theme } });
-    this.toastService.success('Appearance saved');
-    this.isDirty.set(false);
-    this.saving.set(false);
+    // Small delay so "Saving…" label is perceptible before the optimistic update resolves
+    window.setTimeout(() => {
+      this.toastService.success('Preferences saved');
+      this.isDirty.set(false);
+      this.saving.set(false);
+    }, 400);
   }
 
   // ── Security ──────────────────────────────────────────────────────────
