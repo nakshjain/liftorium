@@ -3,6 +3,8 @@ package com.liftorium.service;
 import com.liftorium.entity.Exercise;
 import com.liftorium.entity.ExerciseProviderType;
 import com.liftorium.entity.ExerciseSourceInfo;
+import com.liftorium.entity.ExerciseType;
+import com.liftorium.entity.TrackingType;
 import com.liftorium.exception.AppException;
 import com.liftorium.provider.ExerciseProvider;
 import com.liftorium.provider.ExerciseProviderRegistry;
@@ -83,6 +85,7 @@ public class ExerciseSyncService {
         .secondaryMuscles(source.secondaryMuscles())
         .equipment(source.equipment())
         .exerciseType(source.exerciseType())
+        .trackingType(inferTrackingType(source.exerciseType()))
         .active(true)
         .source(ExerciseSourceInfo.builder()
             .provider(providerType)
@@ -105,6 +108,7 @@ public class ExerciseSyncService {
     exercise.setSecondaryMuscles(source.secondaryMuscles());
     exercise.setEquipment(source.equipment());
     exercise.setExerciseType(source.exerciseType());
+    exercise.setTrackingType(inferTrackingType(source.exerciseType()));
     exercise.setActive(true);
     exercise.setLevel(source.level());
     exercise.setMechanic(source.mechanic());
@@ -112,6 +116,20 @@ public class ExerciseSyncService {
     exercise.setInstructions(source.instructions() != null ? source.instructions() : List.of());
     exercise.setContentFingerprint(source.contentFingerprint());
     exercise.setLastSeenAt(seenAt);
+  }
+
+  /**
+   * Derives the {@link TrackingType} from the exercise type provided by the
+   * external data source.
+   *
+   * <p>Rule: {@code CARDIO} exercises → {@link TrackingType#CARDIO}.
+   * Everything else → {@link TrackingType#WEIGHT_REPS} (safe default that
+   * preserves existing behaviour for all strength exercises).
+   */
+  private TrackingType inferTrackingType(ExerciseType exerciseType) {
+    return exerciseType == ExerciseType.CARDIO
+        ? TrackingType.CARDIO
+        : TrackingType.WEIGHT_REPS;
   }
 
   private int deactivateMissing(ExerciseProviderType providerType, Instant syncStartedAt) {
