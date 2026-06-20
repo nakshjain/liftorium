@@ -2,6 +2,15 @@
 
 A workout tracking application built for real gym usage — fast, focused, and mobile-first.
 
+## Live Demo
+
+🌐 https://liftorium.fit
+
+Try the production deployment of Liftorium.
+
+Frontend: Angular 21 SPA
+Backend: Spring Boot 4 REST API
+Database: MongoDB Atlas
 ---
 
 ## Product Overview
@@ -149,6 +158,20 @@ See the [Open Tasks](./docs/progress/open-tasks.md) for the full active task lis
 | Authentication | JWT — JJWT 0.12.6, stateless, dual-token |
 | Email | Resend API |
 | Password hashing | BCrypt |
+
+---
+
+## Deployment
+
+| Component | Platform |
+|------------|------------|
+| Frontend | Cloudflare Pages |
+| Backend | Render |
+| Database | MongoDB Atlas |
+| Email Delivery | Resend |
+| Domain | liftorium.fit |
+
+Production deployment follows a decoupled architecture with independent frontend and backend deployments.
 
 ---
 
@@ -389,6 +412,11 @@ npm start
 
 Nakshatra Jain
 
+Software Engineer  
+B.Tech, Delhi Technological University (DTU)
+
+GitHub: https://github.com/nakshjain
+LinkedIn: https://linkedin.com/in/nakshjain
 ---
 
 ## License
