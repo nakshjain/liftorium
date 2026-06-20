@@ -8,8 +8,8 @@ A workout tracking application built for real gym usage — fast, focused, and m
 
 Try the production deployment of Liftorium.
 
-Frontend: Angular 21 SPA
-Backend: Spring Boot 4 REST API
+Frontend: Angular 21 SPA    
+Backend: Spring Boot 4 REST API     
 Database: MongoDB Atlas
 ---
 
@@ -413,9 +413,8 @@ npm start
 Nakshatra Jain
 
 Software Engineer  
-B.Tech, Delhi Technological University (DTU)
-
-GitHub: https://github.com/nakshjain
+B.Tech, Delhi Technological University (DTU)    
+GitHub: https://github.com/nakshjain    
 LinkedIn: https://linkedin.com/in/nakshjain
 ---
 
