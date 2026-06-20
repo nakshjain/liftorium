@@ -11,6 +11,7 @@ Try the production deployment of Liftorium.
 Frontend: Angular 21 SPA    
 Backend: Spring Boot 4 REST API     
 Database: MongoDB Atlas
+
 ---
 
 ## Product Overview
@@ -416,6 +417,7 @@ Software Engineer
 B.Tech, Delhi Technological University (DTU)    
 GitHub: https://github.com/nakshjain    
 LinkedIn: https://linkedin.com/in/nakshjain
+
 ---
 
 ## License
