@@ -136,9 +136,6 @@ See the [Open Tasks](./docs/progress/open-tasks.md) for the full active task lis
 ### Exercise Catalog
 ![Exercise Catalog](docs/assets/exercises.png)
 
-### Progress
-![Progress](docs/assets/progress.png)
-
 ### Workout History
 ![Workout History](docs/assets/workout-history.png)
 
