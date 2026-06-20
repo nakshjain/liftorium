@@ -127,17 +127,12 @@ See the [Open Tasks](./docs/progress/open-tasks.md) for the full active task lis
 
 ## Screenshots
 
-### Dashboard
-![Dashboard](docs/assets/dashboard.png)
-
-### Workout Session
-![Workout Session](docs/assets/workout-session.png)
-
-### Exercise Catalog
-![Exercise Catalog](docs/assets/exercises.png)
-
-### Workout History
-![Workout History](docs/assets/workout-history.png)
+| | |
+|---|---|
+| **Dashboard** | **Workout Session** |
+| ![Dashboard](docs/assets/dashboard.png) | ![Workout Session](docs/assets/workout-session.png) |
+| **Progress** | **Workout History** |
+| ![Progress](docs/assets/progress.png) | ![Workout History](docs/assets/workout-history.png) |
 
 ---
 
